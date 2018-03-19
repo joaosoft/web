@@ -1,22 +1,22 @@
-package gomanager
+package golog
 
 import (
-	"github.com/sirupsen/logrus"
+	"io"
 )
 
-// GoManagerOption ...
-type GoManagerOption func(gomanager *GoManager)
+// GoLogOption ...
+type GoLogOption func(golog *GoLog)
 
 // Reconfigure ...
-func (gomanager *GoManager) Reconfigure(options ...GoManagerOption) {
+func (golog *GoLog) Reconfigure(options ...GoLogOption) {
 	for _, option := range options {
-		option(gomanager)
+		option(golog)
 	}
 }
 
-// WithLogLevel ...
-func WithLogLevel(level logrus.Level) GoManagerOption {
-	return func(gomanager *GoManager) {
-		logrus.SetLevel(level)
+// WithWriter ...
+func WithWriter(writer io.Writer) GoLogOption {
+	return func(golog *GoLog) {
+		golog.writer = writer
 	}
 }

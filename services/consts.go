@@ -1,6 +1,5 @@
-package gomanager
+package golog
 
 const (
-	background  = true
 	defaultPath = "."
 )

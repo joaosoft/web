@@ -1,4 +1,4 @@
-package gomanager
+package golog
 
 // App ...
 type App struct {
