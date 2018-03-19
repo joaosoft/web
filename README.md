@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/joaosoft/go-log.svg?branch=master)](https://travis-ci.org/joaosoft/go-log) | [![Code Climate](https://codeclimate.com/github/joaosoft/go-log/badges/coverage.svg)](https://codeclimate.com/github/joaosoft/go-log)
 
 Personalised logger.
+UNDER DEVELOPMENT! EMPTY AT THE MOMENT!
  
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 
