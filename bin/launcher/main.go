@@ -7,6 +7,6 @@ import (
 func main() {
 	//
 	// log
-	log := golog.NewGoLog()
+	log := golog.NewLog()
 	log.Reconfigure()
 }
