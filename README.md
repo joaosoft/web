@@ -32,10 +32,10 @@ type Log interface {
 	WithTags(tags map[string]interface{}) Log
 	WithFields(fields map[string]interface{}) Log
 
-	Debug(message string)
-	Info(message string)
-	Warn(message string)
-	Error(message string)
+	Debug(message interface{})
+	Info(message interface{})
+	Warn(message interface{})
+	Error(message interface{})
 
 	Debugf(format string, arguments ...interface{})
 	Infof(format string, arguments ...interface{})
