@@ -20,6 +20,9 @@ const (
 	// DebugLevel, when it is a debugging message
 	DebugLevel
 
+	// Special Prefixes
+	// Add the level value to the prefix
 	LEVEL = "{{LEVEL}}"
-	TIME  = "{{TIME}}"
+	// Add the time value to the prefix
+	TIME = "{{TIME}}"
 )
