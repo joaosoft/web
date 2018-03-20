@@ -27,6 +27,8 @@ go get github.com/joaosoft/go-log/service
 ## Interface 
 ```go
 type Log interface {
+	SetLevel(level Level)
+
 	With(prefixes, tags, fields map[string]interface{}) Log
 	WithPrefixes(prefixes map[string]interface{}) Log
 	WithTags(tags map[string]interface{}) Log

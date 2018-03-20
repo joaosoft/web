@@ -22,6 +22,10 @@ func NewLog(options ...GoLogOption) *GoLog {
 	return golog
 }
 
+func (log *GoLog) SetLevel(level Level) {
+	log.level = level
+}
+
 func (log *GoLog) With(prefixes, tags, fields map[string]interface{}) Log {
 	log.WithPrefixes(prefixes)
 	log.WithTags(tags)

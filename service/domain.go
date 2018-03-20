@@ -6,6 +6,8 @@ import (
 )
 
 type Log interface {
+	SetLevel(level Level)
+
 	With(prefixes, tags, fields map[string]interface{}) Log
 	WithPrefixes(prefixes map[string]interface{}) Log
 	WithTags(tags map[string]interface{}) Log
@@ -32,7 +34,7 @@ type Entry struct {
 type Message struct {
 	Prefixes map[string]interface{} `json:"prefixes"`
 	Tags     map[string]interface{} `json:"tags"`
-	Message  interface{}                 `json:"message"`
+	Message  interface{}            `json:"message"`
 	Fields   map[string]interface{} `json:"fields"`
 }
 
