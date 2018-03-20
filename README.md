@@ -66,6 +66,7 @@ log.Info("isto é uma mensagem de info")
 log.Debug("isto é uma mensagem de debug")
 
 fmt.Println("--------------")
+<-time.After(time.Second)
 
 //
 // log to json
@@ -89,12 +90,12 @@ log.Debugf("isto é uma mensagem de debug %s", "ehh")
 
 ```javascript
 :: LOG TEXT
-{prefixes:map[level:error time:2018-03-20 01:36:29] tags:map[service:log] message:isto é uma mensagem de error fields:map[name:joão]}
-{prefixes:map[time:2018-03-20 01:36:29 level:info] tags:map[service:log] message:isto é uma mensagem de info fields:map[name:joão]}
+{prefixes:map[level:error time:2018-03-20 02:47:21] tags:map[service:log] message:isto é uma mensagem de error fields:map[name:joão]}
+{prefixes:map[level:info time:2018-03-20 02:47:21] tags:map[service:log] message:isto é uma mensagem de info fields:map[name:joão]}
 --------------
 :: LOG JSON
-{"prefixes":{"level":"error","time":"2018-03-20 01:36:29"},"tags":{"service":"log"},"message":"isto é uma mensagem de error hello","fields":{"name":"joão"}}
-{"prefixes":{"level":"info","time":"2018-03-20 01:36:29"},"tags":{"service":"log"},"message":"isto é uma  mensagem de info hi ","fields":{"name":"joão"}}
+{"prefixes":{"level":"error","time":"2018-03-20 02:47:22"},"tags":{"service":"log"},"message":"isto é uma mensagem de error hello","fields":{"name":"joão"}}
+{"prefixes":{"level":"info","time":"2018-03-20 02:47:22"},"tags":{"service":"log"},"message":"isto é uma  mensagem de info hi ","fields":{"name":"joão"}}
 ```
 
 ## Bugs

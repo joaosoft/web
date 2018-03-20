@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-log/service"
 	"os"
+	"time"
 )
 
 func main() {
@@ -25,6 +26,7 @@ func main() {
 	log.Debug("isto é uma mensagem de debug")
 
 	fmt.Println("--------------")
+	<-time.After(time.Second)
 
 	//
 	// log to json
