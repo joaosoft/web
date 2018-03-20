@@ -20,3 +20,17 @@ func WithWriter(writer io.Writer) GoLogOption {
 		golog.writer = writer
 	}
 }
+
+// WithLevel ...
+func WithLevel(level Level) GoLogOption {
+	return func(golog *GoLog) {
+		golog.level = level
+	}
+}
+
+// WithFormatHandler ...
+func WithFormatHandler(formatHandler FormatHandler) GoLogOption {
+	return func(golog *GoLog) {
+		golog.formatHandler = formatHandler
+	}
+}

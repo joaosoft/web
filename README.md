@@ -28,9 +28,45 @@ This examples are available in the project at [go-log/bin/launcher/main.go](http
 
 ```go
 //
-// log
-log := golog.NewLog()
+// log to text
+fmt.Println(":: LOG TEXT")
+log := golog.NewLog(golog.WithLevel(golog.InfoLevel), golog.WithFormatHandler(golog.TextFormatHandler), golog.WithWriter(os.Stdout))
+log.With(map[string]interface{}{"level": golog.LEVEL, "time": golog.TIME}, map[string]interface{}{"service": "log"}, map[string]interface{}{"name": "joão"})
+
+// logging...
+log.Error("isto é uma mensagem de error")
+log.Info("isto é uma mensagem de info")
+log.Debug("isto é uma mensagem de debug")
+
+fmt.Println("--------------")
+
+//
+// log to json
+fmt.Println("LOG JSON")
+log = golog.NewLog(golog.WithLevel(golog.InfoLevel), golog.WithFormatHandler(golog.JsonFormatHandler), golog.WithWriter(os.Stdout))
+log.With(map[string]interface{}{"level": golog.LEVEL, "time": golog.TIME}, map[string]interface{}{"service": "log"}, map[string]interface{}{"name": "joão"})
+
+// logging...
+log.Errorf("isto é uma mensagem de error %s", "hello")
+log.Infof("isto é uma  mensagem de info %s ", "hi")
+log.Debugf("isto é uma mensagem de debug %s", "ehh")
 ```
+
+###### Output 
+
+```javascript
+:: LOG TEXT
+{prefixes:map[level:error time:2018-03-20 01:36:29] tags:map[service:log] message:isto é uma mensagem de error fields:map[name:joão]}
+{prefixes:map[time:2018-03-20 01:36:29 level:info] tags:map[service:log] message:isto é uma mensagem de info fields:map[name:joão]}
+--------------
+LOG JSON
+{"prefixes":{"level":"error","time":"2018-03-20 01:36:29"},"tags":{"service":"log"},"message":"isto é uma mensagem de error hello","fields":{"name":"joão"}}
+{"prefixes":{"level":"info","time":"2018-03-20 01:36:29"},"tags":{"service":"log"},"message":"isto é uma  mensagem de info hi ","fields":{"name":"joão"}}
+```
+
+## Bugs
+* all the maps do not guarantee order of the items! 
+
 
 ## Follow me at
 Facebook: https://www.facebook.com/joaosoft
