@@ -63,7 +63,7 @@ fmt.Println("--------------")
 
 //
 // log to json
-fmt.Println("LOG JSON")
+fmt.Println(":: LOG JSON")
 log = golog.NewLog(golog.WithLevel(golog.InfoLevel), golog.WithFormatHandler(golog.JsonFormatHandler), golog.WithWriter(os.Stdout))
 log.With(map[string]interface{}{"level": golog.LEVEL, "time": golog.TIME}, map[string]interface{}{"service": "log"}, map[string]interface{}{"name": "joão"})
 
