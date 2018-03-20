@@ -101,7 +101,7 @@ log.Debugf("isto é uma mensagem de debug %s", "ehh")
 {"prefixes":{"level":"info","time":"2018-03-20 02:47:22"},"tags":{"service":"log"},"message":"isto é uma  mensagem de info hi ","fields":{"name":"joão"}}
 ```
 
-## Bugs
+## Known issues
 * all the maps do not guarantee order of the items! 
 
 
