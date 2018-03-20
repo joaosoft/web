@@ -51,8 +51,14 @@ This examples are available in the project at [go-log/bin/launcher/main.go](http
 //
 // log to text
 fmt.Println(":: LOG TEXT")
-log := golog.NewLog(golog.WithLevel(golog.InfoLevel), golog.WithFormatHandler(golog.TextFormatHandler), golog.WithWriter(os.Stdout))
-log.With(map[string]interface{}{"level": golog.LEVEL, "time": golog.TIME}, map[string]interface{}{"service": "log"}, map[string]interface{}{"name": "joão"})
+log := golog.NewLog(
+    golog.WithLevel(golog.InfoLevel), 
+    golog.WithFormatHandler(golog.TextFormatHandler), 
+    golog.WithWriter(os.Stdout)).
+        With(
+            map[string]interface{}{"level": golog.LEVEL, "time": golog.TIME}, 
+            map[string]interface{}{"service": "log"}, 
+            map[string]interface{}{"name": "joão"})
 
 // logging...
 log.Error("isto é uma mensagem de error")
@@ -64,8 +70,14 @@ fmt.Println("--------------")
 //
 // log to json
 fmt.Println(":: LOG JSON")
-log = golog.NewLog(golog.WithLevel(golog.InfoLevel), golog.WithFormatHandler(golog.JsonFormatHandler), golog.WithWriter(os.Stdout))
-log.With(map[string]interface{}{"level": golog.LEVEL, "time": golog.TIME}, map[string]interface{}{"service": "log"}, map[string]interface{}{"name": "joão"})
+log = golog.NewLog(
+    golog.WithLevel(golog.InfoLevel),
+    golog.WithFormatHandler(golog.JsonFormatHandler),
+    golog.WithWriter(os.Stdout)).
+    With(
+    map[string]interface{}{"level": golog.LEVEL, "time": golog.TIME},
+    map[string]interface{}{"service": "log"},
+    map[string]interface{}{"name": "joão"})
 
 // logging...
 log.Errorf("isto é uma mensagem de error %s", "hello")
