@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/joaosoft/go-log.svg?branch=master)](https://travis-ci.org/joaosoft/go-log) | [![Code Climate](https://codeclimate.com/github/joaosoft/go-log/badges/coverage.svg)](https://codeclimate.com/github/joaosoft/go-log)
 
 A simplified logger that allows you to add complexity depending of your requirements.
- 
+After a read of the project https://gitlab.com/vredens/go-logger extracted some concepts like allowing to add tags and fields to logger infrastructure. 
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 
 ## With support for
