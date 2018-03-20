@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go-log/services"
+	"go-log/service"
 	"os"
 )
 
