@@ -7,7 +7,8 @@ A simplified logger that allows you to add complexity depending of your requirem
 
 ## With support for
 * formatted messages
-* tagging
+* prefixes
+* tags
 * fields
 
 ## Dependecy Management 
