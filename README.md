@@ -80,7 +80,7 @@ log.Debugf("isto é uma mensagem de debug %s", "ehh")
 {prefixes:map[level:error time:2018-03-20 01:36:29] tags:map[service:log] message:isto é uma mensagem de error fields:map[name:joão]}
 {prefixes:map[time:2018-03-20 01:36:29 level:info] tags:map[service:log] message:isto é uma mensagem de info fields:map[name:joão]}
 --------------
-LOG JSON
+:: LOG JSON
 {"prefixes":{"level":"error","time":"2018-03-20 01:36:29"},"tags":{"service":"log"},"message":"isto é uma mensagem de error hello","fields":{"name":"joão"}}
 {"prefixes":{"level":"info","time":"2018-03-20 01:36:29"},"tags":{"service":"log"},"message":"isto é uma  mensagem de info hi ","fields":{"name":"joão"}}
 ```
