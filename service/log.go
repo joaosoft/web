@@ -49,19 +49,19 @@ func (log *GoLog) WithField(key string, value interface{}) Log {
 	return log
 }
 
-func (log *GoLog) Debug(message string) {
+func (log *GoLog) Debug(message interface{}) {
 	log.writeLog(DebugLevel, message)
 }
 
-func (log *GoLog) Info(message string) {
+func (log *GoLog) Info(message interface{}) {
 	log.writeLog(InfoLevel, message)
 }
 
-func (log *GoLog) Warn(message string) {
+func (log *GoLog) Warn(message interface{}) {
 	log.writeLog(WarnLevel, message)
 }
 
-func (log *GoLog) Error(message string) {
+func (log *GoLog) Error(message interface{}) {
 	log.writeLog(ErrorLevel, message)
 }
 
@@ -81,7 +81,7 @@ func (log *GoLog) Errorf(format string, arguments ...interface{}) {
 	log.writeLog(ErrorLevel, fmt.Sprintf(format, arguments...))
 }
 
-func (log *GoLog) writeLog(level Level, message string) {
+func (log *GoLog) writeLog(level Level, message interface{}) {
 	log.mux.Lock()
 	defer log.mux.Unlock()
 	if level > log.level {

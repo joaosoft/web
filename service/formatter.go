@@ -19,7 +19,7 @@ func TextFormatHandler(level Level, message *Message) ([]byte, error) {
 	type MessageText struct {
 		prefixes interface{}
 		tags     interface{}
-		message  string
+		message  interface{}
 		fields   interface{}
 	}
 
