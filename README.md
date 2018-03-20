@@ -23,6 +23,26 @@ Project dependencies are managed using Dep. Read more about [Dep](https://github
 go get github.com/joaosoft/go-log
 ```
 
+##Interface
+```go
+type Log interface {
+	With(prefixes, tags, fields map[string]interface{}) Log
+	WithPrefixes(prefixes map[string]interface{}) Log
+	WithTags(tags map[string]interface{}) Log
+	WithFields(fields map[string]interface{}) Log
+
+	Debug(message string)
+	Info(message string)
+	Warn(message string)
+	Error(message string)
+
+	Debugf(format string, arguments ...interface{})
+	Infof(format string, arguments ...interface{})
+	Warnf(format string, arguments ...interface{})
+	Errorf(format string, arguments ...interface{})
+}
+```
+
 ## Usage 
 This examples are available in the project at [go-log/bin/launcher/main.go](https://go-log/tree/master/bin/launcher/main.go)
 
