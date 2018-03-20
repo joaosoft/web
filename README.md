@@ -24,7 +24,7 @@ Project dependencies are managed using Dep. Read more about [Dep](https://github
 go get github.com/joaosoft/go-log
 ```
 
-##Interface
+## Interface 
 ```go
 type Log interface {
 	With(prefixes, tags, fields map[string]interface{}) Log
