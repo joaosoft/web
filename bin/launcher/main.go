@@ -37,4 +37,5 @@ func main() {
 
 	// wait one minute to process...
 	<-time.After(time.Minute * 1)
+	quit <- true
 }
