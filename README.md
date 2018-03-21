@@ -32,20 +32,34 @@ type Writer interface {
 This examples are available in the project at [go-writer/bin/launcher/main.go](https://go-writer/tree/master/bin/launcher/main.go)
 
 ```go
+quit := make(chan bool)
 //
 // file writer
 writer := gowriter.NewFileWriter(
     gowriter.WithDirectory("./testing"),
     gowriter.WithFileName("dummy_"),
     gowriter.WithFileMaxMegaByteSize(1),
-    gowriter.WithFlushTime(time.Second))
+    gowriter.WithFlushTime(time.Second),
+    gowriter.WithQuitChannel(quit),
+)
 
-writer.Open()
+// logger
+log := logger.NewLog(
+    logger.WithLevel(logger.InfoLevel),
+    logger.WithFormatHandler(logger.JsonFormatHandler),
+    logger.WithWriter(writer)).WithPrefixes(map[string]interface{}{
+    "level":   logger.LEVEL,
+    "time":    logger.TIME,
+    "service": "go-writer"})
+
 fmt.Printf("send...")
-for i := 1; i < 1000000; i++ {
-    writer.Write([]byte(fmt.Sprintf("ola %d\n", i)))
+for i := 1; i < 100000; i++ {
+    log.Info(fmt.Sprintf("ola %d\n", i))
 }
 fmt.Printf("sent!")
+
+// wait one minute to process...
+<-time.After(time.Minute * 1)
 ```
 
 ## Known issues
