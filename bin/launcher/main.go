@@ -31,7 +31,7 @@ func main() {
 
 	fmt.Printf("send...")
 	for i := 1; i < 100000; i++ {
-		log.Info(fmt.Sprintf("ola %d\n", i))
+		log.Info(fmt.Sprintf("hello number %d\n", i))
 	}
 	fmt.Printf("sent!")
 
