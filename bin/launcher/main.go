@@ -2,46 +2,23 @@ package main
 
 import (
 	"fmt"
-	"go-log/service"
-	"os"
+	"go-writer/service"
 	"time"
 )
 
 func main() {
 	//
-	// log to text
-	fmt.Println(":: LOG TEXT")
-	log := golog.NewLog(
-		golog.WithLevel(golog.InfoLevel),
-		golog.WithFormatHandler(golog.TextFormatHandler),
-		golog.WithWriter(os.Stdout)).
-		With(
-			map[string]interface{}{"level": golog.LEVEL, "time": golog.TIME},
-			map[string]interface{}{"service": "log"},
-			map[string]interface{}{"name": "joão"})
+	// file writer
+	writer := gowriter.NewFileWriter(
+		gowriter.WithDirectory("./testing"),
+		gowriter.WithFileName("dummy_"),
+		gowriter.WithFileMaxMegaByteSize(1),
+		gowriter.WithFlushTime(time.Second))
 
-	// logging...
-	log.Error("isto é uma mensagem de error")
-	log.Info("isto é uma mensagem de info")
-	log.Debug("isto é uma mensagem de debug")
-
-	fmt.Println("--------------")
-	<-time.After(time.Second)
-
-	//
-	// log to json
-	fmt.Println(":: LOG JSON")
-	log = golog.NewLog(
-		golog.WithLevel(golog.InfoLevel),
-		golog.WithFormatHandler(golog.JsonFormatHandler),
-		golog.WithWriter(os.Stdout)).
-		With(
-			map[string]interface{}{"level": golog.LEVEL, "time": golog.TIME},
-			map[string]interface{}{"service": "log"},
-			map[string]interface{}{"name": "joão"})
-
-	// logging...
-	log.Errorf("isto é uma mensagem de error %s", "hello")
-	log.Infof("isto é uma  mensagem de info %s ", "hi")
-	log.Debugf("isto é uma mensagem de debug %s", "ehh")
+	writer.Open()
+	fmt.Printf("send...")
+	for i := 1; i < 1000000; i++ {
+		writer.Write([]byte(fmt.Sprintf("ola %d\n", i)))
+	}
+	fmt.Printf("sent!")
 }
