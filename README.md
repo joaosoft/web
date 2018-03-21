@@ -29,7 +29,7 @@ type Writer interface {
 ```
 
 ## Usage 
-This examples are available in the project at [go-writer/bin/launcher/main.go](https://go-writer/tree/master/bin/launcher/main.go)
+This examples are available in the project at [go-writer/bin/launcher/main.go](https://github.com/joaosoft/go-writer/tree/master/bin/launcher/main.go)
 
 ```go
 quit := make(chan bool)
