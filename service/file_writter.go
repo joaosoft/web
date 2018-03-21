@@ -41,6 +41,7 @@ func NewFileWriter(options ...FileWriterOption) *FileWriter {
 		quit:   make(chan bool),
 	}
 	fileWriter.Reconfigure(options...)
+	fileWriter.process()
 
 	return fileWriter
 }
@@ -95,16 +96,6 @@ func (fileWriter *FileWriter) process() error {
 		}
 	}(fileWriter)
 	return nil
-}
-
-// Open ...
-func (fileWriter FileWriter) Open() error {
-	return fileWriter.process()
-}
-
-// Close ...
-func (fileWriter FileWriter) Close() {
-	fileWriter.quit <- true
 }
 
 // Write ...

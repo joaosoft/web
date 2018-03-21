@@ -39,3 +39,10 @@ func WithFlushTime(flushTime time.Duration) FileWriterOption {
 		fileWriter.config.flushTime = flushTime
 	}
 }
+
+// WithQuitChannel ...
+func WithQuitChannel(quit chan bool) FileWriterOption {
+	return func(fileWriter *FileWriter) {
+		fileWriter.quit = quit
+	}
+}
