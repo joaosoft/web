@@ -1,5 +1,4 @@
-package gowriter
+package gomapper
 
 const (
-	MB_IN_BYTE = 1000000
 )

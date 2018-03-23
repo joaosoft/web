@@ -1,12 +1,12 @@
-# go-writer
-[![Build Status](https://travis-ci.org/joaosoft/go-writer.svg?branch=master)](https://travis-ci.org/joaosoft/go-writer) | [![Code Climate](https://codeclimate.com/github/joaosoft/go-writer/badges/coverage.svg)](https://codeclimate.com/github/joaosoft/go-writer)
+# go-mapper
+[![Build Status](https://travis-ci.org/joaosoft/go-mapper.svg?branch=master)](https://travis-ci.org/joaosoft/go-mapper) | [![Code Climate](https://codeclimate.com/github/joaosoft/go-mapper/badges/coverage.svg)](https://codeclimate.com/github/joaosoft/go-mapper)
 
-A starting project with writer interface implementations.
+Translates any struct to other data types.
 
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 
-## With support for
-* file writer
+## Convertions
+* to map with key = path and value = the value
 
 ## Dependecy Management 
 >### Dep
@@ -18,49 +18,68 @@ Project dependencies are managed using Dep. Read more about [Dep](https://github
 
 >### Go
 ```
-go get github.com/joaosoft/go-writer/service
-```
-
-## Interface 
-```go
-type Writer interface {
-	Write(p []byte) (n int, err error)
-}
+go get github.com/joaosoft/go-mapper/service
 ```
 
 ## Usage 
-This examples are available in the project at [go-writer/bin/launcher/main.go](https://github.com/joaosoft/go-writer/tree/master/bin/launcher/main.go)
+This examples are available in the project at [go-mapper/bin/launcher/main.go](https://github.com/joaosoft/go-mapper/tree/master/bin/launcher/main.go)
 
 ```go
-quit := make(chan bool)
-//
-// file writer
-writer := gowriter.NewFileWriter(
-    gowriter.WithDirectory("./testing"),
-    gowriter.WithFileName("dummy_"),
-    gowriter.WithFileMaxMegaByteSize(1),
-    gowriter.WithFlushTime(time.Second),
-    gowriter.WithQuitChannel(quit),
-)
-
-// logger
-log := logger.NewLog(
-    logger.WithLevel(logger.InfoLevel),
-    logger.WithFormatHandler(logger.JsonFormatHandler),
-    logger.WithWriter(writer)).WithPrefixes(map[string]interface{}{
-    "level":   logger.LEVEL,
-    "time":    logger.TIME,
-    "service": "go-writer"})
-
-fmt.Printf("send...")
-for i := 1; i < 100000; i++ {
-    log.Info(fmt.Sprintf("hello number %d\n", i))
+type first struct {
+	One   string
+	Two   int
+	Three map[string]string
+	Four  Four
+	Seven []string
+	Eight []Four
 }
-fmt.Printf("sent!")
 
-// wait one minute to process...
-<-time.After(time.Minute * 1)
-quit <- true
+type Four struct {
+	Five string
+	Six  int
+}
+
+type second struct {
+	Eight []Four
+}
+
+obj1 := first{
+    One:   "one",
+    Two:   2,
+    Three: map[string]string{"a": "1", "b": "2"},
+    Four: Four{
+        Five: "five",
+        Six:  6,
+    },
+    Seven: []string{"a", "b", "c"},
+    Eight: []Four{Four{Five: "5", Six: 66}},
+}
+
+log.Info("translate...")
+mapper := gomapper.NewMapper(gomapper.WithLogger(log))
+if translated, err := mapper.ToMap(obj1); err != nil {
+    log.Error("error on translation!")
+} else {
+    log.Info("translated with success!")
+
+    for key, value := range translated {
+        fmt.Printf("%s: %+v\n", key, value)
+    }
+}
+
+obj2 := second{
+    Eight: []Four{Four{Five: "5", Six: 66}},
+}
+log.Info("translate...")
+if translated, err := mapper.ToMap(obj2); err != nil {
+    log.Error("error on translation!")
+} else {
+    log.Info("translated with success!")
+
+    for key, value := range translated {
+        fmt.Printf("%s: %+v\n", key, value)
+    }
+}
 ```
 
 ## Known issues
