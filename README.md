@@ -82,6 +82,27 @@ if translated, err := mapper.ToMap(obj2); err != nil {
 }
 ```
 
+#### Result:
+```javascript
+{"prefixes":{"level":"info","service":"go-mapper","time":"2018-03-23 19:38:50:18"},"tags":{},"message":"translate...","fields":{}}
+{"prefixes":{"level":"info","service":"go-mapper","time":"2018-03-23 19:38:50:18"},"tags":{},"message":"translated with success!","fields":{}}
+three.{b}: 2
+four.five: five
+four.six: 6
+seven.[0]: a
+seven.[2]: c
+eight.[0].six: 66
+two: 2
+three.{a}: 1
+seven.[1]: b
+eight.[0].five: 5
+one: one
+{"prefixes":{"level":"info","service":"go-mapper","time":"2018-03-23 19:38:50:18"},"tags":{},"message":"translate...","fields":{}}
+{"prefixes":{"level":"info","service":"go-mapper","time":"2018-03-23 19:38:50:18"},"tags":{},"message":"translated with success!","fields":{}}
+eight.[0].five: 5
+eight.[0].six: 66
+```
+
 ## Known issues
 
 
