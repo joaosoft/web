@@ -59,7 +59,9 @@ func (fileWriter *FileWriter) process() error {
 		for {
 			select {
 			case <-fileWriter.quit:
-				return
+				if fileWriter.queue.IsEmpty() {
+					return
+				}
 
 			case <-time.After(fileWriter.config.flushTime):
 				fileWriter.mux.Lock()
