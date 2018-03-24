@@ -46,30 +46,46 @@ func main() {
 		Seven: []string{"a", "b", "c"},
 		Eight: []Four{Four{Five: "5", Six: 66}},
 	}
-
-	log.Info("translate...")
-	mapper := gomapper.NewMapper(gomapper.WithLogger(log))
-	if translated, err := mapper.ToMap(obj1); err != nil {
-		log.Error("error on translation!")
-	} else {
-		log.Info("translated with success!")
-
-		for key, value := range translated {
-			fmt.Printf("%s: %+v\n", key, value)
-		}
-	}
-
 	obj2 := second{
 		Eight: []Four{Four{Five: "5", Six: 66}},
 	}
-	log.Info("translate...")
-	if translated, err := mapper.ToMap(obj2); err != nil {
+
+	fmt.Println(":::::::::::: STRUCT TO MAP ::::::::::::")
+
+	fmt.Println("\n:::::::::::: STRUCT ONE")
+
+	mapper := gomapper.NewMapper(gomapper.WithLogger(log))
+	if translated, err := mapper.Map(obj1); err != nil {
 		log.Error("error on translation!")
 	} else {
-		log.Info("translated with success!")
-
 		for key, value := range translated {
 			fmt.Printf("%s: %+v\n", key, value)
 		}
+	}
+
+	fmt.Println("\n:::::::::::: STRUCT TWO")
+
+	if translated, err := mapper.Map(obj2); err != nil {
+		log.Error("error on translation!")
+	} else {
+		for key, value := range translated {
+			fmt.Printf("%s: %+v\n", key, value)
+		}
+	}
+
+	fmt.Println("\n\n:::::::::::: STRUCT TO STRING ::::::::::::")
+
+	fmt.Println("\n:::::::::::: STRUCT ONE")
+	if translated, err := mapper.String(obj1); err != nil {
+		log.Error("error on translation!")
+	} else {
+		fmt.Println(translated)
+	}
+
+	fmt.Println(":::::::::::: STRUCT TWO")
+	if translated, err := mapper.String(obj2); err != nil {
+		log.Error("error on translation!")
+	} else {
+		fmt.Println(translated)
 	}
 }

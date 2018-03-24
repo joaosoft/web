@@ -23,7 +23,6 @@ go get github.com/joaosoft/go-mapper/service
 
 ## Usage 
 This examples are available in the project at [go-mapper/bin/launcher/main.go](https://github.com/joaosoft/go-mapper/tree/master/bin/launcher/main.go)
-
 ```go
 type first struct {
 	One   string
@@ -54,51 +53,94 @@ obj1 := first{
     Seven: []string{"a", "b", "c"},
     Eight: []Four{Four{Five: "5", Six: 66}},
 }
-
-log.Info("translate...")
+obj2 := second{
+    Eight: []Four{Four{Five: "5", Six: 66}},
+}
+```
+#### Convert struct to string 
+```go
+fmt.Println(":::::::::::: STRUCT ONE")
 mapper := gomapper.NewMapper(gomapper.WithLogger(log))
-if translated, err := mapper.ToMap(obj1); err != nil {
+if translated, err := mapper.String(obj1); err != nil {
     log.Error("error on translation!")
 } else {
-    log.Info("translated with success!")
+    fmt.Println(translated)
+}
 
+fmt.Println(":::::::::::: STRUCT TWO")
+if translated, err := mapper.String(obj2); err != nil {
+    log.Error("error on translation!")
+} else {
+    fmt.Println(translated)
+}
+```
+
+##### Result:
+```javascript
+:::::::::::: STRUCT ONE
+
+one:one
+two:2
+three
+  {a}:1
+  {b}:2
+four
+  five:five
+  six:6
+seven
+  [0]:a
+  [1]:b
+  [2]:c
+eight
+  [0]
+    five:5
+    six:66
+    
+:::::::::::: STRUCT TWO
+eight
+  [0]
+    five:5
+    six:66
+```
+
+#### Convert struct to map 
+```go
+fmt.Println(":::::::::::: STRUCT ONE")
+mapper := gomapper.NewMapper(gomapper.WithLogger(log))
+if translated, err := mapper.Map(obj1); err != nil {
+    log.Error("error on translation!")
+} else {
     for key, value := range translated {
         fmt.Printf("%s: %+v\n", key, value)
     }
 }
 
-obj2 := second{
-    Eight: []Four{Four{Five: "5", Six: 66}},
-}
-log.Info("translate...")
-if translated, err := mapper.ToMap(obj2); err != nil {
+fmt.Println(":::::::::::: STRUCT TWO")
+if translated, err := mapper.Map(obj2); err != nil {
     log.Error("error on translation!")
 } else {
-    log.Info("translated with success!")
-
     for key, value := range translated {
         fmt.Printf("%s: %+v\n", key, value)
     }
 }
 ```
 
-#### Result:
+##### Result:
 ```javascript
-{"prefixes":{"level":"info","service":"go-mapper","time":"2018-03-23 19:38:50:18"},"tags":{},"message":"translate...","fields":{}}
-{"prefixes":{"level":"info","service":"go-mapper","time":"2018-03-23 19:38:50:18"},"tags":{},"message":"translated with success!","fields":{}}
-three.{b}: 2
-four.five: five
-four.six: 6
-seven.[0]: a
-seven.[2]: c
-eight.[0].six: 66
+:::::::::::: STRUCT ONE
+one: one
 two: 2
 three.{a}: 1
-seven.[1]: b
+four.five: five
 eight.[0].five: 5
-one: one
-{"prefixes":{"level":"info","service":"go-mapper","time":"2018-03-23 19:38:50:18"},"tags":{},"message":"translate...","fields":{}}
-{"prefixes":{"level":"info","service":"go-mapper","time":"2018-03-23 19:38:50:18"},"tags":{},"message":"translated with success!","fields":{}}
+three.{b}: 2
+four.six: 6
+seven.[0]: a
+seven.[1]: b
+seven.[2]: c
+eight.[0].six: 66
+
+:::::::::::: STRUCT TWO
 eight.[0].five: 5
 eight.[0].six: 66
 ```
