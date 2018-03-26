@@ -7,6 +7,7 @@ Translates any struct to other data types.
 
 ## Convertions
 * to map with key = path and value = the value
+* to string with path = value
 
 ## Dependecy Management 
 >### Dep
