@@ -11,14 +11,14 @@ func (mapper *GoMapper) String(value interface{}) (string, error) {
 	var spaces int
 	var print string
 
-	if err := convertToString(value, "", spaces, &print); err != nil {
+	if err := convertToString(value, "", spaces, "\n", &print); err != nil {
 		return "", err
 	}
 
 	return print, nil
 }
 
-func convertToString(obj interface{}, path string, spaces int, print *string) error {
+func convertToString(obj interface{}, path string, spaces int, delimiter string, print *string) error {
 	types := reflect.TypeOf(obj)
 	value := reflect.ValueOf(obj)
 
@@ -34,44 +34,49 @@ func convertToString(obj interface{}, path string, spaces int, print *string) er
 
 	switch value.Kind() {
 	case reflect.Struct:
-		path = addPoint(path)
-
 		for i := 0; i < types.NumField(); i++ {
 			nextValue := value.Field(i)
-			newPath := fmt.Sprintf("%s%s", path, strings.ToLower(types.Field(i).Name))
-			*print += fmt.Sprintf("\n%s%s", strings.Repeat(" ", spaces), strings.ToLower(types.Field(i).Name))
-			convertToString(nextValue.Interface(), newPath, spaces+2, print)
+			newPath := fmt.Sprintf("%s%s", path, types.Field(i).Name)
+			*print += fmt.Sprintf("%s%s%s", delimiter, strings.Repeat(" ", spaces), types.Field(i).Name)
+			convertToString(nextValue.Interface(), newPath, spaces+2, delimiter, print)
 		}
 
 	case reflect.Array, reflect.Slice:
-		path = addPoint(path)
-
 		for i := 0; i < value.Len(); i++ {
 			nextValue := value.Index(i)
-			newPath := fmt.Sprintf("%s[%d]", path, i)
-			*print += fmt.Sprintf("\n%s[%d]", strings.Repeat(" ", spaces), i)
-			convertToString(nextValue.Interface(), newPath, spaces+2, print)
+			newPath := fmt.Sprintf("[%d]", i)
+			*print += fmt.Sprintf("%s%s%s", delimiter, strings.Repeat(" ", spaces), newPath)
+			convertToString(nextValue.Interface(), newPath, spaces+2, delimiter, print)
 		}
 
 	case reflect.Map:
-		path = addPoint(path)
-
 		for _, key := range value.MapKeys() {
+			var keyValue string
 			nextValue := value.MapIndex(key)
-			newPath := fmt.Sprintf("%s{%+v}", path, key)
-			*print += fmt.Sprintf("\n%s{%+v}", strings.Repeat(" ", spaces), key)
-			convertToString(nextValue.Interface(), newPath, spaces+2, print)
+			convertToString(key.Interface(), "", 0, " ", &keyValue)
+			newPath := fmt.Sprintf("{%s}", keyValue)
+			*print += fmt.Sprintf("%s%s%s", delimiter, strings.Repeat(" ", spaces), newPath)
+			convertToString(nextValue.Interface(), newPath, spaces+2, delimiter, print)
 		}
 
 	default:
-		if value.CanInterface() {
-			*print += fmt.Sprintf(":%+v", value.Interface())
-			log.Debugf(fmt.Sprintf("%s=%+v", path, value.Interface()))
-		} else {
-			*print += fmt.Sprintf(":%+v", value)
-			log.Debugf(fmt.Sprintf("%s=%+v", path, value))
-		}
+		var rtnValue interface{}
+		if value.IsValid() {
+			if value.CanInterface() {
+				rtnValue = value.Interface()
+			} else {
+				rtnValue = value
+			}
 
+			if path != "" {
+				*print += ": "
+			}
+
+			newPath := fmt.Sprintf("%s=%+v", path, rtnValue)
+			*print += fmt.Sprintf("%+v", rtnValue)
+
+			log.Debugf(fmt.Sprintf("%s", newPath))
+		}
 	}
 	return nil
 }
