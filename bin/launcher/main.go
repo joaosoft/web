@@ -24,7 +24,6 @@ type First struct {
 	Four  Four              `json:"four"`
 	Seven []string          `json:"seven"`
 	Eight []Four            `json:"eight"`
-	Nine  map[Four]Second   `json:"nine"`
 }
 
 type Four struct {
@@ -33,7 +32,8 @@ type Four struct {
 }
 
 type Second struct {
-	Eight []Four `json:"eight"`
+	Eight []Four          `json:"eight"`
+	Nine  map[Four]Second `json:"nine"`
 }
 
 func main() {
@@ -47,10 +47,10 @@ func main() {
 		},
 		Seven: []string{"a", "b", "c"},
 		Eight: []Four{Four{Five: "5", Six: 66}},
-		Nine:  map[Four]Second{Four{Five: "111", Six: 1}: Second{Eight: []Four{Four{Five: "222", Six: 2}}}},
 	}
 	obj2 := Second{
 		Eight: []Four{Four{Five: "5", Six: 66}},
+		Nine:  map[Four]Second{Four{Five: "111", Six: 1}: Second{Eight: []Four{Four{Five: "222", Six: 2}}}},
 	}
 
 	fmt.Println(":::::::::::: STRUCT TO MAP ::::::::::::")

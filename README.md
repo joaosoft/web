@@ -24,25 +24,26 @@ go get github.com/joaosoft/go-mapper/service
 ## Usage 
 This examples are available in the project at [go-mapper/bin/launcher/main.go](https://github.com/joaosoft/go-mapper/tree/master/bin/launcher/main.go)
 ```go
-type first struct {
-	One   string
-	Two   int
-	Three map[string]string
-	Four  Four
-	Seven []string
-	Eight []Four
+type First struct {
+	One   string            `json:"one"`
+	Two   int               `json:"two"`
+	Three map[string]string `json:"three"`
+	Four  Four              `json:"four"`
+	Seven []string          `json:"seven"`
+	Eight []Four            `json:"eight"`
 }
 
 type Four struct {
-	Five string
-	Six  int
+	Five string `json"five"`
+	Six  int    `json:"six"`
 }
 
-type second struct {
-	Eight []Four
+type Second struct {
+	Eight []Four          `json:"eight"`
+	Nine  map[Four]Second `json:"nine"`
 }
 
-obj1 := first{
+obj1 := First{
     One:   "one",
     Two:   2,
     Three: map[string]string{"a": "1", "b": "2"},
@@ -53,8 +54,9 @@ obj1 := first{
     Seven: []string{"a", "b", "c"},
     Eight: []Four{Four{Five: "5", Six: 66}},
 }
-obj2 := second{
+obj2 := Second{
     Eight: []Four{Four{Five: "5", Six: 66}},
+    Nine:  map[Four]Second{Four{Five: "111", Six: 1}: Second{Eight: []Four{Four{Five: "222", Six: 2}}}},
 }
 ```
 #### Convert struct to string 
@@ -78,29 +80,53 @@ if translated, err := mapper.String(obj2); err != nil {
 ##### Result:
 ```javascript
 :::::::::::: STRUCT ONE
-
-one:one
-two:2
-three
-  {a}:1
-  {b}:2
-four
-  five:five
-  six:6
-seven
-  [0]:a
-  [1]:b
-  [2]:c
-eight
+One: one
+Two: 2
+Three
+  {a}: 1
+  {b}: 2
+Four
+  Five: five
+  Six: 6
+Seven
+  [0]: a
+  [1]: b
+  [2]: c
+Eight
   [0]
-    five:5
-    six:66
-    
+    Five: 5
+    Six: 66
 :::::::::::: STRUCT TWO
-eight
+
+Eight
   [0]
-    five:5
-    six:66
+    Five: 5
+    Six: 66
+Nine
+  {Five: 111 Six: 1}
+    Eight
+      [0]
+        Five: 222
+        Six: 2
+    Nine
+:::::::::::: JSON STRING OF STRUCT ONE
+
+{one}: one
+{two}: 2
+{three}
+  {a}: 1
+  {b}: 2
+{four}
+  {Five}: five
+  {six}: 6
+{seven}
+  [0]: a
+  [1]: b
+  [2]: c
+{eight}
+  [0]
+    {Five}: 5
+    {six}: 66
 ```
 
 #### Convert struct to map 
@@ -127,22 +153,36 @@ if translated, err := mapper.Map(obj2); err != nil {
 
 ##### Result:
 ```javascript
-:::::::::::: STRUCT ONE
-one: one
-two: 2
-three.{a}: 1
-four.five: five
-eight.[0].five: 5
-three.{b}: 2
-four.six: 6
-seven.[0]: a
-seven.[1]: b
-seven.[2]: c
-eight.[0].six: 66
+Four.Six: 6
+Seven.[0]: a
+Seven.[1]: b
+Seven.[2]: c
+Eight.[0].Six: 66
+One: one
+Four.Five: five
+Three.{b}: 2
+Eight.[0].Five: 5
+Two: 2
+Three.{a}: 1
 
 :::::::::::: STRUCT TWO
-eight.[0].five: 5
-eight.[0].six: 66
+Eight.[0].Five: 5
+Eight.[0].Six: 66
+Nine.{Five=111,Six=1}.Eight.[0].Five: 222
+Nine.{Five=111,Six=1}.Eight.[0].Six: 2
+
+:::::::::::: JSON STRING OF STRUCT ONE
+{four}.{six}: 6
+{seven}.[1]: b
+{seven}.[2]: c
+{eight}.[0].{Five}: 5
+{three}.{b}: 2
+{four}.{Five}: five
+{seven}.[0]: a
+{eight}.[0].{six}: 66
+{one}: one
+{two}: 2
+{three}.{a}: 1
 ```
 
 ## Known issues

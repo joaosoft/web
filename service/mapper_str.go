@@ -18,7 +18,7 @@ func (mapper *GoMapper) String(value interface{}) (string, error) {
 	return print, nil
 }
 
-func convertToString(obj interface{}, path string, spaces int, delimiter string, print *string) error {
+func convertToString(obj interface{}, path string, spaces int, breaker string, print *string) error {
 	types := reflect.TypeOf(obj)
 	value := reflect.ValueOf(obj)
 
@@ -37,16 +37,16 @@ func convertToString(obj interface{}, path string, spaces int, delimiter string,
 		for i := 0; i < types.NumField(); i++ {
 			nextValue := value.Field(i)
 			newPath := fmt.Sprintf("%s%s", path, types.Field(i).Name)
-			*print += fmt.Sprintf("%s%s%s", delimiter, strings.Repeat(" ", spaces), types.Field(i).Name)
-			convertToString(nextValue.Interface(), newPath, spaces+2, delimiter, print)
+			*print += fmt.Sprintf("%s%s%s", breaker, strings.Repeat(" ", spaces), types.Field(i).Name)
+			convertToString(nextValue.Interface(), newPath, spaces+2, breaker, print)
 		}
 
 	case reflect.Array, reflect.Slice:
 		for i := 0; i < value.Len(); i++ {
 			nextValue := value.Index(i)
 			newPath := fmt.Sprintf("[%d]", i)
-			*print += fmt.Sprintf("%s%s%s", delimiter, strings.Repeat(" ", spaces), newPath)
-			convertToString(nextValue.Interface(), newPath, spaces+2, delimiter, print)
+			*print += fmt.Sprintf("%s%s%s", breaker, strings.Repeat(" ", spaces), newPath)
+			convertToString(nextValue.Interface(), newPath, spaces+2, breaker, print)
 		}
 
 	case reflect.Map:
@@ -54,9 +54,9 @@ func convertToString(obj interface{}, path string, spaces int, delimiter string,
 			var keyValue string
 			nextValue := value.MapIndex(key)
 			convertToString(key.Interface(), "", 0, " ", &keyValue)
-			newPath := fmt.Sprintf("{%s}", keyValue)
-			*print += fmt.Sprintf("%s%s%s", delimiter, strings.Repeat(" ", spaces), newPath)
-			convertToString(nextValue.Interface(), newPath, spaces+2, delimiter, print)
+			newPath := fmt.Sprintf("{%s}", strings.Trim(keyValue, " "))
+			*print += fmt.Sprintf("%s%s%s", breaker, strings.Repeat(" ", spaces), newPath)
+			convertToString(nextValue.Interface(), newPath, spaces+2, breaker, print)
 		}
 
 	default:

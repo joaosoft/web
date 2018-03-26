@@ -41,7 +41,7 @@ func convertToMap(obj interface{}, path string, mapping map[string]interface{}, 
 			newPath := fmt.Sprintf("%s%s", path, types.Field(i).Name)
 			tmp, _ := convertToMap(nextValue.Interface(), newPath, mapping, add)
 			if len > 0 {
-				tmp += " "
+				tmp += ","
 			}
 			innerPath += fmt.Sprintf("%s", tmp)
 		}
@@ -60,7 +60,7 @@ func convertToMap(obj interface{}, path string, mapping map[string]interface{}, 
 			newPath := fmt.Sprintf("%s[%d]", path, i)
 			tmp, _ := convertToMap(nextValue.Interface(), newPath, mapping, add)
 			if len > 0 {
-				tmp += " "
+				tmp += ","
 			}
 			innerPath += fmt.Sprintf("%s", tmp)
 		}
@@ -81,7 +81,7 @@ func convertToMap(obj interface{}, path string, mapping map[string]interface{}, 
 			newPath += fmt.Sprintf("%s}", keyValue)
 			tmp, _ := convertToMap(nextValue.Interface(), newPath, mapping, add)
 			if len > 0 {
-				tmp += " "
+				tmp += ","
 			}
 			innerPath += fmt.Sprintf("%s", tmp)
 		}
