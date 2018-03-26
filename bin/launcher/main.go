@@ -27,7 +27,7 @@ type First struct {
 }
 
 type Four struct {
-	Five string `json"five"`
+	Five string `json:"five"`
 	Six  int    `json:"six"`
 }
 
@@ -108,6 +108,7 @@ func main() {
 	fmt.Println(":::::::::::: JSON STRING OF STRUCT ONE")
 	bytesObj1, _ = json.Marshal(obj1)
 	json.Unmarshal(bytesObj1, &convObj1)
+	fmt.Println("STEING:" + string(bytesObj1))
 	if translated, err := mapper.String(convObj1); err != nil {
 		log.Error("error on translation!")
 	} else {

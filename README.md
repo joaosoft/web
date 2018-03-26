@@ -35,7 +35,7 @@ type First struct {
 }
 
 type Four struct {
-	Five string `json"five"`
+	Five string `json:"five"`
 	Six  int    `json:"six"`
 }
 
@@ -97,8 +97,8 @@ Eight
   [0]
     Five: 5
     Six: 66
-:::::::::::: STRUCT TWO
 
+:::::::::::: STRUCT TWO
 Eight
   [0]
     Five: 5
@@ -110,24 +110,24 @@ Nine
         Five: 222
         Six: 2
     Nine
-:::::::::::: JSON STRING OF STRUCT ONE
 
-{one}: one
-{two}: 2
-{three}
-  {a}: 1
-  {b}: 2
-{four}
-  {Five}: five
-  {six}: 6
+:::::::::::: JSON STRING OF STRUCT ONE
 {seven}
   [0]: a
   [1]: b
   [2]: c
 {eight}
   [0]
-    {Five}: 5
+    {five}: 5
     {six}: 66
+{one}: one
+{two}: 2
+{three}
+  {a}: 1
+  {b}: 2
+{four}
+  {five}: five
+  {six}: 6
 ```
 
 #### Convert struct to map 
@@ -154,6 +154,7 @@ if translated, err := mapper.Map(obj2); err != nil {
 
 ##### Result:
 ```javascript
+:::::::::::: STRUCT ONE
 Four.Six: 6
 Seven.[0]: a
 Seven.[1]: b
@@ -173,17 +174,17 @@ Nine.{Five=111,Six=1}.Eight.[0].Five: 222
 Nine.{Five=111,Six=1}.Eight.[0].Six: 2
 
 :::::::::::: JSON STRING OF STRUCT ONE
-{four}.{six}: 6
-{seven}.[1]: b
-{seven}.[2]: c
-{eight}.[0].{Five}: 5
-{three}.{b}: 2
-{four}.{Five}: five
+{four}.{five}: five
 {seven}.[0]: a
-{eight}.[0].{six}: 66
-{one}: one
+{seven}.[1]: b
 {two}: 2
+{three}.{b}: 2
+{one}: one
 {three}.{a}: 1
+{four}.{six}: 6
+{seven}.[2]: c
+{eight}.[0].{five}: 5
+{eight}.[0].{six}: 66
 ```
 
 ## Known issues
