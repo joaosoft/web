@@ -19,7 +19,7 @@ Project dependencies are managed using Dep. Read more about [Dep](https://github
 
 >### Go
 ```
-go get github.com/joaosoft/go-mapper/service
+go get github.com/joaosoft/go-mapper
 ```
 
 ## Usage 
