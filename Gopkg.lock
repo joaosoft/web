@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/joaosoft/go-log"
   packages = ["service"]
-  revision = "5ccff6cc52e6b2054d39309075958b54f4755249"
+  revision = "c2791efb9983ce119abe1d1ffeebab6b91048372"
 
 [solve-meta]
   analyzer-name = "dep"

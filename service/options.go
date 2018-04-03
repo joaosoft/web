@@ -15,7 +15,7 @@ func (gomapper *GoMapper) Reconfigure(options ...GoMapperOption) {
 }
 
 // WithLogger ...
-func WithLogger(logger logger.Log) GoMapperOption {
+func WithLogger(logger logger.ILog) GoMapperOption {
 	return func(gomapper *GoMapper) {
 		log = logger
 	}
