@@ -20,3 +20,11 @@
 #  name = "github.com/x/y"
 #  version = "2.4.0"
 
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/joaosoft/go-log"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/joaosoft/go-writer"
