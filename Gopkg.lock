@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/joaosoft/go-log"
   packages = ["service"]
-  revision = "14737dce72a7fb9bda9fefab53bf5fae602e22f4"
+  revision = "5440ef3c601d7ce1748fd5f9a5317d28d5adbad3"
 
 [[projects]]
   branch = "master"

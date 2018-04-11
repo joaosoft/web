@@ -4,19 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-mapper/service"
-	"os"
 
 	logger "github.com/joaosoft/go-log/service"
-	writer "github.com/joaosoft/go-writer/service"
 )
 
-var log = logger.NewLog(
-	logger.WithLevel(logger.InfoLevel),
-	logger.WithFormatHandler(writer.JsonFormatHandler),
-	logger.WithWriter(os.Stdout)).WithPrefixes(map[string]interface{}{
-	"level":   logger.LEVEL,
-	"time":    logger.TIME,
-	"service": "go-mapper"})
+var log = logger.NewLogDefault("go-mapper", logger.InfoLevel)
 
 type First struct {
 	One   string            `json:"one"`
