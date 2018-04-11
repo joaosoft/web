@@ -1,5 +1,5 @@
 # go-mapper
-[![Build Status](https://travis-ci.org/joaosoft/go-mapper.svg?branch=master)](https://travis-ci.org/joaosoft/go-mapper) | [![codecov](https://codecov.io/gh/joaosoft/go-mapper/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/go-mapper)
+[![Build Status](https://travis-ci.org/joaosoft/go-mapper.svg?branch=master)](https://travis-ci.org/joaosoft/go-mapper) | [![codecov](https://codecov.io/gh/joaosoft/go-mapper/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/go-mapper) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/go-test)](https://goreportcard.com/report/github.com/joaosoft/go-test) | [![GoDoc](https://godoc.org/github.com/joaosoft/go-mapper?status.svg)](https://godoc.org/github.com/joaosoft/go-mapper/service)
 
 Translates any struct to other data types.
 
