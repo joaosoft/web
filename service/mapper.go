@@ -3,12 +3,12 @@ package gomapper
 import "github.com/joaosoft/go-log/service"
 
 // GoMapper ...
-type GoMapper struct{}
+type GoMapper struct {
+	config *AppConfig
+}
 
 // NewMapper ...
 func NewMapper(options ...GoMapperOption) *GoMapper {
-	gomapper := &GoMapper{}
-
 	// load configuration file
 	configApp := &AppConfig{}
 	if _, err := readFile("./config/app.json", configApp); err != nil {
@@ -18,6 +18,8 @@ func NewMapper(options ...GoMapperOption) *GoMapper {
 		log.Debugf("setting log level to %s", level)
 		WithLogLevel(level)
 	}
+
+	gomapper := &GoMapper{config: configApp}
 
 	gomapper.Reconfigure(options...)
 
