@@ -23,7 +23,7 @@ go get github.com/joaosoft/go-mapper/service
 ```
 
 ## Usage 
-This examples are available in the project at [go-mapper/bin/launcher/main.go](https://github.com/joaosoft/go-mapper/tree/master/bin/launcher/main.go)
+This examples are available in the project at [go-mapper/example](https://github.com/joaosoft/go-mapper/tree/master/example)
 ```go
 type First struct {
 	One   string            `json:"one"`
