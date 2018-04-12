@@ -30,18 +30,6 @@ type Second struct {
 }
 
 func main() {
-	//
-	// config
-	appConfig := &gomapper.AppConfig{}
-	if _, err := gomapper.ReadFile("./config/app.json", appConfig); err != nil {
-		log.Error(err)
-	}
-	var level golog.Level
-	var err error
-	if level, err = golog.ParseLevel(appConfig.Log.Level); err != nil {
-		log.Error(err)
-	}
-
 	obj1 := First{
 		One:   "one",
 		Two:   2,
@@ -62,7 +50,7 @@ func main() {
 
 	fmt.Println("\n:::::::::::: STRUCT ONE")
 
-	mapper := gomapper.NewMapper(gomapper.WithLogger(log), gomapper.WithLogLevel(level))
+	mapper := gomapper.NewMapper()
 	if translated, err := mapper.Map(obj1); err != nil {
 		log.Error("error on translation!")
 	} else {
