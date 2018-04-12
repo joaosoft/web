@@ -3,15 +3,15 @@ package gomapper
 import (
 	"os"
 
-	logger "github.com/joaosoft/go-log/service"
-	writer "github.com/joaosoft/go-writer/service"
+	"github.com/joaosoft/go-log/service"
+	"github.com/joaosoft/go-writer/service"
 )
 
 var global = make(map[string]interface{})
-var log = logger.NewLog(
-	logger.WithLevel(logger.InfoLevel),
-	logger.WithFormatHandler(writer.JsonFormatHandler),
-	logger.WithWriter(os.Stdout)).WithPrefixes(map[string]interface{}{
-	"level":   logger.LEVEL,
-	"time":    logger.TIME,
+var log = golog.NewLog(
+	golog.WithLevel(golog.InfoLevel),
+	golog.WithFormatHandler(gowriter.JsonFormatHandler),
+	golog.WithWriter(os.Stdout)).WithPrefixes(map[string]interface{}{
+	"level":   golog.LEVEL,
+	"time":    golog.TIME,
 	"service": "go-mapper"})
