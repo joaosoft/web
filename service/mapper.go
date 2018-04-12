@@ -11,7 +11,7 @@ func NewMapper(options ...GoMapperOption) *GoMapper {
 
 	// load configuration file
 	configApp := &AppConfig{}
-	if _, err := ReadFile("./config/app.json", configApp); err != nil {
+	if _, err := readFile("./config/app.json", configApp); err != nil {
 		log.Error(err)
 	} else {
 		level, _ := golog.ParseLevel(configApp.Log.Level)
