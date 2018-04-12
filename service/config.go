@@ -1,6 +1,6 @@
 package gomapper
 
-// App ...
+// AppConfig ...
 type AppConfig struct {
 	Log struct {
 		Level string `json:"level"`
