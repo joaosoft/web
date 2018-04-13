@@ -6,3 +6,8 @@ import (
 
 var global = make(map[string]interface{})
 var log = golog.NewLogDefault("go-mapper", golog.InfoLevel)
+
+func init() {
+	global["path"] = defaultPath
+}
+

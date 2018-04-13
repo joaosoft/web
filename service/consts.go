@@ -1,4 +1,5 @@
 package gomapper
 
 const (
+	defaultPath = "."
 )
