@@ -1,6 +1,10 @@
 package gomapper
 
-import "github.com/joaosoft/go-log/service"
+import (
+	"fmt"
+
+	"github.com/joaosoft/go-log/service"
+)
 
 // GoMapper ...
 type GoMapper struct {
@@ -11,7 +15,7 @@ type GoMapper struct {
 func NewMapper(options ...GoMapperOption) *GoMapper {
 	// load configuration file
 	configApp := &AppConfig{}
-	if _, err := readFile("./config/app.json", configApp); err != nil {
+	if _, err := readFile(fmt.Sprintf("/config/app.%s.json", getEnv()), configApp); err != nil {
 		log.Error(err)
 	} else {
 		level, _ := golog.ParseLevel(configApp.Log.Level)
