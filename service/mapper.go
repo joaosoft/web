@@ -11,11 +11,11 @@ import (
 type Mapper struct {
 	config        *MapperConfig
 	pm            *gomanager.Manager
-	logIsExternal bool
+	isLogExternal bool
 }
 
 // NewMapper ...
-func NewMapper(options ...MapperOption) *Mapper {
+func NewMapper(options ...mapperOption) *Mapper {
 	pm := gomanager.NewManager(gomanager.WithRunInBackground(false))
 
 	// load configuration file
@@ -29,9 +29,13 @@ func NewMapper(options ...MapperOption) *Mapper {
 		WithLogLevel(level)
 	}
 
-	gomapper := &Mapper{config: &appConfig.GoMapper}
+	mapper := &Mapper{config: &appConfig.GoMapper}
 
-	gomapper.Reconfigure(options...)
+	mapper.Reconfigure(options...)
 
-	return gomapper
+	if mapper.isLogExternal {
+		pm.Reconfigure(gomanager.WithLogger(log))
+	}
+
+	return mapper
 }
