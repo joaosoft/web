@@ -9,7 +9,7 @@ import (
 
 // Mapper ...
 type Mapper struct {
-	config *GoMapperConfig
+	config *MapperConfig
 	pm     *gomanager.Manager
 }
 

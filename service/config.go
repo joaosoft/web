@@ -2,11 +2,11 @@ package gomapper
 
 // appConfig ...
 type appConfig struct {
-	GoMapper GoMapperConfig `json:"gomapper"`
+	GoMapper MapperConfig `json:"gomapper"`
 }
 
-// GoMapperConfig ...
-type GoMapperConfig struct {
+// MapperConfig ...
+type MapperConfig struct {
 	Log struct {
 		Level string `json:"level"`
 	} `json:"log"`
