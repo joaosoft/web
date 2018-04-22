@@ -22,6 +22,10 @@ func NewMapper(options ...mapperOption) *Mapper {
 
 	mapper.Reconfigure(options...)
 
+	if mapper.isLogExternal {
+		pm.Reconfigure(gomanager.WithLogger(log))
+	}
+
 	// load configuration file
 	appConfig := &appConfig{}
 	if simpleConfig, err := gomanager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", getEnv()), appConfig); err != nil {
@@ -34,10 +38,6 @@ func NewMapper(options ...mapperOption) *Mapper {
 	}
 
 	mapper.config = &appConfig.GoMapper
-
-	if mapper.isLogExternal {
-		pm.Reconfigure(gomanager.WithLogger(log))
-	}
 
 	return mapper
 }
