@@ -1,5 +1,5 @@
 /*
-GoMapper helps to create integration test in a easy way
+Mapper helps to create integration test in a easy way
 
 you just need to define the test structure and run it.
 

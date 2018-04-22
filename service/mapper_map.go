@@ -6,7 +6,7 @@ import (
 )
 
 // Map ...
-func (mapper *GoMapper) Map(value interface{}) (map[string]interface{}, error) {
+func (mapper *Mapper) Map(value interface{}) (map[string]interface{}, error) {
 	mapping := make(map[string]interface{})
 
 	if _, err := convertToMap(value, "", mapping, true); err != nil {

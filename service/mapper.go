@@ -4,17 +4,17 @@ import (
 	"fmt"
 
 	"github.com/joaosoft/go-log/service"
-	"github.com/joaosoft/go-manager/service"
+	gomanager "github.com/joaosoft/go-manager/service"
 )
 
-// GoMapper ...
-type GoMapper struct {
+// Mapper ...
+type Mapper struct {
 	config *goMapperConfig
-	pm     *gomanager.GoManager
+	pm     *gomanager.Manager
 }
 
 // NewMapper ...
-func NewMapper(options ...GoMapperOption) *GoMapper {
+func NewMapper(options ...MapperOption) *Mapper {
 	pm := gomanager.NewManager(gomanager.WithRunInBackground(false))
 
 	// load configuration file
@@ -28,7 +28,7 @@ func NewMapper(options ...GoMapperOption) *GoMapper {
 		WithLogLevel(level)
 	}
 
-	gomapper := &GoMapper{config: &appConfig.GoMapper}
+	gomapper := &Mapper{config: &appConfig.GoMapper}
 
 	gomapper.Reconfigure(options...)
 

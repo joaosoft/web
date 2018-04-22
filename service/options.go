@@ -1,29 +1,27 @@
 package gomapper
 
-import (
-	logger "github.com/joaosoft/go-log/service"
-)
+import "github.com/joaosoft/go-log/service"
 
-// GoMapperOption ...
-type GoMapperOption func(gomapper *GoMapper)
+// MapperOption ...
+type MapperOption func(mapper *Mapper)
 
 // Reconfigure ...
-func (gomapper *GoMapper) Reconfigure(options ...GoMapperOption) {
+func (mapper *Mapper) Reconfigure(options ...MapperOption) {
 	for _, option := range options {
-		option(gomapper)
+		option(mapper)
 	}
 }
 
 // WithLogger ...
-func WithLogger(logger logger.ILog) GoMapperOption {
-	return func(gomapper *GoMapper) {
+func WithLogger(logger golog.ILog) MapperOption {
+	return func(mapper *Mapper) {
 		log = logger
 	}
 }
 
 // WithLogLevel ...
-func WithLogLevel(level logger.Level) GoMapperOption {
-	return func(gomapper *GoMapper) {
+func WithLogLevel(level golog.Level) MapperOption {
+	return func(mapper *Mapper) {
 		log.SetLevel(level)
 	}
 }

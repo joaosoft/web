@@ -7,7 +7,7 @@ import (
 )
 
 // String ...
-func (mapper *GoMapper) String(value interface{}) (string, error) {
+func (mapper *Mapper) String(value interface{}) (string, error) {
 	var spaces int
 	var print string
 
