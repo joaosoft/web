@@ -41,13 +41,13 @@
   branch = "master"
   name = "github.com/joaosoft/go-log"
   packages = ["service"]
-  revision = "2e92e8f22a185fcd24ceb1e38f392d1ad6399fca"
+  revision = "bb80ed104841dee7e3cc38a161c28bffc3fd274e"
 
 [[projects]]
   branch = "master"
   name = "github.com/joaosoft/go-manager"
   packages = ["service"]
-  revision = "088d2d761b97ab0bbf87081bfc3950217764cdbf"
+  revision = "ab79c78a5d6def40500b36e2059288ae568cc1f0"
 
 [[projects]]
   branch = "master"

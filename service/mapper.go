@@ -18,6 +18,10 @@ type Mapper struct {
 func NewMapper(options ...mapperOption) *Mapper {
 	pm := gomanager.NewManager(gomanager.WithRunInBackground(false))
 
+	mapper := &Mapper{}
+
+	mapper.Reconfigure(options...)
+
 	// load configuration file
 	appConfig := &appConfig{}
 	if simpleConfig, err := gomanager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", getEnv()), appConfig); err != nil {
@@ -26,12 +30,10 @@ func NewMapper(options ...mapperOption) *Mapper {
 		pm.AddConfig("config_app", simpleConfig)
 		level, _ := golog.ParseLevel(appConfig.GoMapper.Log.Level)
 		log.Debugf("setting log level to %s", level)
-		WithLogLevel(level)
+		log.Reconfigure(golog.WithLevel(level))
 	}
 
-	mapper := &Mapper{config: &appConfig.GoMapper}
-
-	mapper.Reconfigure(options...)
+	mapper.config = &appConfig.GoMapper
 
 	if mapper.isLogExternal {
 		pm.Reconfigure(gomanager.WithLogger(log))
