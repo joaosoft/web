@@ -9,8 +9,9 @@ import (
 
 // Mapper ...
 type Mapper struct {
-	config *MapperConfig
-	pm     *gomanager.Manager
+	config        *MapperConfig
+	pm            *gomanager.Manager
+	logIsExternal bool
 }
 
 // NewMapper ...

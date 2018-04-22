@@ -16,6 +16,7 @@ func (mapper *Mapper) Reconfigure(options ...MapperOption) {
 func WithLogger(logger golog.ILog) MapperOption {
 	return func(mapper *Mapper) {
 		log = logger
+		mapper.logIsExternal = true
 	}
 }
 
