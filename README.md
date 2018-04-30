@@ -1,5 +1,5 @@
 # go-mapper
-[![Build Status](https://travis-ci.org/joaosoft/go-mapper.svg?branch=master)](https://travis-ci.org/joaosoft/go-mapper) | [![codecov](https://codecov.io/gh/joaosoft/go-mapper/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/go-mapper) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/go-mapper)](https://goreportcard.com/report/github.com/joaosoft/go-mapper) | [![GoDoc](https://godoc.org/github.com/joaosoft/go-mapper?status.svg)](https://godoc.org/github.com/joaosoft/go-mapper/service)
+[![Build Status](https://travis-ci.org/joaosoft/go-mapper.svg?branch=master)](https://travis-ci.org/joaosoft/go-mapper) | [![codecov](https://codecov.io/gh/joaosoft/go-mapper/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/go-mapper) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/go-mapper)](https://goreportcard.com/report/github.com/joaosoft/go-mapper) | [![GoDoc](https://godoc.org/github.com/joaosoft/go-mapper?status.svg)](https://godoc.org/github.com/joaosoft/go-mapper/app)
 
 Translates any struct to other data types.
 
@@ -19,7 +19,7 @@ Project dependencies are managed using Dep. Read more about [Dep](https://github
 
 >### Go
 ```
-go get github.com/joaosoft/go-mapper/service
+go get github.com/joaosoft/go-mapper/app
 ```
 
 ## Usage 

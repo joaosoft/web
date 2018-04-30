@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"go-mapper/service"
+	"go-mapper/app"
 
-	"github.com/joaosoft/go-log/service"
+	golog "github.com/joaosoft/go-log/app"
 )
 
 var log = golog.NewLogDefault("go-mapper", golog.InfoLevel)
