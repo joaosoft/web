@@ -15,7 +15,7 @@ type Mapper struct {
 }
 
 // NewMapper ...
-func NewMapper(options ...mapperOption) *Mapper {
+func NewMapper(options ...MapperOption) *Mapper {
 	pm := gomanager.NewManager(gomanager.WithRunInBackground(false))
 
 	mapper := &Mapper{}
@@ -27,17 +27,17 @@ func NewMapper(options ...mapperOption) *Mapper {
 	}
 
 	// load configuration file
-	appConfig := &appConfig{}
+	appConfig := &AppConfig{}
 	if simpleConfig, err := gomanager.NewSimpleConfig(fmt.Sprintf("/config.%s.json", getEnv()), appConfig); err != nil {
 		log.Error(err.Error())
 	} else {
 		pm.AddConfig("config_app", simpleConfig)
-		level, _ := logger.ParseLevel(appConfig.GoMapper.Log.Level)
+		level, _ := logger.ParseLevel(appConfig.Mapper.Log.Level)
 		log.Debugf("setting log level to %s", level)
 		log.Reconfigure(logger.WithLevel(level))
 	}
 
-	mapper.config = &appConfig.GoMapper
+	mapper.config = &appConfig.Mapper
 
 	return mapper
 }

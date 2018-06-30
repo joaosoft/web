@@ -2,18 +2,18 @@ package mapper
 
 import logger "github.com/joaosoft/logger"
 
-// mapperOption ...
-type mapperOption func(mapper *Mapper)
+// MapperOption ...
+type MapperOption func(mapper *Mapper)
 
 // Reconfigure ...
-func (mapper *Mapper) Reconfigure(options ...mapperOption) {
+func (mapper *Mapper) Reconfigure(options ...MapperOption) {
 	for _, option := range options {
 		option(mapper)
 	}
 }
 
 // WithLogger ...
-func WithLogger(logger logger.ILogger) mapperOption {
+func WithLogger(logger logger.ILogger) MapperOption {
 	return func(mapper *Mapper) {
 		log = logger
 		mapper.isLogExternal = true
@@ -21,7 +21,7 @@ func WithLogger(logger logger.ILogger) mapperOption {
 }
 
 // WithLogLevel ...
-func WithLogLevel(level logger.Level) mapperOption {
+func WithLogLevel(level logger.Level) MapperOption {
 	return func(mapper *Mapper) {
 		log.SetLevel(level)
 	}

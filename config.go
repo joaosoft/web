@@ -1,8 +1,8 @@
 package mapper
 
-// appConfig ...
-type appConfig struct {
-	GoMapper MapperConfig `json:"mapper"`
+// AppConfig ...
+type AppConfig struct {
+	Mapper MapperConfig `json:"mapper"`
 }
 
 // MapperConfig ...
