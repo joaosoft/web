@@ -1,6 +1,6 @@
-package gomapper
+package mapper
 
-import golog "github.com/joaosoft/go-log/app"
+import golog "github.com/joaosoft/logger"
 
 // mapperOption ...
 type mapperOption func(mapper *Mapper)

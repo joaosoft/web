@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"go-mapper/app"
+	"mapper"
 
-	golog "github.com/joaosoft/go-log/app"
+	logger "github.com/joaosoft/logger"
 )
 
-var log = golog.NewLogDefault("go-mapper", golog.InfoLevel)
+var log = logger.NewLogDefault("mapper", golog.InfoLevel)
 
 type First struct {
 	One   string            `json:"one"`
@@ -50,7 +50,7 @@ func main() {
 
 	fmt.Println("\n:::::::::::: STRUCT ONE")
 
-	mapper := gomapper.NewMapper()
+	mapper := mapper.NewMapper()
 	if translated, err := mapper.Map(obj1); err != nil {
 		log.Error("error on translation!")
 	} else {

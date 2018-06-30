@@ -1,10 +1,10 @@
-package gomapper
+package mapper
 
 import (
 	"fmt"
 
-	golog "github.com/joaosoft/go-log/app"
-	gomanager "github.com/joaosoft/go-manager/app"
+	golog "github.com/joaosoft/logger"
+	gomanager "github.com/joaosoft/go-manager"
 )
 
 // Mapper ...
@@ -28,7 +28,7 @@ func NewMapper(options ...mapperOption) *Mapper {
 
 	// load configuration file
 	appConfig := &appConfig{}
-	if simpleConfig, err := gomanager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", getEnv()), appConfig); err != nil {
+	if simpleConfig, err := gomanager.NewSimpleConfig(fmt.Sprintf("/config.%s.json", getEnv()), appConfig); err != nil {
 		log.Error(err.Error())
 	} else {
 		pm.AddConfig("config_app", simpleConfig)

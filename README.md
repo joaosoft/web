@@ -1,5 +1,5 @@
-# go-mapper
-[![Build Status](https://travis-ci.org/joaosoft/go-mapper.svg?branch=master)](https://travis-ci.org/joaosoft/go-mapper) | [![codecov](https://codecov.io/gh/joaosoft/go-mapper/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/go-mapper) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/go-mapper)](https://goreportcard.com/report/github.com/joaosoft/go-mapper) | [![GoDoc](https://godoc.org/github.com/joaosoft/go-mapper?status.svg)](https://godoc.org/github.com/joaosoft/go-mapper/app)
+# mapper
+[![Build Status](https://travis-ci.org/joaosoft/mapper.svg?branch=master)](https://travis-ci.org/joaosoft/mapper) | [![codecov](https://codecov.io/gh/joaosoft/mapper/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/mapper) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/mapper)](https://goreportcard.com/report/github.com/joaosoft/mapper) | [![GoDoc](https://godoc.org/github.com/joaosoft/mapper?status.svg)](https://godoc.org/github.com/joaosoft/mapper)
 
 Translates any struct to other data types.
 
@@ -19,11 +19,11 @@ Project dependencies are managed using Dep. Read more about [Dep](https://github
 
 >### Go
 ```
-go get github.com/joaosoft/go-mapper/app
+go get github.com/joaosoft/mapper
 ```
 
 ## Usage 
-This examples are available in the project at [go-mapper/example](https://github.com/joaosoft/go-mapper/tree/master/example)
+This examples are available in the project at [mapper/example](https://github.com/joaosoft/mapper/tree/master/examples)
 ```go
 type First struct {
 	One   string            `json:"one"`
@@ -63,15 +63,15 @@ obj2 := Second{
 #### Convert struct to string 
 ```go
 fmt.Println(":::::::::::: STRUCT ONE")
-mapper := gomapper.NewMapper(gomapper.WithLogger(log))
-if translated, err := mapper.String(obj1); err != nil {
+m, := mapper.NewMapper(mapper.WithLogger(log))
+if translated, err := m.String(obj1); err != nil {
     log.Error("error on translation!")
 } else {
     fmt.Println(translated)
 }
 
 fmt.Println(":::::::::::: STRUCT TWO")
-if translated, err := mapper.String(obj2); err != nil {
+if translated, err := m.String(obj2); err != nil {
     log.Error("error on translation!")
 } else {
     fmt.Println(translated)
@@ -133,8 +133,8 @@ Nine
 #### Convert struct to map 
 ```go
 fmt.Println(":::::::::::: STRUCT ONE")
-mapper := gomapper.NewMapper(gomapper.WithLogger(log))
-if translated, err := mapper.Map(obj1); err != nil {
+m := mapper.NewMapper(mapper.WithLogger(log))
+if translated, err := m.Map(obj1); err != nil {
     log.Error("error on translation!")
 } else {
     for key, value := range translated {
@@ -143,7 +143,7 @@ if translated, err := mapper.Map(obj1); err != nil {
 }
 
 fmt.Println(":::::::::::: STRUCT TWO")
-if translated, err := mapper.Map(obj2); err != nil {
+if translated, err := m.Map(obj2); err != nil {
     log.Error("error on translation!")
 } else {
     for key, value := range translated {

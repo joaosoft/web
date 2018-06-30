@@ -1,4 +1,4 @@
-package gomapper
+package mapper
 
 import (
 	"bufio"
