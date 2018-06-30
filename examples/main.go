@@ -8,7 +8,7 @@ import (
 	logger "github.com/joaosoft/logger"
 )
 
-var log = logger.NewLogDefault("mapper", golog.InfoLevel)
+var log = logger.NewLogDefault("mapper", logger.InfoLevel)
 
 type First struct {
 	One   string            `json:"one"`

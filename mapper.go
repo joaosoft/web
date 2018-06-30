@@ -3,7 +3,7 @@ package mapper
 import (
 	"fmt"
 
-	golog "github.com/joaosoft/logger"
+	logger "github.com/joaosoft/logger"
 	gomanager "github.com/joaosoft/go-manager"
 )
 
@@ -32,9 +32,9 @@ func NewMapper(options ...mapperOption) *Mapper {
 		log.Error(err.Error())
 	} else {
 		pm.AddConfig("config_app", simpleConfig)
-		level, _ := golog.ParseLevel(appConfig.GoMapper.Log.Level)
+		level, _ := logger.ParseLevel(appConfig.GoMapper.Log.Level)
 		log.Debugf("setting log level to %s", level)
-		log.Reconfigure(golog.WithLevel(level))
+		log.Reconfigure(logger.WithLevel(level))
 	}
 
 	mapper.config = &appConfig.GoMapper

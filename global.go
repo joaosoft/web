@@ -1,11 +1,11 @@
 package mapper
 
 import (
-	golog "github.com/joaosoft/logger"
+	"github.com/joaosoft/logger"
 )
 
 var global = make(map[string]interface{})
-var log = logger.NewLogDefault("mapper", golog.InfoLevel)
+var log = logger.NewLogDefault("mapper", logger.InfoLevel)
 
 func init() {
 	global[path_key] = defaultPath

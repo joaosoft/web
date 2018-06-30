@@ -1,6 +1,6 @@
 package mapper
 
-import golog "github.com/joaosoft/logger"
+import logger "github.com/joaosoft/logger"
 
 // mapperOption ...
 type mapperOption func(mapper *Mapper)
@@ -13,7 +13,7 @@ func (mapper *Mapper) Reconfigure(options ...mapperOption) {
 }
 
 // WithLogger ...
-func WithLogger(logger golog.ILog) mapperOption {
+func WithLogger(logger logger.ILogger) mapperOption {
 	return func(mapper *Mapper) {
 		log = logger
 		mapper.isLogExternal = true
@@ -21,7 +21,7 @@ func WithLogger(logger golog.ILog) mapperOption {
 }
 
 // WithLogLevel ...
-func WithLogLevel(level golog.Level) mapperOption {
+func WithLogLevel(level logger.Level) mapperOption {
 	return func(mapper *Mapper) {
 		log.SetLevel(level)
 	}
