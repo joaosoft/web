@@ -1,10 +1,10 @@
 {
-  "gomappper": {
+  "mappper": {
     "log": {
       "level": "info"
     }
   },
-  "gomanager": {
+  "manager": {
     "log": {
       "level": "info"
     }
