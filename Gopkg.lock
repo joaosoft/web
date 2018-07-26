@@ -52,19 +52,19 @@
   branch = "master"
   name = "github.com/joaosoft/go-manager"
   packages = ["."]
-  revision = "7e0860cbbbcc6a32005c056309ed3e1c629727fb"
+  revision = "b5b22f6ddf205257bfa165134dd4aa01d1760662"
 
 [[projects]]
   branch = "master"
   name = "github.com/joaosoft/logger"
   packages = ["."]
-  revision = "e32a295c6b3dbd9761fc293eddfe95afd4f5d162"
+  revision = "5ed81168ee3bd702a9fa77be2bb1d896af637582"
 
 [[projects]]
   branch = "master"
   name = "github.com/joaosoft/writers"
   packages = ["."]
-  revision = "8a2b16715c7c524aca8f5eab7e376b0ee7c4b9ab"
+  revision = "ac09d2935fa7e36fadd1d108d06bacd3cbe412fc"
 
 [[projects]]
   name = "github.com/labstack/echo"
@@ -127,10 +127,10 @@
   version = "v1.2.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/satori/go.uuid"
   packages = ["."]
-  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
-  version = "v1.2.0"
+  revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -220,6 +220,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eb71c3d46875dac23107c900d8f2efa2952854b14c16c404ddea7e9d9eeded26"
+  inputs-digest = "4a8301bfedf699595b2ab164eddb66e3cd6f73d70de2e9843c5a440e53ff6776"
   solver-name = "gps-cdcl"
   solver-version = 1
