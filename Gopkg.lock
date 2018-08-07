@@ -46,25 +46,25 @@
   branch = "master"
   name = "github.com/joaosoft/errors"
   packages = ["."]
-  revision = "26de174de522922a2e1b7520dba32fe23c6d0fd6"
+  revision = "f46e81c553ca6700877861d3020e495d56cc2291"
 
 [[projects]]
   branch = "master"
   name = "github.com/joaosoft/go-manager"
   packages = ["."]
-  revision = "b5b22f6ddf205257bfa165134dd4aa01d1760662"
+  revision = "a1ae2d27aa1e959094127244a0011f5b5eb4905c"
 
 [[projects]]
   branch = "master"
   name = "github.com/joaosoft/logger"
   packages = ["."]
-  revision = "5ed81168ee3bd702a9fa77be2bb1d896af637582"
+  revision = "edd89dd7dfa181b5d173966fd7d659ab10dee5c3"
 
 [[projects]]
   branch = "master"
   name = "github.com/joaosoft/writers"
   packages = ["."]
-  revision = "ac09d2935fa7e36fadd1d108d06bacd3cbe412fc"
+  revision = "1410d81e85d22774561ca575b0d27656ada14a97"
 
 [[projects]]
   name = "github.com/labstack/echo"
@@ -162,8 +162,14 @@
 [[projects]]
   name = "github.com/spf13/viper"
   packages = ["."]
-  revision = "b5e8006cbee93ec955a89ab31e0e3ce3204f3736"
-  version = "v1.0.2"
+  revision = "907c19d40d9a6c9bb55f040ff4ae45271a4754b9"
+  version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/streadway/amqp"
+  packages = ["."]
+  revision = "70e15c650864f4fc47f5d3c82ea117285480895d"
 
 [[projects]]
   branch = "master"
@@ -184,13 +190,13 @@
     "acme",
     "acme/autocert"
   ]
-  revision = "c126467f60eb25f8f27e5a981f32a87e3965053f"
+  revision = "f027049dab0ad238e394a753dba2d14753473a04"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "e072cadbbdc8dd3d3ffa82b8b4b9304c261d9311"
+  revision = "acbc56fc7007d2a01796d5bde54f39e3b3e95945"
 
 [[projects]]
   name = "golang.org/x/text"
