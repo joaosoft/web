@@ -1,5 +1,4 @@
 run:
-	go run ./bin/launcher/main.go
 
 build:
 	go build .

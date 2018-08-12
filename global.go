@@ -1,12 +1,5 @@
-package mapper
+package types
 
-import (
-	"github.com/joaosoft/logger"
-)
+import logger "github.com/joaosoft/logger"
 
-var global = make(map[string]interface{})
-var log = logger.NewLogDefault("mapper", logger.InfoLevel)
-
-func init() {
-	global[path_key] = defaultPath
-}
+var log = logger.NewLogDefault("types", logger.InfoLevel)

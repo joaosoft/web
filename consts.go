@@ -1,6 +1,14 @@
-package mapper
+package types
 
 const (
-	defaultPath = "."
-	path_key    = "path"
+	StatusStopped Status = "stopped"
+	StatusRunning Status = "running"
+
+	DayMonday    Day = "monday"
+	DayTuesday   Day = "tuesday"
+	DayWednesday Day = "wednesday"
+	DayThursday  Day = "thursday"
+	DayFriday    Day = "friday"
+	DaySaturday  Day = "saturday"
+	DaySunday    Day = "sunday"
 )
