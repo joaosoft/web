@@ -2,7 +2,6 @@ package types
 
 type Date string
 type Time string
-type Status string
 type Day string
 type ListDay []Day
 

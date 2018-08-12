@@ -1,7 +1,7 @@
 # types
 [![Build Status](https://travis-ci.org/joaosoft/types.svg?branch=master)](https://travis-ci.org/joaosoft/types) | [![codecov](https://codecov.io/gh/joaosoft/types/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/types) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/types)](https://goreportcard.com/report/github.com/joaosoft/types) | [![GoDoc](https://godoc.org/github.com/joaosoft/types?status.svg)](https://godoc.org/github.com/joaosoft/types)
 
-Golang missing types
+Golang missing types with support for direct save on postgres.
 
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 

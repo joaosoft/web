@@ -64,31 +64,6 @@ func (t Time) Value() (driver.Value, error) {
 	return string(t), nil
 }
 
-func (s *Status) Scan(src interface{}) error {
-	if s == nil {
-		return nil
-	}
-
-	switch value := src.(type) {
-	case string:
-		*s = Status(value)
-		return nil
-	case nil:
-		s = nil
-		return nil
-	}
-
-	return errors.New("0", "pq: cannot convert %T to %T", src, *s)
-}
-
-func (s Status) Value() (driver.Value, error) {
-	if s == "" {
-		return nil, nil
-	}
-
-	return string(s), nil
-}
-
 func (d *Day) Scan(src interface{}) error {
 	if d == nil {
 		return nil
