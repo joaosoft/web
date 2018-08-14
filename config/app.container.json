@@ -1,0 +1,18 @@
+{
+  "dbmigration": {
+    "host": "localhost:8001",
+    "path": "/",
+    "db": {
+      "driver": "postgres",
+      "datasource": "postgres://user:password@localhost:5432?sslmode=disable"
+    },
+    "log": {
+      "level": "info"
+    }
+  },
+  "manager": {
+    "log": {
+      "level": "error"
+    }
+  }
+}

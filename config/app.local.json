@@ -1,0 +1,18 @@
+{
+  "dbmigration": {
+    "host": "localhost:8001",
+    "path": "schema/db/postgres/example",
+    "db": {
+      "driver": "postgres",
+      "datasource": "postgres://postgres:postgres@localhost:5432?sslmode=disable"
+    },
+    "log": {
+      "level": "info"
+    }
+  },
+  "manager": {
+    "log": {
+      "level": "error"
+    }
+  }
+}
