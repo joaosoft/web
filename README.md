@@ -69,6 +69,9 @@ dbmigration -migrate down
 
 // migrate down 2 migration
 dbmigration -migrate down -number 2
+
+// migrate down all migration
+dbmigration -migrate down -number -1
 ```
 
 > Administration
