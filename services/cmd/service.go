@@ -273,7 +273,7 @@ func (service *CmdService) process(option services.MigrationOption, number int, 
 		}
 
 		if err != nil {
-			service.logger.Errorf("error executing the migration %s", fileName).ToError(&err)
+			service.logger.Errorf("error executing the migration %s", fileName)
 			return err
 		}
 	}
