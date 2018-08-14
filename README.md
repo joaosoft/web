@@ -46,6 +46,16 @@ Configuration file
 }
 ```
 
+Migration file
+```
+-- migrate up
+CREATE TABLE dbmigration.test1();
+
+
+-- migrate down
+DROP TABLE dbmigration.test1;
+```
+
 Migration commands
 ```
 // migrate up all migrations

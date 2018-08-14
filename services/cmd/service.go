@@ -197,18 +197,41 @@ func (service *CmdService) process(option services.MigrationOption, number int, 
 		indexUp := strings.Index(string(data), string(services.TagMigrationUp))
 		indexDown := strings.Index(string(data), string(services.TagMigrationDown))
 
-		var migratioBody []string
+		var migrationBody []string
 		var migrationUp string
 		var migrationDown string
 		if indexUp < indexDown {
-			migratioBody = strings.Split(string(data), string(services.TagMigrationDown))
-			migrationUp = migratioBody[0]
-			migrationDown = migratioBody[1]
+			migrationBody = strings.Split(string(data), string(services.TagMigrationDown))
+			if len(migrationBody) > 0 {
+				migrationUp = migrationBody[0]
+			}
+			if len(migrationBody) > 1 {
+				migrationDown = migrationBody[1]
+			}
 
 		} else {
-			migratioBody = strings.Split(string(data), string(services.TagMigrationUp))
-			migrationDown = migratioBody[0]
-			migrationUp = migratioBody[1]
+			migrationBody = strings.Split(string(data), string(services.TagMigrationUp))
+			if len(migrationBody) > 0 {
+				migrationDown = migrationBody[0]
+			}
+			if len(migrationBody) > 1 {
+				migrationUp = migrationBody[1]
+			}
+		}
+
+		var query string
+		if option == services.MigrationOptionUp {
+			query = migrationUp
+			if migrationUp == "" {
+				service.logger.Infof("empty migration up on migration %s", migration)
+			}
+		}
+
+		if option == services.MigrationOptionDown {
+			query = migrationDown
+			if migrationDown == "" {
+				service.logger.Infof("empty migration down on migration %s", migration)
+			}
 		}
 
 		conn, err := service.config.Db.Connect()
@@ -229,8 +252,9 @@ func (service *CmdService) process(option services.MigrationOption, number int, 
 			}
 		}(err)
 
+		_, err = tx.Exec(query)
+
 		if option == services.MigrationOptionUp {
-			_, err = tx.Exec(migrationUp)
 			if err == nil {
 				if er := service.interactor.CreateMigration(&services.Migration{IdMigration: fileName}); er != nil {
 					service.logger.Error("error adding migration to database")
@@ -239,7 +263,6 @@ func (service *CmdService) process(option services.MigrationOption, number int, 
 				}
 			}
 		} else {
-			_, err = conn.Exec(migrationDown)
 			if err == nil {
 				if er := service.interactor.DeleteMigration(migration); er != nil {
 					service.logger.Error("error deleting migration to database")
