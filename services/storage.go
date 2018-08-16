@@ -22,7 +22,7 @@ func NewStoragePostgres(logger logger.ILogger, connection manager.IDB) *StorageP
 	}
 }
 
-func (storage *StoragePostgres) GetMigration(idMigration string) (*Migration, *errors.Err) {
+func (storage *StoragePostgres) GetMigration(idMigration string) (*Migration, error) {
 	row := storage.conn.Get().QueryRow(`
 	    SELECT
 		    "user",
@@ -47,7 +47,7 @@ func (storage *StoragePostgres) GetMigration(idMigration string) (*Migration, *e
 	return migration, nil
 }
 
-func (storage *StoragePostgres) GetMigrations(values map[string][]string) (ListMigration, *errors.Err) {
+func (storage *StoragePostgres) GetMigrations(values map[string][]string) (ListMigration, error) {
 	query := `
 	    SELECT
 			id_migration,
@@ -101,7 +101,7 @@ func (storage *StoragePostgres) GetMigrations(values map[string][]string) (ListM
 	return migrations, nil
 }
 
-func (storage *StoragePostgres) CreateMigration(newMigration *Migration) *errors.Err {
+func (storage *StoragePostgres) CreateMigration(newMigration *Migration) error {
 	if _, err := storage.conn.Get().Exec(`
 		INSERT INTO dbmigration.migration(
 			id_migration)
@@ -114,7 +114,7 @@ func (storage *StoragePostgres) CreateMigration(newMigration *Migration) *errors
 	return nil
 }
 
-func (storage *StoragePostgres) DeleteMigration(idMigration string) *errors.Err {
+func (storage *StoragePostgres) DeleteMigration(idMigration string) error {
 	if _, err := storage.conn.Get().Exec(`
 	    DELETE 
 		FROM dbmigration.migration
@@ -126,7 +126,7 @@ func (storage *StoragePostgres) DeleteMigration(idMigration string) *errors.Err 
 	return nil
 }
 
-func (storage *StoragePostgres) DeleteMigrations() *errors.Err {
+func (storage *StoragePostgres) DeleteMigrations() error {
 	if _, err := storage.conn.Get().Exec(`
 	    DELETE FROM dbmigration.migration`); err != nil {
 		return errors.New("0", err)
@@ -135,7 +135,7 @@ func (storage *StoragePostgres) DeleteMigrations() *errors.Err {
 	return nil
 }
 
-func (storage *StoragePostgres) ExecuteMigration(migration string) *errors.Err {
+func (storage *StoragePostgres) ExecuteMigration(migration string) error {
 	if _, err := storage.conn.Get().Exec(migration); err != nil {
 		return errors.New("0", err)
 	}

@@ -52,7 +52,6 @@ func NewService(options ...CmdServiceOption) (*CmdService, error) {
 	service.Reconfigure(options...)
 
 	simpleDB := manager.NewSimpleDB(&appConfig.DbMigration.Db)
-	simpleDB.Start(&sync.WaitGroup{})
 	if err := service.pm.AddDB("db_postgres", simpleDB); err != nil {
 		service.logger.Error(err.Error())
 		return nil, err
@@ -93,7 +92,7 @@ func (service *CmdService) load() (executed []string, toexecute []string, err er
 	service.logger.Info("getting all executed migrations")
 	migrations, er := service.interactor.GetMigrations(nil)
 	if er != nil {
-		service.logger.Error("error loading migrations from database").ToErr(er)
+		err = service.logger.Error("error loading migrations from database").ToError()
 		return nil, nil, er
 	}
 	for _, migration := range migrations {
@@ -105,7 +104,7 @@ func (service *CmdService) load() (executed []string, toexecute []string, err er
 	dir, _ := os.Getwd()
 	files, err := filepath.Glob(fmt.Sprintf("%s/%s/*.sql", dir, service.config.Path))
 	if err != nil {
-		service.logger.Error("error loading migrations from file system").ToError(&err)
+		err = service.logger.Error("error loading migrations from file system").ToError()
 		return executed, nil, err
 	}
 	for _, file := range files {
@@ -121,7 +120,7 @@ func (service *CmdService) validate(executed []string, toexecute []string) (err 
 	service.logger.Info("validate migrations")
 	for i, migration := range executed {
 		if migration != toexecute[i] {
-			service.logger.Errorf("the migrations are in a different order of the already executed migrations [%s] <-> [%s]", migration, toexecute[i]).ToError(&err)
+			err = service.logger.Errorf("the migrations are in a different order of the already executed migrations [%s] <-> [%s]", migration, toexecute[i]).ToError()
 			return err
 		}
 	}

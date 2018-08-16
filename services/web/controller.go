@@ -32,7 +32,7 @@ func (controller *Controller) GetMigrationHandler(ctx echo.Context) error {
 	}
 
 	if process, err := controller.interactor.GetMigration(request.IdMigration); err != nil {
-		return ctx.JSON(http.StatusInternalServerError, ErrorResponse{Code: http.StatusInternalServerError, Message: err.Error(), Cause: err.Cause()})
+		return ctx.JSON(http.StatusInternalServerError, ErrorResponse{Code: http.StatusInternalServerError, Message: err.Error()})
 	} else if process == nil {
 		return ctx.NoContent(http.StatusNotFound)
 	} else {
@@ -42,7 +42,7 @@ func (controller *Controller) GetMigrationHandler(ctx echo.Context) error {
 
 func (controller *Controller) GetMigrationsHandler(ctx echo.Context) error {
 	if processes, err := controller.interactor.GetMigrations(ctx.QueryParams()); err != nil {
-		return ctx.JSON(http.StatusInternalServerError, ErrorResponse{Code: http.StatusInternalServerError, Message: err.Error(), Cause: err.Cause()})
+		return ctx.JSON(http.StatusInternalServerError, ErrorResponse{Code: http.StatusInternalServerError, Message: err.Error()})
 	} else if processes == nil {
 		return ctx.NoContent(http.StatusNotFound)
 	} else {
@@ -53,16 +53,15 @@ func (controller *Controller) GetMigrationsHandler(ctx echo.Context) error {
 func (controller *Controller) CreateMigrationHandler(ctx echo.Context) error {
 	request := CreateMigrationRequest{}
 	if err := ctx.Bind(&request.Body); err != nil {
-		newErr := errors.New("0", err)
-		controller.logger.WithFields(map[string]interface{}{"error": err, "cause": newErr.Cause()}).
-			Error("error getting body").ToErr(newErr)
-		return ctx.JSON(http.StatusBadRequest, ErrorResponse{Code: http.StatusBadRequest, Message: newErr.Error(), Cause: newErr.Cause()})
+		err = controller.logger.WithFields(map[string]interface{}{"error": err}).
+			Error("error getting body").ToError()
+		return ctx.JSON(http.StatusBadRequest, ErrorResponse{Code: http.StatusBadRequest, Message: err.Error()})
 	}
 
 	if errs := validator.Validate(request.Body); !errs.IsEmpty() {
 		newErr := errors.New("0", errs)
 		controller.logger.WithFields(map[string]interface{}{"error": newErr.Error(), "cause": newErr.Cause()}).
-			Error("error when validating body request").ToErr(newErr)
+			Error("error when validating body request").ToError()
 		return ctx.JSON(http.StatusBadRequest, ErrorResponse{Code: http.StatusBadRequest, Message: newErr.Error(), Cause: newErr.Cause()})
 	}
 
@@ -72,7 +71,7 @@ func (controller *Controller) CreateMigrationHandler(ctx echo.Context) error {
 	if err := controller.interactor.CreateMigration(&newMigration); err != nil {
 		newErr := errors.New("0", err)
 		controller.logger.WithFields(map[string]interface{}{"error": newErr.Error(), "cause": newErr.Cause()}).
-			Errorf("error creating process %s", request.Body.IdMigration).ToErr(newErr)
+			Errorf("error creating process %s", request.Body.IdMigration).ToError()
 		return ctx.JSON(http.StatusBadRequest, ErrorResponse{Code: http.StatusBadRequest, Message: newErr.Error(), Cause: newErr.Cause()})
 	} else {
 		return ctx.NoContent(http.StatusCreated)
@@ -87,14 +86,14 @@ func (controller *Controller) DeleteMigrationHandler(ctx echo.Context) error {
 	if errs := validator.Validate(request); !errs.IsEmpty() {
 		newErr := errors.New("0", errs)
 		controller.logger.WithFields(map[string]interface{}{"error": newErr.Error(), "cause": newErr.Cause()}).
-			Error("error when validating body request").ToErr(newErr)
+			Error("error when validating body request").ToError()
 		return ctx.JSON(http.StatusBadRequest, ErrorResponse{Code: http.StatusBadRequest, Message: newErr.Error(), Cause: newErr.Cause()})
 	}
 
 	if err := controller.interactor.DeleteMigration(request.IdMigration); err != nil {
 		newErr := errors.New("0", err)
 		controller.logger.WithFields(map[string]interface{}{"error": newErr.Error(), "cause": newErr.Cause()}).
-			Errorf("error deleting process by id %s", request.IdMigration).ToErr(newErr)
+			Errorf("error deleting process by id %s", request.IdMigration).ToError()
 		return ctx.JSON(http.StatusBadRequest, ErrorResponse{Code: http.StatusBadRequest, Message: newErr.Error(), Cause: newErr.Cause()})
 	} else {
 		return ctx.NoContent(http.StatusOK)
@@ -103,7 +102,7 @@ func (controller *Controller) DeleteMigrationHandler(ctx echo.Context) error {
 
 func (controller *Controller) DeleteMigrationsHandler(ctx echo.Context) error {
 	if err := controller.interactor.DeleteMigrations(); err != nil {
-		return ctx.JSON(http.StatusInternalServerError, ErrorResponse{Code: http.StatusInternalServerError, Message: err.Error(), Cause: err.Cause()})
+		return ctx.JSON(http.StatusInternalServerError, ErrorResponse{Code: http.StatusInternalServerError, Message: err.Error()})
 	} else {
 		return ctx.NoContent(http.StatusOK)
 	}

@@ -49,9 +49,14 @@
   name = "github.com/labstack/gommon"
   version = "0.2.6"
 
+[[constraint]]
+  branch = "master"
+  name = "github.com/lib/pq"
+
 [[override]]
   name = "github.com/satori/go.uuid"
   branch = "master"
+
 
 [prune]
   go-tests = true
