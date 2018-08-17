@@ -67,7 +67,7 @@ func CustomHandler(option cmd.MigrationOption, tx *sql.Tx, data string) error {
 ```
 
 
-Configuration file
+> Configuration file
 ```
 {
   "dbmigration": {
@@ -89,7 +89,7 @@ Configuration file
 }
 ```
 
-Migration file example
+> Migration file example
 ```
 -- migrate up
 CREATE TABLE dbmigration.test1();
@@ -108,7 +108,7 @@ teste do joao 1
 teste do joao 2
 ```
 
-Migration commands
+> Migration commands
 ```
 // migrate up all migrations
 dbmigration -migrate up
@@ -126,16 +126,16 @@ dbmigration -migrate down -number 2
 dbmigration -migrate down -number -1
 ```
 
-> Administration
->> Get a migration (GET)
+## Administration
+> Get a migration (GET)
 ```
 http://localhost:8001/api/v1/migrations/<migration_name>
 ```
->> Get migrations (GET)
+> Get migrations (GET)
 ```
 http://localhost:8001/api/v1/migrations
 ```
->> Create a migration (POST)
+>>+ Create a migration (POST)
 ```
 http://localhost:8001/api/v1/migrations
 ```
@@ -146,11 +146,11 @@ with body:
 	"executed_at": "2018-06-02 13:11:37"
 }
 ```
->> Delete a migration (DELETE)
+> Delete a migration (DELETE)
 ```
 http://localhost:8001/api/v1/migrations/<migration_name>
 ```
->> Delete migrations (DELETE)
+> Delete migrations (DELETE)
 ```
 http://localhost:8001/api/v1/migrations
 ```
