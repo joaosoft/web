@@ -27,7 +27,7 @@ func NewInteractor(logger logger.ILogger, storageDB IStorageDB) *Interactor {
 
 func (interactor *Interactor) GetMigrations(values map[string][]string) (ListMigration, error) {
 	interactor.logger.WithFields(map[string]interface{}{"method": "GetMigrations"})
-	interactor.logger.Info("getting migrations")
+	interactor.logger.Debug("getting migrations")
 	if categories, err := interactor.storageDB.GetMigrations(values); err != nil {
 		err = interactor.logger.WithFields(map[string]interface{}{"error": err.Error()}).
 			Errorf("error getting migrations on storage database %s", err).ToError()
@@ -39,7 +39,7 @@ func (interactor *Interactor) GetMigrations(values map[string][]string) (ListMig
 
 func (interactor *Interactor) GetMigration(idMigration string) (*Migration, error) {
 	interactor.logger.WithFields(map[string]interface{}{"method": "GetMigration"})
-	interactor.logger.Infof("getting migration %s", idMigration)
+	interactor.logger.Debugf("getting migration %s", idMigration)
 	if category, err := interactor.storageDB.GetMigration(idMigration); err != nil {
 		interactor.logger.WithFields(map[string]interface{}{"error": err.Error()}).
 			Errorf("error getting migration %S on storage database %s", idMigration, err).ToError()
@@ -52,7 +52,7 @@ func (interactor *Interactor) GetMigration(idMigration string) (*Migration, erro
 func (interactor *Interactor) CreateMigration(newMigration *Migration) error {
 	interactor.logger.WithFields(map[string]interface{}{"method": "CreateMigration"})
 
-	interactor.logger.Infof("creating migration with id %s", newMigration.IdMigration)
+	interactor.logger.Debugf("creating migration with id %s", newMigration.IdMigration)
 	if err := interactor.storageDB.CreateMigration(newMigration); err != nil {
 		interactor.logger.WithFields(map[string]interface{}{"error": err.Error()}).
 			Errorf("error creating migration %s on storage database %s", newMigration.IdMigration, err).ToError()
@@ -64,7 +64,7 @@ func (interactor *Interactor) CreateMigration(newMigration *Migration) error {
 
 func (interactor *Interactor) DeleteMigration(idMigration string) error {
 	interactor.logger.WithFields(map[string]interface{}{"method": "DeleteMigration"})
-	interactor.logger.Infof("deleting migration %s", idMigration)
+	interactor.logger.Debugf("deleting migration %s", idMigration)
 	if err := interactor.storageDB.DeleteMigration(idMigration); err != nil {
 		interactor.logger.WithFields(map[string]interface{}{"error": err.Error()}).
 			Errorf("error deleting migration %s on storage database %s", idMigration, err).ToError()
@@ -75,7 +75,7 @@ func (interactor *Interactor) DeleteMigration(idMigration string) error {
 
 func (interactor *Interactor) DeleteMigrations() error {
 	interactor.logger.WithFields(map[string]interface{}{"method": "DeleteMigrations"})
-	interactor.logger.Info("deleting migrations")
+	interactor.logger.Debug("deleting migrations")
 	if err := interactor.storageDB.DeleteMigrations(); err != nil {
 		interactor.logger.WithFields(map[string]interface{}{"error": err.Error()}).
 			Errorf("error deleting migrations on storage database %s", err).ToError()
@@ -86,7 +86,7 @@ func (interactor *Interactor) DeleteMigrations() error {
 
 func (interactor *Interactor) ExecuteMigration(migration string) error {
 	interactor.logger.WithFields(map[string]interface{}{"method": "ExecuteMigration"})
-	interactor.logger.Info("execute migration")
+	interactor.logger.Debug("execute migration")
 	if err := interactor.storageDB.ExecuteMigration(migration); err != nil {
 		interactor.logger.WithFields(map[string]interface{}{"error": err.Error()}).
 			Errorf("error executing migration on storage database %s", err).ToError()

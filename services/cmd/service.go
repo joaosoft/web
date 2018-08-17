@@ -9,8 +9,6 @@ import (
 
 	"db-migration/services"
 
-	"io/ioutil"
-
 	"sort"
 
 	"github.com/joaosoft/logger"
@@ -20,6 +18,7 @@ import (
 type CmdService struct {
 	config        *services.DbMigrationConfig
 	interactor    *services.Interactor
+	tag           map[string]Handler
 	isLogExternal bool
 	pm            *manager.Manager
 	mux           sync.Mutex
@@ -30,6 +29,10 @@ func NewService(options ...CmdServiceOption) (*CmdService, error) {
 	service := &CmdService{
 		pm:     manager.NewManager(manager.WithRunInBackground(true)),
 		logger: logger.NewLogDefault("services-cmd", logger.InfoLevel),
+		tag: map[string]Handler{
+			string(FileTagMigrateUp):   MigrationHandler,
+			string(FileTagMigrateDown): MigrationHandler,
+		},
 	}
 
 	if service.isLogExternal {
@@ -62,50 +65,56 @@ func NewService(options ...CmdServiceOption) (*CmdService, error) {
 	return service, nil
 }
 
+func (service *CmdService) AddTag(name string, handler Handler) error {
+	_, okUp := service.tag[fmt.Sprintf(string(FileTagCustomUp), name)]
+	_, okDown := service.tag[fmt.Sprintf(string(FileTagCustomDown), name)]
+
+	if okUp || okDown {
+		return service.logger.Errorf("the tag %s already exists!", name).ToError()
+	}
+
+	service.tag[fmt.Sprintf(string(FileTagCustomUp), name)] = handler
+	service.tag[fmt.Sprintf(string(FileTagCustomDown), name)] = handler
+
+	return nil
+}
+
 // Execute ...
-func (service *CmdService) Execute(option services.MigrationOption, number int) error {
-	service.logger.Infof("executing migration with option '-%s %s'", services.MigrationCmd, option)
+func (service *CmdService) Execute(option MigrationOption, number int) (int, error) {
+	service.logger.Infof("executing dbmigration with option '-%s %s'", CmdMigrate, option)
 
 	// load
 	executed, toexecute, err := service.load()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// validate
 	if err := service.validate(executed, toexecute); err != nil {
-		return err
+		return 0, err
 	}
 
 	// process
-	if err := service.process(option, number, executed, toexecute); err != nil {
-		return err
-	}
-
-	return nil
+	return service.process(option, number, executed, toexecute)
 }
 
 // load ...
 func (service *CmdService) load() (executed []string, toexecute []string, err error) {
 
 	// executed
-	service.logger.Info("getting all executed migrations")
 	migrations, er := service.interactor.GetMigrations(nil)
 	if er != nil {
-		err = service.logger.Error("error loading migrations from database").ToError()
-		return nil, nil, er
+		return nil, nil, service.logger.Error("error loading migrations from database").ToError()
 	}
 	for _, migration := range migrations {
 		executed = append(executed, migration.IdMigration)
 	}
 
 	// to execute
-	service.logger.Info("getting all migrations from file system")
 	dir, _ := os.Getwd()
 	files, err := filepath.Glob(fmt.Sprintf("%s/%s/*.sql", dir, service.config.Path))
 	if err != nil {
-		err = service.logger.Error("error loading migrations from file system").ToError()
-		return executed, nil, err
+		return executed, nil, service.logger.Error("error loading migrations from file system").ToError()
 	}
 	for _, file := range files {
 		fileName := file[strings.LastIndex(file, "/")+1:]
@@ -117,24 +126,22 @@ func (service *CmdService) load() (executed []string, toexecute []string, err er
 
 // validate ...
 func (service *CmdService) validate(executed []string, toexecute []string) (err error) {
-	service.logger.Info("validate migrations")
 	for i, migration := range executed {
 		if migration != toexecute[i] {
-			err = service.logger.Errorf("the migrations are in a different order of the already executed migrations [%s] <-> [%s]", migration, toexecute[i]).ToError()
-			return err
+			return service.logger.Errorf("error, the migrations are in a different order of the already executed migrations [%s] <-> [%s]", migration, toexecute[i]).ToError()
 		}
 	}
 	return nil
 }
 
 // process ...
-func (service *CmdService) process(option services.MigrationOption, number int, executed []string, toexecute []string) error {
+func (service *CmdService) process(option MigrationOption, number int, executed []string, toexecute []string) (int, error) {
 	var migrations []string
 
-	if option == services.MigrationOptionUp {
+	if option == OptionUp {
 		if len(toexecute) <= len(executed) {
-			service.logger.Info("there are no migrations to execute!")
-			return nil
+			service.logger.Infof("applied %d migrations!", 0)
+			return 0, nil
 		}
 
 		if number > (len(toexecute) - len(executed)) {
@@ -154,8 +161,8 @@ func (service *CmdService) process(option services.MigrationOption, number int, 
 		}
 	} else {
 		if len(executed) == 0 {
-			service.logger.Info("there are no migrations to execute!")
-			return nil
+			service.logger.Infof("applied %d migrations!", 0)
+			return 0, nil
 		}
 		toexecute = toexecute[:len(executed)]
 		sort.Slice(toexecute, func(i, j int) bool {
@@ -180,104 +187,111 @@ func (service *CmdService) process(option services.MigrationOption, number int, 
 	service.logger.Infof("migrations already executed %+v", executed)
 	service.logger.Infof("migrations to execute %+v", migrations)
 
-	for _, migration := range migrations {
-		fileName := migration[strings.LastIndex(migration, "/")+1:]
+	conn, err := service.config.Db.Connect()
+	if err != nil {
+		return 0, err
+	}
+	defer conn.Close()
 
-		service.logger.Infof("Running sql migration: [%s]", fileName)
+	tx, err := conn.Begin()
+	if err != nil {
+		return 0, err
+	}
 
-		dir, _ := os.Getwd()
-		file, err := os.Open(fmt.Sprintf("%s/%s/%s", dir, service.config.Path, migration))
-		if err != nil {
-			return err
-		}
-
-		data, err := ioutil.ReadAll(file)
-
-		indexUp := strings.Index(string(data), string(services.TagMigrationUp))
-		indexDown := strings.Index(string(data), string(services.TagMigrationDown))
-
-		var migrationBody []string
-		var migrationUp string
-		var migrationDown string
-		if indexUp < indexDown {
-			migrationBody = strings.Split(string(data), string(services.TagMigrationDown))
-			if len(migrationBody) > 0 {
-				migrationUp = migrationBody[0]
-			}
-			if len(migrationBody) > 1 {
-				migrationDown = migrationBody[1]
-			}
-
-		} else {
-			migrationBody = strings.Split(string(data), string(services.TagMigrationUp))
-			if len(migrationBody) > 0 {
-				migrationDown = migrationBody[0]
-			}
-			if len(migrationBody) > 1 {
-				migrationUp = migrationBody[1]
-			}
-		}
-
-		var query string
-		if option == services.MigrationOptionUp {
-			query = migrationUp
-			if migrationUp == "" {
-				service.logger.Infof("empty migration up on migration %s", migration)
-			}
-		}
-
-		if option == services.MigrationOptionDown {
-			query = migrationDown
-			if migrationDown == "" {
-				service.logger.Infof("empty migration down on migration %s", migration)
-			}
-		}
-
-		conn, err := service.config.Db.Connect()
-		if err != nil {
-			return err
-		}
-		defer conn.Close()
-
-		tx, err := conn.Begin()
-		if err != nil {
-			return err
-		}
-		defer func(err error) {
+	defer func() {
+		if tx != nil {
 			if err != nil {
 				tx.Rollback()
 			} else {
 				tx.Commit()
 			}
-		}(err)
+		}
+	}()
 
-		_, err = tx.Exec(query)
+	for _, migration := range migrations {
+		var migrationTags, customTags map[string]string
+		migrationTags, customTags, err = service.loadRunningTags(option, migration)
+		if err != nil {
+			return 0, err
+		}
 
-		if option == services.MigrationOptionUp {
+		// execute migration handlers
+		for key, value := range migrationTags {
+			if err = service.tag[key](option, tx, value); err != nil {
+				break
+			}
+		}
+
+		if err == nil {
+			// execute custom handlers
+			for key, value := range customTags {
+				if err = service.tag[key](option, tx, value); err != nil {
+					break
+				}
+			}
+		}
+
+		if option == OptionUp {
 			if err == nil {
-				if er := service.interactor.CreateMigration(&services.Migration{IdMigration: fileName}); er != nil {
-					service.logger.Error("error adding migration to database")
-					err = er
-					return er
+				if err = service.interactor.CreateMigration(&services.Migration{IdMigration: migration}); err != nil {
+					return 0, service.logger.Error("error adding migration to database").ToError()
 				}
 			}
 		} else {
 			if err == nil {
-				if er := service.interactor.DeleteMigration(migration); er != nil {
-					service.logger.Error("error deleting migration to database")
-					err = er
-					return er
+				if err = service.interactor.DeleteMigration(migration); err != nil {
+					return 0, service.logger.Error("error deleting migration to database").ToError()
 				}
 			}
 		}
 
 		if err != nil {
-			service.logger.Errorf("error executing the migration %s", fileName)
-			return err
+			return 0, service.logger.Errorf("error executing the migration %s", migration).ToError()
+		}
+	}
+	service.logger.Infof("applied %d migrations!", len(migrations))
+
+	return len(migrations), nil
+}
+
+func (service *CmdService) loadRunningTags(option MigrationOption, file string) (migrationTags map[string]string, customTags map[string]string, err error) {
+	dir, _ := os.Getwd()
+	lines, err := services.ReadFileLines(fmt.Sprintf("%s/%s/%s", dir, service.config.Path, file))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var tag string
+	var text string
+
+	migrationTags = make(map[string]string)
+	customTags = make(map[string]string)
+
+	addFunc := func(tag string, text *string, migrationTags, customTags map[string]string) {
+		if tag != "" && *text != "" {
+			if tag == fmt.Sprintf(string(FileTagMigrate), option) {
+				migrationTags[tag] = *text
+			} else {
+				if strings.HasSuffix(tag, string(option)) {
+					customTags[tag] = *text
+				}
+			}
+			*text = ""
 		}
 	}
 
-	return nil
+	for _, line := range lines {
+		if _, ok := service.tag[strings.TrimSpace(line)]; ok {
+			addFunc(tag, &text, migrationTags, customTags)
+			tag = strings.TrimSpace(line)
+			continue
+		}
+		text += fmt.Sprintf("%s\n", line)
+	}
+
+	addFunc(tag, &text, migrationTags, customTags)
+
+	return migrationTags, customTags, nil
 }
 
 // Start ...

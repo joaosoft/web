@@ -6,6 +6,8 @@ A simple database migration tool to integrate in your projects
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 
 ## With support for
+* Migration Up and Down options
+* Custom Tags with handler to Up and Down options
 * Postgres
 
 ## Dependecy Management 
@@ -23,6 +25,47 @@ go get github.com/joaosoft/dbmigration
 
 ## Usage 
 This examples are available in the project at [dbmigration/Makefile](https://github.com/joaosoft/dbmigration/tree/master/Makefile)
+```
+import (
+	github.com/joaosoft/dbmigration
+	"flag"
+
+	"fmt"
+
+	"database/sql"
+)
+
+func main() {
+	var cmdMigrate string
+	var cmdNumber int
+
+	flag.StringVar(&cmdMigrate, string(cmd.CmdMigrate), string(cmd.OptionUp), "Runs the specified command. Valid options are: `"+string(cmd.OptionUp)+"`, `"+string(cmd.OptionDown)+"`.")
+	flag.IntVar(&cmdNumber, string(cmd.CmdNumber), 0, "Runs the specified command.")
+	flag.Parse()
+
+	m, err := cmd.NewService()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := m.Start(); err != nil {
+		panic(err)
+	}
+
+	m.AddTag("custom", CustomHandler)
+	if executed, err := m.Execute(cmd.MigrationOption(cmdMigrate), cmdNumber); err != nil {
+		panic(err)
+	} else {
+		fmt.Printf("EXECUTED: %d", executed)
+	}
+}
+
+func CustomHandler(option cmd.MigrationOption, tx *sql.Tx, data string) error {
+	fmt.Printf("\nexecuting with option '%s' and data '%s", option, data)
+	return nil
+}
+```
+
 
 Configuration file
 ```
@@ -46,14 +89,23 @@ Configuration file
 }
 ```
 
-Migration file
+Migration file example
 ```
 -- migrate up
 CREATE TABLE dbmigration.test1();
 
+-- custom up
+teste do joao A
+teste do joao B
+
+
 
 -- migrate down
 DROP TABLE dbmigration.test1;
+
+-- custom down
+teste do joao 1
+teste do joao 2
 ```
 
 Migration commands
