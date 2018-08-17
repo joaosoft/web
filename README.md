@@ -24,7 +24,7 @@ go get github.com/joaosoft/dbmigration
 ```
 
 ## Usage 
-This examples are available in the project at [dbmigration/main/cmd/main.go](https://github.com/joaosoft/dbmigration/tree/master/main/cmd/main.go)
+This examples are available in the project at [db-migration/main/cmd/main.go](https://github.com/joaosoft/db-migration/tree/master/main/cmd/main.go)
 ```
 import (
 	github.com/joaosoft/dbmigration
