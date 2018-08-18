@@ -4,6 +4,7 @@ import (
 	"db-migration/services"
 
 	"github.com/joaosoft/logger"
+	"github.com/joaosoft/manager"
 )
 
 // WebServiceOption ...
@@ -35,5 +36,12 @@ func WithLogger(logger logger.ILogger) WebServiceOption {
 func WithLogLevel(level logger.Level) WebServiceOption {
 	return func(service *WebService) {
 		service.logger.SetLevel(level)
+	}
+}
+
+// WithManager ...
+func WithManager(mgr *manager.Manager) WebServiceOption {
+	return func(service *WebService) {
+		service.pm = mgr
 	}
 }
