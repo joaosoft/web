@@ -1,5 +1,7 @@
 {
   "builder": {
+    "source": "main/main.go",
+    "destination": "bin/builder",
     "reload_time": 1,
     "log": {
       "level": "error"
@@ -8,9 +10,9 @@
   "watcher": {
     "reload_time": 1,
     "dirs": {
-      "watch":[ "examples/" ],
-      "excluded":[ "examples/test_2" ],
-      "extensions": [ "go", "json" ]
+      "watch":[ "." ],
+      "excluded":[ "vendor", "bin" ],
+      "extensions": [ "go", "json", "yml" ]
     },
     "log": {
       "level": "error"

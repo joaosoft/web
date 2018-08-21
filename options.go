@@ -50,3 +50,10 @@ func WithReloadTime(reloadTime int64) BuilderOption {
 		builder.reloadTime = reloadTime
 	}
 }
+
+// WithQuitChannel ...
+func WithQuitChannel(quit chan int) BuilderOption {
+	return func(builder *Builder) {
+		builder.quit = quit
+	}
+}

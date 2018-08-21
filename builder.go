@@ -8,6 +8,11 @@ import (
 	"syscall"
 	"time"
 
+	"os/exec"
+
+	"io"
+	"io/ioutil"
+
 	"github.com/joaosoft/logger"
 	"github.com/joaosoft/manager"
 	"github.com/joaosoft/watcher"
@@ -57,7 +62,6 @@ func NewBuilder(options ...BuilderOption) (*Builder, error) {
 	}
 
 	service.config = &appConfig.Builder
-
 	service.Reconfigure(options...)
 
 	return service, nil
@@ -74,7 +78,6 @@ func (b *Builder) execute() error {
 		for {
 			select {
 			case <-termChan:
-				b.quit <- 1
 				b.logger.Info("received term signal")
 				return
 			case <-b.quit:
@@ -84,9 +87,9 @@ func (b *Builder) execute() error {
 				b.logger.Info("watching changes")
 
 				ev := <-b.event
-				fmt.Println(ev.Operation)
 				if ev.Operation == watcher.OperationChanges {
-					b.rebuild()
+					b.build()
+					b.start()
 				}
 			}
 		}
@@ -95,9 +98,66 @@ func (b *Builder) execute() error {
 	return nil
 }
 
-// execute ...
-func (b *Builder) rebuild() error {
-	b.logger.Debug("executing rebuild")
+// build ...
+func (b *Builder) build() error {
+	b.logger.Info("executing build")
+	cmd := exec.Command("go", "build", "-i", "-o", b.config.Destination, b.config.Source)
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return b.logger.Errorf("error getting stderr pipe %s", err).ToError()
+	}
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return b.logger.Errorf("error getting stdout pipe %s", err).ToError()
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return b.logger.Errorf("error executing build command %s", err).ToError()
+	}
+
+	io.Copy(os.Stdout, stdout)
+	errBuf, _ := ioutil.ReadAll(stderr)
+
+	err = cmd.Wait()
+	if err != nil {
+		return b.logger.Errorf("error executing build %s", string(errBuf)).ToError()
+	}
+	b.logger.Info("build completed")
+
+	return nil
+}
+
+// start ...
+func (b *Builder) start() error {
+	b.logger.Info("executing start")
+	cmd := exec.Command("./" + b.config.Destination)
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return b.logger.Errorf("error getting stderr pipe %s", err).ToError()
+	}
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return b.logger.Errorf("error getting stdout pipe %s", err).ToError()
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return b.logger.Errorf("error executing restart command %s", err).ToError()
+	}
+
+	io.Copy(os.Stdout, stdout)
+	errBuf, _ := ioutil.ReadAll(stderr)
+
+	err = cmd.Wait()
+	if err != nil {
+		return b.logger.Errorf("error executing restart %s", string(errBuf)).ToError()
+	}
+	b.logger.Info("start completed")
 
 	return nil
 }
@@ -105,7 +165,6 @@ func (b *Builder) rebuild() error {
 // Start ...
 func (b *Builder) Start(wg *sync.WaitGroup) error {
 	b.started = true
-	wg.Add(1)
 	wg.Done()
 
 	if err := b.pm.Start(); err != nil {
@@ -126,10 +185,8 @@ func (b *Builder) Started() bool {
 
 // Stop ...
 func (b *Builder) Stop(wg *sync.WaitGroup) error {
-	wg.Add(1)
 	wg.Done()
 
-	b.quit <- 1
 	if err := b.pm.Stop(); err != nil {
 		return err
 	}

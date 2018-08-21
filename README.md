@@ -1,12 +1,13 @@
 # builder
 [![Build Status](https://travis-ci.org/joaosoft/builder.svg?branch=master)](https://travis-ci.org/joaosoft/builder) | [![codecov](https://codecov.io/gh/joaosoft/builder/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/builder) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/builder)](https://goreportcard.com/report/github.com/joaosoft/builder) | [![GoDoc](https://godoc.org/github.com/joaosoft/builder?status.svg)](https://godoc.org/github.com/joaosoft/builder)
 
-A simple golang rebuild when some file changes
+A simple golang build and restart tool when some file of the project changes
 
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 
 ## With support for
 * Rebuild
+* Restart
 
 ## Dependecy Management 
 >### Dep
@@ -26,26 +27,30 @@ This examples are available in the project at [builder/main/main.go](https://git
 ```
 import (
 	github.com/joaosoft/builder
-	"fmt"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
 
 func main() {
-	c := make(chan *service.Event)
-	w, err := service.NewWatcher(service.WithEventChannel(c))
+	termChan := make(chan os.Signal, 1)
+	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1)
+
+	w, err := builder.NewBuilder(builder.WithReloadTime(1))
 	if err != nil {
 		panic(err)
 	}
 
-	go func() {
-		for {
-			select {
-			case event := <-c:
-				fmt.Printf("received event %+v\n", event)
-			}
-		}
-	}()
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	if err := w.Start(&wg); err != nil {
+		panic(err)
+	}
 
-	if err := w.Start(); err != nil {
+	<-termChan
+	wg.Add(1)
+	if err := w.Stop(&wg); err != nil {
 		panic(err)
 	}
 }
@@ -56,16 +61,19 @@ func main() {
 ```
 {
   "builder": {
+    "source": "main/main.go",
+    "destination": "bin/builder",
+    "reload_time": 1,
     "log": {
       "level": "error"
     }
   },
   "watcher": {
-    "host": "localhost:8001",
+    "reload_time": 1,
     "dirs": {
-      "watch":[ "examples/" ],
-      "excluded":[ "examples/test_2" ],
-      "extensions": [ "go" ]
+      "watch":[ "." ],
+      "excluded":[ "vendor", "bin" ],
+      "extensions": [ "go", "json", "yml" ]
     },
     "log": {
       "level": "error"

@@ -16,8 +16,10 @@ type AppConfig struct {
 
 // BuilderConfig ...
 type BuilderConfig struct {
-	ReloadTime time.Duration `json:"reload_time"`
-	Log        struct {
+	Source      string        `json:"source"`
+	Destination string        `json:"destination"`
+	ReloadTime  time.Duration `json:"reload_time"`
+	Log         struct {
 		Level string `json:"level"`
 	} `json:"log"`
 }

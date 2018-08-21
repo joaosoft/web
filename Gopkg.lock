@@ -58,13 +58,13 @@
   branch = "master"
   name = "github.com/joaosoft/manager"
   packages = ["."]
-  revision = "e659dde62b042b6c85ec3f404136c173ccdd946e"
+  revision = "38412e95de32d301fa6cd622072e1a849a685800"
 
 [[projects]]
   branch = "master"
   name = "github.com/joaosoft/watcher"
   packages = ["."]
-  revision = "69014ba8e4a8c505bdc00813a4f6923248f0d8ce"
+  revision = "d6206cc5bccea9bd966cb906dc0bb520834d5bb3"
 
 [[projects]]
   branch = "master"
