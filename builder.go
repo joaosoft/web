@@ -30,7 +30,7 @@ type Builder struct {
 	started       bool
 }
 
-func NewBuilder(options ...BuilderOption) (*Builder, error) {
+func NewBuilder(options ...BuilderOption) *Builder {
 	pm := manager.NewManager(manager.WithRunInBackground(true))
 	log := logger.NewLogDefault("builder", logger.InfoLevel)
 	event := make(chan *watcher.Event)
@@ -64,7 +64,7 @@ func NewBuilder(options ...BuilderOption) (*Builder, error) {
 	service.config = &appConfig.Builder
 	service.Reconfigure(options...)
 
-	return service, nil
+	return service
 }
 
 // execute ...
@@ -165,7 +165,9 @@ func (b *Builder) start() error {
 // Start ...
 func (b *Builder) Start(wg *sync.WaitGroup) error {
 	b.started = true
-	wg.Done()
+	if wg != nil {
+		defer wg.Done()
+	}
 
 	if err := b.pm.Start(); err != nil {
 		return err
@@ -185,13 +187,15 @@ func (b *Builder) Started() bool {
 
 // Stop ...
 func (b *Builder) Stop(wg *sync.WaitGroup) error {
-	wg.Done()
+	b.started = false
+	if wg != nil {
+		defer wg.Done()
+	}
 
 	if err := b.pm.Stop(); err != nil {
 		return err
 	}
 
-	b.started = false
 
 	return nil
 }

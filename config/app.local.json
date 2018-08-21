@@ -4,7 +4,7 @@
     "destination": "bin/builder",
     "reload_time": 1,
     "log": {
-      "level": "error"
+      "level": "info"
     }
   },
   "watcher": {
@@ -15,12 +15,12 @@
       "extensions": [ "go", "json", "yml" ]
     },
     "log": {
-      "level": "error"
+      "level": "info"
     }
   },
   "manager": {
     "log": {
-      "level": "error"
+      "level": "info"
     }
   }
 }
