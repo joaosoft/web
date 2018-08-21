@@ -31,11 +31,6 @@ import (
 	"fmt"
 )
 
-import (
-	"fmt"
-	"watcher/service"
-)
-
 func main() {
 	c := make(chan *service.Event)
 	w, err := service.NewWatcher(service.WithEventChannel(c))
