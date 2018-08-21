@@ -1,13 +1,13 @@
 {
-  "dbmigration": {
+  "watcher": {
     "host": "localhost:8001",
-    "path": "/",
-    "db": {
-      "driver": "postgres",
-      "datasource": "postgres://user:password@localhost:5432?sslmode=disable"
+    "dirs": {
+      "watch":[ "examples/" ],
+      "excluded":[ "examples/test_2" ],
+      "extensions": [ "go" ]
     },
     "log": {
-      "level": "info"
+      "level": "error"
     }
   },
   "manager": {
