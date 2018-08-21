@@ -1,13 +1,19 @@
 {
+  "builder": {
+    "reload_time": 1,
+    "log": {
+      "level": "info"
+    }
+  },
   "watcher": {
-    "host": "localhost:8001",
+    "reload_time": 1,
     "dirs": {
       "watch":[ "examples/" ],
       "excluded":[ "examples/test_2" ],
-      "extensions": [ "go" ]
+      "extensions": [ "go", "json" ]
     },
     "log": {
-      "level": "error"
+      "level": "info"
     }
   },
   "manager": {

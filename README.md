@@ -1,14 +1,12 @@
-# watcher
-[![Build Status](https://travis-ci.org/joaosoft/watcher.svg?branch=master)](https://travis-ci.org/joaosoft/watcher) | [![codecov](https://codecov.io/gh/joaosoft/watcher/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/watcher) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/watcher)](https://goreportcard.com/report/github.com/joaosoft/watcher) | [![GoDoc](https://godoc.org/github.com/joaosoft/watcher?status.svg)](https://godoc.org/github.com/joaosoft/watcher)
+# builder
+[![Build Status](https://travis-ci.org/joaosoft/builder.svg?branch=master)](https://travis-ci.org/joaosoft/builder) | [![codecov](https://codecov.io/gh/joaosoft/builder/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/builder) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/builder)](https://goreportcard.com/report/github.com/joaosoft/builder) | [![GoDoc](https://godoc.org/github.com/joaosoft/builder?status.svg)](https://godoc.org/github.com/joaosoft/builder)
 
-A simple cross-platform file watcher
+A simple golang rebuild when some file changes
 
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 
 ## With support for
-* Multi directories
-* Exclusions
-* Extensions
+* Rebuild
 
 ## Dependecy Management 
 >### Dep
@@ -20,14 +18,14 @@ Project dependencies are managed using Dep. Read more about [Dep](https://github
 
 >### Go
 ```
-go get github.com/joaosoft/watcher
+go get github.com/joaosoft/builder
 ```
 
 ## Usage 
-This examples are available in the project at [watcher/main/main.go](https://github.com/joaosoft/watcher/tree/master/main/main.go)
+This examples are available in the project at [builder/main/main.go](https://github.com/joaosoft/builder/tree/master/main/main.go)
 ```
 import (
-	github.com/joaosoft/watcher
+	github.com/joaosoft/builder
 	"fmt"
 )
 
@@ -57,6 +55,11 @@ func main() {
 > Configuration file
 ```
 {
+  "builder": {
+    "log": {
+      "level": "error"
+    }
+  },
   "watcher": {
     "host": "localhost:8001",
     "dirs": {

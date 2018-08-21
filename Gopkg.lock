@@ -52,19 +52,19 @@
   branch = "master"
   name = "github.com/joaosoft/logger"
   packages = ["."]
-  revision = "fc4ba6d09605b34ef99f1dd1576b8dcde8c596b0"
+  revision = "5ef7771226b6d32d8f666f919e8a1ae58a36b949"
 
 [[projects]]
   branch = "master"
   name = "github.com/joaosoft/manager"
   packages = ["."]
-  revision = "ef4decdb2e0c1c6e08359dbb8b02115ac3d24c0a"
+  revision = "e659dde62b042b6c85ec3f404136c173ccdd946e"
 
 [[projects]]
   branch = "master"
-  name = "github.com/joaosoft/validator"
+  name = "github.com/joaosoft/watcher"
   packages = ["."]
-  revision = "ef7488152ed87e34f0606cccd21ddc3fe03035c9"
+  revision = "69014ba8e4a8c505bdc00813a4f6923248f0d8ce"
 
 [[projects]]
   branch = "master"
@@ -196,13 +196,13 @@
     "acme",
     "acme/autocert"
   ]
-  revision = "de0752318171da717af4ce24d0a2e8626afaeb11"
+  revision = "614d502a4dac94afa3a6ce146bd1736da82514c6"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "1c9583448a9c3aa0f9a6a5241bf73c0bd8aafded"
+  revision = "3b58ed4ad3395d483fc92d5d14123ce2c3581fec"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -232,6 +232,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e668adc578fc36fa67e2980cc253bae1d722668ffdc2a1287185e675fa4b072e"
+  inputs-digest = "c2df5f9b8bb11a3f1af938d6d76ed9ab9de2e0d114bd74bcf8f5893a0c0457cb"
   solver-name = "gps-cdcl"
   solver-version = 1

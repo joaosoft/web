@@ -39,24 +39,15 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/joaosoft/validator"
-
-[[constraint]]
-  name = "github.com/labstack/echo"
-  version = "3.3.5"
+  name = "github.com/joaosoft/watcher"
 
 [[constraint]]
   name = "github.com/labstack/gommon"
   version = "0.2.6"
 
-[[constraint]]
-  branch = "master"
-  name = "github.com/lib/pq"
-
 [[override]]
   name = "github.com/satori/go.uuid"
   branch = "master"
-
 
 [prune]
   go-tests = true

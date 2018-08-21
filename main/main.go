@@ -1,27 +1,27 @@
 package main
 
 import (
-	"fmt"
-	"watcher/service"
+	"builder"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
 
 func main() {
-	c := make(chan *service.Event)
-	w, err := service.NewWatcher(service.WithEventChannel(c))
+	quit := make(chan int)
+	termChan := make(chan os.Signal, 1)
+	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1)
+
+	w, err := builder.NewBuilder()
 	if err != nil {
 		panic(err)
 	}
 
-	go func() {
-		for {
-			select {
-			case event := <-c:
-				fmt.Printf("received event %+v\n", event)
-			}
-		}
-	}()
-
-	if err := w.Start(); err != nil {
+	if err := w.Start(&sync.WaitGroup{}); err != nil {
 		panic(err)
 	}
+
+	<-termChan
+	quit <- 1
 }
