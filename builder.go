@@ -196,6 +196,5 @@ func (b *Builder) Stop(wg *sync.WaitGroup) error {
 		return err
 	}
 
-
 	return nil
 }
