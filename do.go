@@ -145,7 +145,7 @@ func (d *Dependency) doLoadLockImports() (Imports, error) {
 	} else {
 		newFile, err := os.Create(LockImportFileName)
 		if err != nil {
-			return nil, d.logger.Errorf("error creating file [%s] %s", fileName, err).ToError()
+			return nil, d.logger.Errorf("error creating file [%s] %s", LockImportFileName, err).ToError()
 		}
 		newFile.Close()
 	}
