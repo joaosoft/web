@@ -1,26 +1,8 @@
 {
-  "builder": {
-    "source": "main/main.go",
-    "destination": "bin/builder",
-    "reload_time": 1,
+  "dependency": {
+    "path": "./",
     "log": {
-      "level": "error"
-    }
-  },
-  "watcher": {
-    "reload_time": 1,
-    "dirs": {
-      "watch":[ "." ],
-      "excluded":[ "vendor", "bin" ],
-      "extensions": [ "go", "json", "yml" ]
-    },
-    "log": {
-      "level": "error"
-    }
-  },
-  "manager": {
-    "log": {
-      "level": "error"
+      "level": "debug"
     }
   }
 }

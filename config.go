@@ -1,35 +1,31 @@
-package builder
+package dependency
 
 import (
 	"fmt"
 
-	"time"
-
-	manager "github.com/joaosoft/manager"
+	"github.com/joaosoft/manager"
 	"github.com/labstack/gommon/log"
 )
 
 // AppConfig ...
 type AppConfig struct {
-	Builder BuilderConfig `json:"builder"`
+	Dependency DependencyConfig `json:"dependency"`
 }
 
-// BuilderConfig ...
-type BuilderConfig struct {
-	Source      string        `json:"source"`
-	Destination string        `json:"destination"`
-	ReloadTime  time.Duration `json:"reload_time"`
-	Log         struct {
+// DependencyConfig ...
+type DependencyConfig struct {
+	Path string `json:"path"`
+	Log  struct {
 		Level string `json:"level"`
 	} `json:"log"`
 }
 
 // NewConfig ...
-func NewConfig() *BuilderConfig {
+func NewConfig() *DependencyConfig {
 	appConfig := &AppConfig{}
 	if _, err := manager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
 		log.Error(err.Error())
 	}
 
-	return &appConfig.Builder
+	return &appConfig.Dependency
 }

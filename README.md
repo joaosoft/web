@@ -1,80 +1,51 @@
-# builder
-[![Build Status](https://travis-ci.org/joaosoft/builder.svg?branch=master)](https://travis-ci.org/joaosoft/builder) | [![codecov](https://codecov.io/gh/joaosoft/builder/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/builder) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/builder)](https://goreportcard.com/report/github.com/joaosoft/builder) | [![GoDoc](https://godoc.org/github.com/joaosoft/builder?status.svg)](https://godoc.org/github.com/joaosoft/builder)
+# dependency
+[![Build Status](https://travis-ci.org/joaosoft/dependency.svg?branch=master)](https://travis-ci.org/joaosoft/dependency) | [![codecov](https://codecov.io/gh/joaosoft/dependency/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/dependency) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/dependency)](https://goreportcard.com/report/github.com/joaosoft/dependency) | [![GoDoc](https://godoc.org/github.com/joaosoft/dependency?status.svg)](https://godoc.org/github.com/joaosoft/dependency)
 
-A simple golang build and restart tool when some file of the project changes
+A simple dependency manager
 
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 
 ## With support for
-* Rebuild
-* Restart
-
-## Dependecy Management 
->### Dep
-
-Project dependencies are managed using Dep. Read more about [Dep](https://github.com/golang/dep).
-* Install dependencies: `dep ensure`
-* Update dependencies: `dep ensure -update`
-
+* Get, to get the dependencies
+* Reset, to delete the user locked dependencies and Get dependencies
 
 >### Go
 ```
-go get github.com/joaosoft/builder
+go get github.com/joaosoft/dependency
 ```
 
 ## Usage 
-This examples are available in the project at [builder/main/main.go](https://github.com/joaosoft/builder/tree/master/main/main.go)
+This examples are available in the project at [dependency/examples/main.go](https://github.com/joaosoft/dependency/tree/master/examples/main.go)
+> By code
 ```
 import (
-	github.com/joaosoft/builder
-	"os"
-	"os/signal"
-	"syscall"
+	github.com/joaosoft/dependency
 )
 
 func main() {
-	termChan := make(chan os.Signal, 1)
-	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1)
-
-	build := builder.NewBuilder(builder.WithReloadTime(1))
-
-	if err := build.Start(nil); err != nil {
-		panic(err)
-	}
-
-	<-termChan
-	if err := build.Stop(nil); err != nil {
+	dependency := dependency.NewDependency()
+	if err := dependency.Get(); err != nil {
 		panic(err)
 	}
 }
 ```
 
+> Dependency commands
+```
+// generate dependencies
+dependency get
+
+// delete lock configuration
+dependency reset
+```
 
 > Configuration file
 ```
 {
-  "builder": {
-    "source": "main/main.go",
-    "destination": "bin/builder",
-    "reload_time": 1,
+  "dependency": {
+    "path": ".",
     "log": {
-      "level": "error"
-    }
-  },
-  "watcher": {
-    "reload_time": 1,
-    "dirs": {
-      "watch":[ "." ],
-      "excluded":[ "vendor", "bin" ],
-      "extensions": [ "go", "json", "yml" ]
-    },
-    "log": {
-      "level": "error"
-    }
-  },
-  "manager": {
-    "log": {
-      "level": "error"
+      "level": "info"
     }
   }
 }

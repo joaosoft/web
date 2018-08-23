@@ -1,24 +1,32 @@
 package main
 
 import (
-	"builder"
+	"dependency"
+	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 )
 
 func main() {
-	termChan := make(chan os.Signal, 1)
-	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1)
+	cmd := dependency.CmdDependencyGet
 
-	build := builder.NewBuilder(builder.WithReloadTime(1))
-
-	if err := build.Start(nil); err != nil {
-		panic(err)
+	args := os.Args
+	if len(args) == 0 {
+		cmd = dependency.CmdDependency(args[1])
 	}
 
-	<-termChan
-	if err := build.Stop(nil); err != nil {
-		panic(err)
+	d := dependency.NewDependency()
+
+	switch cmd {
+	case dependency.CmdDependencyGet:
+		if err := d.Get(); err != nil {
+			panic(err)
+		}
+	case dependency.CmdDependencyReset:
+		if err := d.Reset(); err != nil {
+			panic(err)
+		}
+	default:
+		fmt.Printf("invalid command! available commands are [%s, %s]", dependency.CmdDependencyGet, dependency.CmdDependencyReset)
 	}
+
 }

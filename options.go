@@ -1,59 +1,45 @@
-package builder
+package dependency
 
 import (
 	"github.com/joaosoft/logger"
 	"github.com/joaosoft/manager"
 )
 
-// BuilderOption ...
-type BuilderOption func(builder *Builder)
+// DependencyOption ...
+type DependencyOption func(builder *Dependency)
 
 // Reconfigure ...
-func (b *Builder) Reconfigure(options ...BuilderOption) {
+func (d *Dependency) Reconfigure(options ...DependencyOption) {
 	for _, option := range options {
-		option(b)
+		option(d)
 	}
 }
 
 // WithConfiguration ...
-func WithConfiguration(config *BuilderConfig) BuilderOption {
-	return func(builder *Builder) {
+func WithConfiguration(config *DependencyConfig) DependencyOption {
+	return func(builder *Dependency) {
 		builder.config = config
 	}
 }
 
 // WithLogger ...
-func WithLogger(logger logger.ILogger) BuilderOption {
-	return func(builder *Builder) {
+func WithLogger(logger logger.ILogger) DependencyOption {
+	return func(builder *Dependency) {
 		builder.logger = logger
 		builder.isLogExternal = true
 	}
 }
 
 // WithLogLevel ...
-func WithLogLevel(level logger.Level) BuilderOption {
-	return func(builder *Builder) {
+func WithLogLevel(level logger.Level) DependencyOption {
+	return func(builder *Dependency) {
 		builder.logger.SetLevel(level)
 	}
 }
 
 // WithManager ...
-func WithManager(mgr *manager.Manager) BuilderOption {
-	return func(builder *Builder) {
+func WithManager(mgr *manager.Manager) DependencyOption {
+	return func(builder *Dependency) {
 		builder.pm = mgr
-	}
-}
-
-// WithReloadTime ...
-func WithReloadTime(reloadTime int64) BuilderOption {
-	return func(builder *Builder) {
-		builder.reloadTime = reloadTime
-	}
-}
-
-// WithQuitChannel ...
-func WithQuitChannel(quit chan int) BuilderOption {
-	return func(builder *Builder) {
-		builder.quit = quit
 	}
 }
