@@ -22,11 +22,14 @@ import (
 )
 
 func (d *Dependency) doGet(dir string, executed Imports, loadExcludedPaths bool) error {
-	intImports := make(Imports)
-	extImports := make(Imports)
+	sync := sync{
+		intImports: make(Imports),
+		extImports: make(Imports),
+		exeImports: executed,
+	}
 
 	// load imports from project
-	if err := d.doLoadImports(dir, intImports, extImports, executed, loadExcludedPaths); err != nil {
+	if err := d.doLoadImports(dir, &sync, loadExcludedPaths); err != nil {
 		return err
 	}
 
@@ -35,13 +38,13 @@ func (d *Dependency) doGet(dir string, executed Imports, loadExcludedPaths bool)
 		return err
 	} else {
 		// merge imports with lock
-		if err := d.doMergeWithLockImports(extImports, lockImports); err != nil {
+		if err := d.doMergeWithLockImports(&sync, lockImports); err != nil {
 			return err
 		}
 	}
 
 	// download imports
-	if err := d.doDownloadImports(extImports, executed); err != nil {
+	if err := d.doDownloadImports(&sync, executed); err != nil {
 		return err
 	}
 
@@ -49,24 +52,24 @@ func (d *Dependency) doGet(dir string, executed Imports, loadExcludedPaths bool)
 }
 
 func (d *Dependency) doReset() error {
-	if file, err := os.OpenFile(LockImportFileName, os.O_RDWR, 0666); err != nil {
-		d.logger.Infof("creating file [%s]", LockImportFileName)
+	if file, err := os.OpenFile(LockImportFile, os.O_RDWR, 0666); err != nil {
+		d.logger.Infof("creating file [%s]", LockImportFile)
 
-		newFile, err := os.Create(LockImportFileName)
+		newFile, err := os.Create(LockImportFile)
 		if err != nil {
-			return d.logger.Errorf("error creating file [%s] %s", LockImportFileName, err).ToError()
+			return d.logger.Errorf("error creating file [%s] %s", LockImportFile, err).ToError()
 		}
 		newFile.Close()
 	} else {
 		defer file.Close()
 		if err := file.Truncate(0); err != nil {
-			return d.logger.Errorf("error cleaning [%s] file", LockImportFileName).ToError()
+			return d.logger.Errorf("error cleaning [%s] file", LockImportFile).ToError()
 		}
 	}
 	return nil
 }
 
-func (d *Dependency) doLoadImports(dir string, intImports Imports, extImports Imports, executed Imports, loadExcludedPaths bool) error {
+func (d *Dependency) doLoadImports(dir string, sync *sync, loadExcludedPaths bool) error {
 	fileInfo, err := os.Stat(dir)
 	if err != nil {
 		return err
@@ -108,7 +111,7 @@ func (d *Dependency) doLoadImports(dir string, intImports Imports, extImports Im
 			return err
 		}
 		for _, nextDir := range subDir {
-			if err := d.doLoadImports(nextDir, intImports, extImports, executed, loadExcludedPaths); err != nil {
+			if err := d.doLoadImports(nextDir, sync, loadExcludedPaths); err != nil {
 				return err
 			}
 		}
@@ -122,7 +125,7 @@ func (d *Dependency) doLoadImports(dir string, intImports Imports, extImports Im
 
 	d.logger.Debugf("loading file [%s]", fileInfo.Name())
 
-	if err := d.doGetFileImports(dir, intImports, extImports, executed); err != nil {
+	if err := d.doGetFileImports(dir, sync); err != nil {
 		return err
 	}
 
@@ -133,19 +136,19 @@ func (d *Dependency) doLoadLockImports() (Imports, error) {
 	d.logger.Debugf("executing Load Lock Imports")
 	imports := make(map[string]Import)
 
-	if _, err := os.Stat(LockImportFileName); err == nil {
-		if bytes, err := ioutil.ReadFile(LockImportFileName); err != nil {
-			return imports, d.logger.Errorf("error reading file [%s] %s", LockImportFileName, err).ToError()
+	if _, err := os.Stat(LockImportFile); err == nil {
+		if bytes, err := ioutil.ReadFile(LockImportFile); err != nil {
+			return imports, d.logger.Errorf("error reading file [%s] %s", LockImportFile, err).ToError()
 		} else {
 			if err := yaml.Unmarshal(bytes, &imports); err != nil {
-				return nil, d.logger.Errorf("error unmarshal file [%s] %s", LockImportFileName, err).ToError()
+				return nil, d.logger.Errorf("error unmarshal file [%s] %s", LockImportFile, err).ToError()
 			}
 			return imports, nil
 		}
 	} else {
-		newFile, err := os.Create(LockImportFileName)
+		newFile, err := os.Create(LockImportFile)
 		if err != nil {
-			return nil, d.logger.Errorf("error creating file [%s] %s", LockImportFileName, err).ToError()
+			return nil, d.logger.Errorf("error creating file [%s] %s", LockImportFile, err).ToError()
 		}
 		newFile.Close()
 	}
@@ -156,20 +159,20 @@ func (d *Dependency) doLoadLockImports() (Imports, error) {
 func (d *Dependency) doSaveImports(imports Imports) error {
 	d.logger.Debugf("executing Save Imports")
 
-	d.doDelete(GenImportFileName)
+	d.doDelete(GenImportFile)
 
 	if bytes, err := yaml.Marshal(imports); err != nil {
 		return d.logger.Errorf("error marshal imports %s", err).ToError()
 	} else {
-		if err := ioutil.WriteFile(GenImportFileName, bytes, 0644); err != nil {
-			return d.logger.Errorf("error writing file [%s] %s", GenImportFileName, err).ToError()
+		if err := ioutil.WriteFile(GenImportFile, bytes, 0644); err != nil {
+			return d.logger.Errorf("error writing file [%s] %s", GenImportFile, err).ToError()
 		}
 	}
 
 	return nil
 }
 
-func (d *Dependency) doGetFileImports(dir string, intImports Imports, extImports Imports, executed Imports) error {
+func (d *Dependency) doGetFileImports(dir string, sync *sync) error {
 	d.logger.Debugf("executing Get Imports for file %s", dir)
 
 	parsedFile, err := parser.ParseFile(token.NewFileSet(), dir, nil, parser.ImportsOnly|parser.ParseComments)
@@ -191,25 +194,26 @@ func (d *Dependency) doGetFileImports(dir string, intImports Imports, extImports
 		if !strings.Contains(imprt.Path.Value, ".") {
 			d.logger.Debugf("adding internal dependency [%s]", name)
 
-			intImports[name] = Import{}
+			sync.intImports[name] = Import{}
 		} else {
 			d.logger.Debugf("adding external dependency [%s]", name)
 
-			if host, user, project, ssh, https, vendor, err := d.doGetRepositoryInfo(name); err != nil {
+			if host, user, project, ssh, https, path, err := d.doGetRepositoryInfo(name); err != nil {
 				return err
 			} else {
-				if _, ok := executed[ssh]; !ok {
-					extImports[ssh] = Import{
+				if _, ok := sync.exeImports[ssh]; !ok {
+					sync.extImports[ssh] = Import{
 						Branch: "master",
 						internal: Internal{
 							host:    host,
 							user:    user,
 							project: project,
-							vendor:  vendor,
 							repo: Repo{
 								ssh:   ssh,
 								https: https,
+								path:  path,
 							},
+							vendor: fmt.Sprintf("vendor/%s", path),
 						},
 					}
 				}
@@ -223,13 +227,13 @@ func (d *Dependency) doGetFileImports(dir string, intImports Imports, extImports
 func (d *Dependency) doLoadLockedImports() (Imports, error) {
 	d.logger.Debugf("executing Load Locked Imports")
 
-	if _, err := os.Stat(LockImportFileName); err != nil {
-		if bytes, err := ioutil.ReadFile(LockImportFileName); err != nil {
-			return nil, d.logger.Errorf("error reading file [%s] %s", LockImportFileName, err).ToError()
+	if _, err := os.Stat(LockImportFile); err != nil {
+		if bytes, err := ioutil.ReadFile(LockImportFile); err != nil {
+			return nil, d.logger.Errorf("error reading file [%s] %s", LockImportFile, err).ToError()
 		} else {
 			imports := make(map[string]Import)
 			if err := yaml.Unmarshal(bytes, &imports); err != nil {
-				return nil, d.logger.Errorf("error unmarshal file [%s] %s", LockImportFileName, err).ToError()
+				return nil, d.logger.Errorf("error unmarshal file [%s] %s", LockImportFile, err).ToError()
 			}
 			return imports, nil
 		}
@@ -238,23 +242,23 @@ func (d *Dependency) doLoadLockedImports() (Imports, error) {
 	return nil, nil
 }
 
-func (d *Dependency) doMergeWithLockImports(extImports Imports, lockImports Imports) error {
+func (d *Dependency) doMergeWithLockImports(sync *sync, lockImports Imports) error {
 	d.logger.Debugf("executing Merge With Lock Imports")
 
 	for lockKey, lockValue := range lockImports {
-		if _, ok := extImports[lockKey]; ok {
+		if _, ok := sync.extImports[lockKey]; ok {
 			d.logger.Debugf("replacing [%s] with locked", lockKey)
-			extImports[lockKey] = lockValue
+			sync.extImports[lockKey] = lockValue
 		}
 	}
 
 	return nil
 }
 
-func (d *Dependency) doDownloadImports(imports Imports, executed Imports) error {
+func (d *Dependency) doDownloadImports(sync *sync, executed Imports) error {
 	d.logger.Debugf("executing Download imports to vendor")
 
-	for repository, info := range imports {
+	for repository, info := range sync.extImports {
 		executed[repository] = info
 		d.logger.Infof("downloading repository with ssh protocol [%s]", info.internal.repo.ssh)
 
@@ -276,7 +280,7 @@ func (d *Dependency) doDownloadImports(imports Imports, executed Imports) error 
 
 		d.logger.Infof("git clone completed for [%s]", repository)
 
-		if _, err := os.Stat(fmt.Sprintf("%s/vendor/", info.internal.vendor)); err != nil {
+		if _, err := os.Stat(fmt.Sprintf("vendor/%s/", info.internal.vendor)); err != nil {
 			d.logger.Infof("getting vendor [%s] imports", info.internal.vendor)
 			if err := d.doGet(info.internal.vendor, executed, true); err != nil {
 				return err
@@ -293,7 +297,7 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 	var project string
 	var ssh string
 	var https string
-	var vendor string
+	var path string
 
 	// moved packages
 	for old, new := range movedPackages {
@@ -308,18 +312,18 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 
 		ssh = fmt.Sprintf("git@%s:%s/%s", host, user, project)
 		https = fmt.Sprintf("https://%s/%s", host, project)
-		vendor = fmt.Sprintf("vendor/%s/%s/%s", host, user, project)
+		path = fmt.Sprintf("%s/%s/%s", host, user, project)
 	} else if len(nSplit) == 2 {
 		host = nSplit[0]
 		project = nSplit[1]
 		ssh = fmt.Sprintf("ssh://%s/%s", host, project)
 		https = fmt.Sprintf("https://%s/%s", host, project)
-		vendor = fmt.Sprintf("vendor/%s/%s", host, project)
+		path = fmt.Sprintf("%s/%s", host, project)
 	} else {
 		return "", "", "", "", "", "", d.logger.Errorf("invalid import [%s]", name).ToError()
 	}
 
-	return host, user, project, ssh, https, vendor, nil
+	return host, user, project, ssh, https, path, nil
 }
 
 func (d *Dependency) doBackupVendor() (string, error) {

@@ -14,8 +14,6 @@ func main() {
 		cmd = dependency.CmdDependency(args[1])
 	}
 
-	return
-
 	d := dependency.NewDependency()
 
 	switch cmd {

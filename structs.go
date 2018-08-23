@@ -3,6 +3,12 @@ package dependency
 type CmdDependency string
 type Imports map[string]Import
 
+type sync struct {
+	intImports Imports
+	extImports Imports
+	exeImports Imports
+}
+
 type Import struct {
 	Branch   string   `json:"branch,omitempty" yaml:"branch,omitempty"`
 	Package  []string `json:"package,omitempty" yaml:"package,omitempty"`
@@ -22,4 +28,5 @@ type Internal struct {
 type Repo struct {
 	https string
 	ssh   string
+	path  string
 }

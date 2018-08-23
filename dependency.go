@@ -78,5 +78,13 @@ func (d *Dependency) Get() error {
 func (d *Dependency) Reset() error {
 	d.logger.Debug("executing Reset")
 
-	return d.doReset()
+	if err := d.doReset(); err != nil {
+		return err
+	}
+
+	if err := d.Get(); err != nil {
+		return err
+	}
+
+	return nil
 }

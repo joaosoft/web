@@ -4,8 +4,11 @@ const (
 	CmdDependencyGet   CmdDependency = "get"
 	CmdDependencyReset CmdDependency = "reset"
 
-	GenImportFileName = "import-gen.yml"
-	LockImportFileName = "import-lock.yml"
+	GenImportFile  = "import-gen.yml"
+	LockImportFile = "import-lock.yml"
+
+	CacheRepository           = "dependency/cached"
+	CacheRepositoryConfigFile = "dependencies.yml"
 )
 
 var (
