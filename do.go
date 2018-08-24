@@ -32,6 +32,14 @@ func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedI
 	if _, ok := loadedImports[dir]; !ok {
 		sync.loadedImports[dir] = true
 
+		// validate ignored packages
+		for _, ignored := range ignoredPackages {
+			if strings.Contains(dir, ignored) {
+				fmt.Println("IGNORED" + dir)
+				return nil
+			}
+		}
+
 		// load imports from project
 		if err := d.doLoadImports(dir, &sync, isVendorPackage); err != nil {
 			return err

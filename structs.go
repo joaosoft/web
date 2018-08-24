@@ -42,7 +42,7 @@ type Cache struct {
 	config  string
 }
 
-type MovePackage struct {
+type PackageAction struct {
 	old string
 	new string
 }
