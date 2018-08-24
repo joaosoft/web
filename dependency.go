@@ -12,15 +12,24 @@ type Dependency struct {
 	isLogExternal bool
 	pm            *manager.Manager
 	logger        logger.ILogger
+	vcs           *Vcs
+	vendor        string
+	oldVendor     string
 }
 
-func NewDependency(options ...DependencyOption) *Dependency {
+func NewDependency(options ...DependencyOption) (*Dependency, error) {
 	pm := manager.NewManager(manager.WithRunInBackground(true))
 	log := logger.NewLogDefault("dependency", logger.InfoLevel)
+	vcs, err := NewVcs(CacheRepository, CacheRepositoryConfigFile, log)
+	if err != nil {
+		return nil, err
+	}
 
 	service := &Dependency{
 		pm:     pm,
 		logger: log,
+		vcs:    vcs,
+		vendor: "vendor",
 	}
 
 	if service.isLogExternal {
@@ -41,33 +50,60 @@ func NewDependency(options ...DependencyOption) *Dependency {
 	service.config = &appConfig.Dependency
 	service.Reconfigure(options...)
 
-	return service
+	return service, nil
 }
 
-// execute ...
 func (d *Dependency) Get() error {
 	d.logger.Debug("executing Get")
 	var err error
-	executed := make(Imports)
-	allImports := make(Imports)
-	var newVendor string
+	loadedImports := make(map[string]bool)
+	installedImports := make(Imports)
 
 	defer func() {
 		if err != nil {
-			d.doUndoBackupVendor(newVendor)
+			d.doUndoBackupVendor()
 		}
 	}()
 
 	// backup old vendor folder
-	if newVendor, err = d.doBackupVendor(); err != nil {
+	if err = d.doBackupVendor(); err != nil {
 		return err
 	}
 
-	if err = d.doGet(d.config.Path, executed, false); err != nil {
+	if err = d.doGet(d.config.Path, loadedImports, installedImports, false); err != nil {
 		return err
 	} else {
 		// save generated imports
-		if err = d.doSaveImports(allImports); err != nil {
+		if err = d.doSaveImports(installedImports); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d *Dependency) Reload() error {
+	d.logger.Debug("executing Reload")
+	var err error
+	loadedImports := make(map[string]bool)
+	installedImports := make(Imports)
+
+	defer func() {
+		if err != nil {
+			d.doUndoBackupVendor()
+		}
+	}()
+
+	// backup old vendor folder
+	if err = d.doBackupVendor(); err != nil {
+		return err
+	}
+
+	if err = d.doReload(d.config.Path, loadedImports, installedImports, false); err != nil {
+		return err
+	} else {
+		// save generated imports
+		if err = d.doSaveImports(installedImports); err != nil {
 			return err
 		}
 	}

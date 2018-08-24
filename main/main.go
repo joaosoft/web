@@ -14,7 +14,10 @@ func main() {
 		cmd = dependency.CmdDependency(args[1])
 	}
 
-	d := dependency.NewDependency()
+	d, err := dependency.NewDependency()
+	if err != nil {
+		panic(err)
+	}
 
 	switch cmd {
 	case dependency.CmdDependencyGet:

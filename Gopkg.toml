@@ -38,12 +38,12 @@
   name = "github.com/joaosoft/manager"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/joaosoft/watcher"
-
-[[constraint]]
   name = "github.com/labstack/gommon"
   version = "0.2.6"
+
+[[constraint]]
+  name = "gopkg.in/yaml.v2"
+  version = "2.2.1"
 
 [[override]]
   name = "github.com/satori/go.uuid"

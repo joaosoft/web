@@ -1,12 +1,13 @@
 package dependency
 
 type CmdDependency string
-type Imports map[string]Import
+type Imports map[string]*Import
 
 type sync struct {
-	intImports Imports
-	extImports Imports
-	exeImports Imports
+	internalImports  Imports
+	externalImports  Imports
+	loadedImports    map[string]bool
+	installedImports Imports
 }
 
 type Import struct {
@@ -14,19 +15,26 @@ type Import struct {
 	Package  []string `json:"package,omitempty" yaml:"package,omitempty"`
 	Revision string   `json:"revision,omitempty" yaml:"revision,omitempty"`
 	Version  string   `json:"version,omitempty" yaml:"version,omitempty"`
-	internal Internal
+	internal internal
 }
 
-type Internal struct {
+type internal struct {
 	host    string
 	user    string
 	project string
-	repo    Repo
+	packag  string
+	repo    repo
 	vendor  string
 }
 
-type Repo struct {
+type repo struct {
 	https string
 	ssh   string
 	path  string
+}
+
+type Cache struct {
+	imports Imports
+	path    string
+	config  string
 }

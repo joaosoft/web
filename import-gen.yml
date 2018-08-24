@@ -1,1 +1,85 @@
-{}
+../../logger:
+  branch: master
+github.com/BurntSushi/toml:
+  branch: master
+github.com/alphazero/Go-Redis:
+  branch: master
+github.com/davecgh/go-spew:
+  branch: master
+github.com/dgrijalva/jwt-go:
+  branch: master
+github.com/fsnotify/fsnotify:
+  branch: master
+github.com/go-sql-driver/mysql:
+  branch: master
+github.com/golang/appengine:
+  branch: master
+github.com/golang/crypto:
+  branch: master
+github.com/golang/net:
+  branch: master
+github.com/golang/snappy:
+  branch: master
+github.com/golang/sys:
+  branch: master
+github.com/golang/text:
+  branch: master
+github.com/hashicorp/hcl:
+  branch: master
+github.com/joaosoft/errors:
+  branch: master
+github.com/joaosoft/logger:
+  branch: master
+github.com/joaosoft/manager:
+  branch: master
+github.com/joaosoft/writers:
+  branch: master
+github.com/kr/fs:
+  branch: master
+github.com/labstack/echo:
+  branch: master
+github.com/labstack/gommon:
+  branch: master
+github.com/lib/pq:
+  branch: master
+github.com/magiconair/properties:
+  branch: master
+github.com/mitchellh/mapstructure:
+  branch: master
+github.com/nsqio/go-nsq:
+  branch: master
+github.com/pelletier/go-toml:
+  branch: master
+github.com/pkg/errors:
+  branch: master
+github.com/pkg/sftp:
+  branch: master
+github.com/pmezard/go-difflib:
+  branch: master
+github.com/satori/go.uuid:
+  branch: master
+github.com/spf13/afero:
+  branch: master
+github.com/spf13/cast:
+  branch: master
+github.com/spf13/jwalterweatherman:
+  branch: master
+github.com/spf13/pflag:
+  branch: master
+github.com/spf13/viper:
+  branch: master
+  version: v1.0.2
+github.com/streadway/amqp:
+  branch: master
+github.com/stretchr/testify:
+  branch: master
+github.com/valyala/bytebufferpool:
+  branch: master
+github.com/valyala/fasttemplate:
+  branch: master
+github.com/xordataexchange/crypt:
+  branch: master
+gopkg.in/check.v1:
+  branch: master
+gopkg.in/yaml.v2:
+  branch: master

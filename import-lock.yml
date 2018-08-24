@@ -1,2 +1,4 @@
 gopkg.in/yaml.v2:
   branch: master
+github.com/spf13/viper:
+  version: v1.0.2

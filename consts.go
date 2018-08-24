@@ -7,8 +7,8 @@ const (
 	GenImportFile  = "import-gen.yml"
 	LockImportFile = "import-lock.yml"
 
-	CacheRepository           = "dependency/cached"
-	CacheRepositoryConfigFile = "dependencies.yml"
+	CacheRepository           = "/tmp/dependency/cache"
+	CacheRepositoryConfigFile = "cache.yml"
 )
 
 var (
@@ -19,6 +19,7 @@ var (
 	excludedImports = []string{
 		"golang.org/x",
 		"google.golang.org",
+		"github.com/golang",
 	}
 
 	movedPackages = map[string]string{

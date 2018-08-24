@@ -62,12 +62,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/joaosoft/watcher"
-  packages = ["."]
-  revision = "e748d741d686c9d9c4353669d071d7150291b7c9"
-
-[[projects]]
-  branch = "master"
   name = "github.com/joaosoft/writers"
   packages = ["."]
   revision = "a1cd188c0e3ffca9bb227ea1fea39ed900a867a6"
@@ -88,13 +82,13 @@
   version = "0.2.6"
 
 [[projects]]
-  branch = "master"
   name = "github.com/lib/pq"
   packages = [
     ".",
     "oid"
   ]
-  revision = "90697d60dd844d5ef6ff15135d0203f65d2f53b8"
+  revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/magiconair/properties"
@@ -202,7 +196,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "3b58ed4ad3395d483fc92d5d14123ce2c3581fec"
+  revision = "11551d06cbcc94edc80a0facaccbda56473c19c1"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -232,6 +226,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c2df5f9b8bb11a3f1af938d6d76ed9ab9de2e0d114bd74bcf8f5893a0c0457cb"
+  inputs-digest = "d37f5e7980d8043bf69278f38308b10585f9d5c2bfdb9511e0972d2ad5355376"
   solver-name = "gps-cdcl"
   solver-version = 1

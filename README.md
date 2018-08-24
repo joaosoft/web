@@ -16,21 +16,7 @@ go get github.com/joaosoft/dependency
 
 ## Usage 
 This examples are available in the project at [dependency/examples/main.go](https://github.com/joaosoft/dependency/tree/master/examples/main.go)
-> By code
-```
-import (
-	github.com/joaosoft/dependency
-)
-
-func main() {
-	dependency := dependency.NewDependency()
-	if err := dependency.Get(); err != nil {
-		panic(err)
-	}
-}
-```
-
-> Dependency commands
+> Commands
 ```
 // generate dependencies
 dependency get
@@ -39,17 +25,9 @@ dependency get
 dependency reset
 ```
 
-> Configuration file
-```
-{
-  "dependency": {
-    "path": ".",
-    "log": {
-      "level": "info"
-    }
-  }
-}
-```
+> Files
+* import-gen.yml, generated files with dependencies
+* import-lock.yml, user dependencies lock
 
 ## Known issues
 

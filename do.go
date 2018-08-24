@@ -16,16 +16,51 @@ import (
 
 	"io/ioutil"
 
-	"os/exec"
-
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
-func (d *Dependency) doGet(dir string, executed Imports, loadExcludedPaths bool) error {
+func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedImports Imports, loadExcludedPaths bool) error {
 	sync := sync{
-		intImports: make(Imports),
-		extImports: make(Imports),
-		exeImports: executed,
+		internalImports:  make(Imports),
+		externalImports:  make(Imports),
+		loadedImports:    loadedImports,
+		installedImports: installedImports,
+	}
+
+	if _, ok := loadedImports[strings.Replace(dir, "vendor/", "", 1)]; !ok {
+
+		// load imports from project
+		if err := d.doLoadImports(dir, &sync, loadExcludedPaths); err != nil {
+			return err
+		}
+
+		sync.loadedImports[strings.Replace(dir, "vendor/", "", 1)] = true
+	}
+
+	// load locked imports
+	if lockImports, err := d.doLoadLockImports(); err != nil {
+		return err
+	} else {
+		// merge imports with lock
+		if err := d.doMergeWithLockImports(&sync, lockImports); err != nil {
+			return err
+		}
+	}
+
+	// download imports
+	if err := d.doDownloadImports(&sync); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *Dependency) doReload(dir string, loadedImports map[string]bool, installedImports Imports, loadExcludedPaths bool) error {
+	sync := sync{
+		internalImports:  make(Imports),
+		externalImports:  make(Imports),
+		loadedImports:    loadedImports,
+		installedImports: installedImports,
 	}
 
 	// load imports from project
@@ -44,7 +79,7 @@ func (d *Dependency) doGet(dir string, executed Imports, loadExcludedPaths bool)
 	}
 
 	// download imports
-	if err := d.doDownloadImports(&sync, executed); err != nil {
+	if err := d.doDownloadImports(&sync); err != nil {
 		return err
 	}
 
@@ -75,6 +110,7 @@ func (d *Dependency) doLoadImports(dir string, sync *sync, loadExcludedPaths boo
 		return err
 	}
 
+	// ignore hidden folder/files
 	if fileInfo.Name() != "." && strings.HasPrefix(fileInfo.Name(), ".") {
 		return nil
 	}
@@ -82,22 +118,29 @@ func (d *Dependency) doLoadImports(dir string, sync *sync, loadExcludedPaths boo
 	// if it is a directory
 	if fileInfo.IsDir() {
 
+		if dir == d.oldVendor {
+			return nil
+		}
+
 		// exclude validation for prefix
 		if !loadExcludedPaths {
 			for _, exclude := range excludedPaths {
 				if strings.HasPrefix(dir, exclude) {
+					d.logger.Infof("the import [%s] is on excluded paths", dir)
 					return nil
 				}
 			}
 		}
 
 		for _, exclude := range excludedImports {
-			if strings.HasPrefix(dir, exclude) {
+			// also allow to validate in inner vendor projects
+			if strings.HasPrefix(strings.Replace(dir, "vendor/", "", 1), exclude) {
+				d.logger.Infof("the import [%s] is on excluded imports list", dir)
 				return nil
 			}
 		}
 
-		// exclude validation for sufix
+		// exclude validation for suffix
 		for _, exclude := range excludedPaths {
 			if strings.HasSuffix(dir, exclude) {
 				return nil
@@ -134,7 +177,7 @@ func (d *Dependency) doLoadImports(dir string, sync *sync, loadExcludedPaths boo
 
 func (d *Dependency) doLoadLockImports() (Imports, error) {
 	d.logger.Debugf("executing Load Lock Imports")
-	imports := make(map[string]Import)
+	imports := make(map[string]*Import)
 
 	if _, err := os.Stat(LockImportFile); err == nil {
 		if bytes, err := ioutil.ReadFile(LockImportFile); err != nil {
@@ -194,26 +237,28 @@ func (d *Dependency) doGetFileImports(dir string, sync *sync) error {
 		if !strings.Contains(imprt.Path.Value, ".") {
 			d.logger.Debugf("adding internal dependency [%s]", name)
 
-			sync.intImports[name] = Import{}
+			sync.internalImports[name] = &Import{}
 		} else {
 			d.logger.Debugf("adding external dependency [%s]", name)
 
-			if host, user, project, ssh, https, path, err := d.doGetRepositoryInfo(name); err != nil {
-				return err
+			if host, user, project, packag, ssh, https, path, err := d.doGetRepositoryInfo(name); err != nil {
+				d.logger.Infof("repository ignored [%s]", name)
+				return nil
 			} else {
-				if _, ok := sync.exeImports[ssh]; !ok {
-					sync.extImports[ssh] = Import{
+				if _, ok := sync.loadedImports[ssh]; !ok {
+					sync.externalImports[path] = &Import{
 						Branch: "master",
-						internal: Internal{
+						internal: internal{
 							host:    host,
 							user:    user,
 							project: project,
-							repo: Repo{
+							packag:  packag,
+							repo: repo{
 								ssh:   ssh,
 								https: https,
 								path:  path,
 							},
-							vendor: fmt.Sprintf("vendor/%s", path),
+							vendor: fmt.Sprintf("%s/%s", d.vendor, path),
 						},
 					}
 				}
@@ -231,7 +276,7 @@ func (d *Dependency) doLoadLockedImports() (Imports, error) {
 		if bytes, err := ioutil.ReadFile(LockImportFile); err != nil {
 			return nil, d.logger.Errorf("error reading file [%s] %s", LockImportFile, err).ToError()
 		} else {
-			imports := make(map[string]Import)
+			imports := make(map[string]*Import)
 			if err := yaml.Unmarshal(bytes, &imports); err != nil {
 				return nil, d.logger.Errorf("error unmarshal file [%s] %s", LockImportFile, err).ToError()
 			}
@@ -244,45 +289,43 @@ func (d *Dependency) doLoadLockedImports() (Imports, error) {
 
 func (d *Dependency) doMergeWithLockImports(sync *sync, lockImports Imports) error {
 	d.logger.Debugf("executing Merge With Lock Imports")
-
 	for lockKey, lockValue := range lockImports {
-		if _, ok := sync.extImports[lockKey]; ok {
+
+		if externalValue, ok := sync.externalImports[lockKey]; ok {
 			d.logger.Debugf("replacing [%s] with locked", lockKey)
-			sync.extImports[lockKey] = lockValue
+			lockValue.internal = externalValue.internal
+
+			if lockValue.Branch == "" {
+				lockValue.Branch = externalValue.Branch
+			}
+
+			sync.externalImports[lockKey] = lockValue
 		}
 	}
 
 	return nil
 }
 
-func (d *Dependency) doDownloadImports(sync *sync, executed Imports) error {
+func (d *Dependency) doDownloadImports(sync *sync) error {
 	d.logger.Debugf("executing Download imports to vendor")
 
-	for repository, info := range sync.extImports {
-		executed[repository] = info
-		d.logger.Infof("downloading repository with ssh protocol [%s]", info.internal.repo.ssh)
+	for _, imprt := range sync.externalImports {
 
-		if _, err := exec.Command("git", "ls-remote", "-h", info.internal.repo.ssh).CombinedOutput(); err != nil {
-			d.logger.Infof("the repository doesn't exist [%s]", info.internal.repo.ssh)
-			return nil
+		if _, ok := sync.installedImports[imprt.internal.repo.path]; ok {
+			continue
 		}
 
-		if stderr, err := exec.Command("git", "clone", "--recursive", "-v", "--progress", "--depth", "1", "--shallow-submodules", info.internal.repo.ssh, info.internal.vendor).CombinedOutput(); err != nil {
-			d.logger.Errorf("error executing git clone command %s", string(stderr))
+		sync.installedImports[imprt.internal.repo.path] = imprt
 
-			d.logger.Infof("retrying download with https protocol [%s]", info.internal.repo.https)
-			if stderr, err := exec.Command("git", "clone", "--recursive", "-v", "--progress", "--depth", "1", "--shallow-submodules", info.internal.repo.https, info.internal.vendor).CombinedOutput(); err != nil {
-				d.logger.Errorf("error executing git clone command %s", string(stderr)).ToError()
-				d.logger.Infof("ignoring download of repository [%s]", info.internal.repo.https).ToError()
-				continue
-			}
+		if err := d.vcs.Clone(imprt, d.vendor); err != nil {
+			d.logger.Infof("repository ignored [%s]", imprt.internal.repo.ssh)
+			continue
 		}
 
-		d.logger.Infof("git clone completed for [%s]", repository)
-
-		if _, err := os.Stat(fmt.Sprintf("vendor/%s/", info.internal.vendor)); err != nil {
-			d.logger.Infof("getting vendor [%s] imports", info.internal.vendor)
-			if err := d.doGet(info.internal.vendor, executed, true); err != nil {
+		// to get inner vendor if it exists
+		if _, err := os.Stat(fmt.Sprintf("%s/%s/", d.vendor, imprt.internal.vendor)); err != nil {
+			d.logger.Infof("getting vendor of [%s] import", imprt.internal.vendor)
+			if err := d.doGet(imprt.internal.vendor, sync.loadedImports, sync.installedImports, true); err != nil {
 				return err
 			}
 		}
@@ -291,10 +334,11 @@ func (d *Dependency) doDownloadImports(sync *sync, executed Imports) error {
 	return nil
 }
 
-func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, string, string, string, error) {
+func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, string, string, string, string, error) {
 	var host string
 	var user string
 	var project string
+	var packag string
 	var ssh string
 	var https string
 	var path string
@@ -305,42 +349,51 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 	}
 
 	// example [github.com/username/path1/path2] and should be [git@github.com:username/path1]
-	if nSplit := strings.Split(name, "/"); len(nSplit) >= 3 {
+	if nSplit := strings.SplitN(name, "/", 4); len(nSplit) >= 3 {
+
 		host = nSplit[0]
 		user = nSplit[1]
 		project = nSplit[2]
 
+		if len(nSplit) > 3 {
+			packag = fmt.Sprintf("/%s", nSplit[3])
+		}
+
 		ssh = fmt.Sprintf("git@%s:%s/%s", host, user, project)
-		https = fmt.Sprintf("https://%s/%s", host, project)
+		https = fmt.Sprintf("https://%s/%s/%s", user, host, project)
 		path = fmt.Sprintf("%s/%s/%s", host, user, project)
+
 	} else if len(nSplit) == 2 {
+
 		host = nSplit[0]
 		project = nSplit[1]
-		ssh = fmt.Sprintf("ssh://%s/%s", host, project)
+
+		ssh = fmt.Sprintf("git@%s:/%s", host, project)
 		https = fmt.Sprintf("https://%s/%s", host, project)
 		path = fmt.Sprintf("%s/%s", host, project)
+
 	} else {
-		return "", "", "", "", "", "", d.logger.Errorf("invalid import [%s]", name).ToError()
+		return "", "", "", "", "", "", "", d.logger.Errorf("invalid import [%s]", name).ToError()
 	}
 
-	return host, user, project, ssh, https, path, nil
+	return host, user, project, packag, ssh, https, path, nil
 }
 
-func (d *Dependency) doBackupVendor() (string, error) {
-	newName := fmt.Sprintf("vendor_%s", time.Now().Format("20060102150405"))
-	d.logger.Debugf("executing Backup Vendor to [%s]", newName)
+func (d *Dependency) doBackupVendor() error {
+	d.oldVendor = fmt.Sprintf("%s_%s", d.vendor, time.Now().Format("20060102150405"))
+	d.logger.Debugf("executing Backup Vendor to [%s]", d.oldVendor)
 
-	if _, err := os.Stat("vendor"); err == nil {
-		os.Rename("vendor", newName)
+	if _, err := os.Stat(d.vendor); err == nil {
+		os.Rename(d.vendor, d.oldVendor)
 	}
-	return newName, nil
+	return nil
 }
 
-func (d *Dependency) doUndoBackupVendor(oldName string) error {
-	d.logger.Debugf("executing Undo Backup Vendor to [%s]", oldName)
+func (d *Dependency) doUndoBackupVendor() error {
+	d.logger.Debugf("executing Undo Backup Vendor to [%s]", d.oldVendor)
 
-	if _, err := os.Stat(oldName); err == nil {
-		os.Rename(oldName, "vendor")
+	if _, err := os.Stat(d.oldVendor); err == nil {
+		os.Rename(d.oldVendor, d.vendor)
 	}
 	return nil
 }
