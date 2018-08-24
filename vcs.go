@@ -270,7 +270,8 @@ func (v *Vcs) GetBranch(path string) (string, error) {
 	cmd.Dir = path
 
 	if stderr, err := cmd.CombinedOutput(); err != nil {
-		return "", v.logger.Errorf("error getting git branch: %s", string(stderr)).ToError()
+		v.logger.Infof("error getting git branch: %s", string(stderr))
+		return "", nil
 	} else {
 		return strings.TrimSpace(string(stderr)), nil
 	}
@@ -289,7 +290,7 @@ func (v *Vcs) GetLatestVersion(path string) (string, error) {
 	cmd.Dir = path
 
 	if stderr, err := cmd.CombinedOutput(); err != nil {
-		v.logger.Infof("returned [%s] getting latest version", string(stderr)).ToError()
+		v.logger.Infof("returned [%s] getting latest version", string(stderr))
 		return "", nil
 	} else {
 		return strings.TrimSpace(string(stderr)), nil
@@ -309,7 +310,8 @@ func (v *Vcs) GetVersion(path string) (string, error) {
 	cmd.Dir = path
 
 	if stderr, err := cmd.CombinedOutput(); err != nil {
-		return "", v.logger.Errorf("error getting git version: %s", string(stderr)).ToError()
+		v.logger.Infof("error getting git version: %s", string(stderr))
+		return "", nil
 	} else {
 		return strings.TrimSpace(string(stderr)), nil
 	}
@@ -327,7 +329,8 @@ func (v *Vcs) GetRevision(path string) (string, error) {
 	cmd.Dir = path
 
 	if stderr, err := cmd.CombinedOutput(); err != nil {
-		return "", v.logger.Errorf("error getting git revision: %s", string(stderr)).ToError()
+		v.logger.Infof("error getting git revision: %s", string(stderr))
+		return "", nil
 	} else {
 		rtn := strings.TrimSpace(string(stderr))
 		if rtn == "" {

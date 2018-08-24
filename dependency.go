@@ -21,7 +21,7 @@ type Dependency struct {
 
 func NewDependency(options ...DependencyOption) (*Dependency, error) {
 	pm := manager.NewManager(manager.WithRunInBackground(true))
-	log := logger.NewLogDefault("dependency", logger.InfoLevel)
+	log := logger.NewLogDefault("dependency", logger.WarnLevel)
 	vcs, err := NewVcs(fmt.Sprintf("%s/%s", os.Getenv("HOME"), CacheRepository), CacheRepositoryConfigFile, log)
 	if err != nil {
 		return nil, err
@@ -72,7 +72,8 @@ func (d *Dependency) Get() error {
 		return err
 	}
 
-	if err = d.doGet(d.config.Path, loadedImports, installedImports, false); err != nil {
+	dir, _ := os.Getwd()
+	if err = d.doGet(dir, loadedImports, installedImports, false); err != nil {
 		return err
 	} else {
 		// save generated imports
@@ -101,7 +102,8 @@ func (d *Dependency) Update() error {
 		return err
 	}
 
-	if err = d.doUpdate(d.config.Path, loadedImports, installedImports, false); err != nil {
+	dir, _ := os.Getwd()
+	if err = d.doUpdate(dir, loadedImports, installedImports, false); err != nil {
 		return err
 	} else {
 		// save generated imports
