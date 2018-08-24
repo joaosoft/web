@@ -262,7 +262,7 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 			// validate ignored packages
 			for _, ignored := range ignoredPackages {
 				if strings.Contains(name, ignored) {
-					continue
+					goto next
 				}
 			}
 
@@ -304,6 +304,7 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 				}
 			}
 		}
+	next:
 	}
 
 	return nil
