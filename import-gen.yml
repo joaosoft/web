@@ -13,6 +13,11 @@ github.com/fsnotify/fsnotify:
   revision: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 github.com/go-sql-driver/mysql:
   revision: 99ff426eb706cffe92ff3d058e168b278cabf7c7
+github.com/go-yaml/yaml:
+  branch: v2.2.1
+  revision: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+github.com/golang/check.v1: {}
+github.com/golang/gemnasium: {}
 github.com/golang/snappy:
   revision: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
 github.com/hashicorp/hcl:
