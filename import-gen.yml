@@ -13,23 +13,8 @@ github.com/fsnotify/fsnotify:
   revision: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 github.com/go-sql-driver/mysql:
   revision: 99ff426eb706cffe92ff3d058e168b278cabf7c7
-github.com/go-yaml/yaml:
-  branch: v2.2.1
-  revision: 5420a8b6744d3b0345ab293f6fcba19c978f1183
-github.com/golang/appengine:
-  revision: 4216e58b9158e5f1c906f1aca75162a46a2ec88a
-github.com/golang/check.v1: {}
-github.com/golang/crypto:
-  revision: 614d502a4dac94afa3a6ce146bd1736da82514c6
-github.com/golang/gemnasium: {}
-github.com/golang/net:
-  revision: 4bcd98cce591d8c7061bf313d7a3cbad05b58549
 github.com/golang/snappy:
   revision: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
-github.com/golang/sys:
-  revision: 4910a1d54f876d7b22162a85f4d066d3ee649450
-github.com/golang/text:
-  revision: 6e3c4e7365ddcc329f090f96e4348398f6310088
 github.com/hashicorp/hcl:
   revision: ef8a98b0bbce4a65b5aa4c368430a80ddc533168
 github.com/joaosoft/errors:

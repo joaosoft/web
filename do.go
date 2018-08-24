@@ -300,7 +300,6 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 					}
 
 					sync.loadedImports[fmt.Sprintf("%s%s", path, packag)] = true
-
 				}
 			}
 		}

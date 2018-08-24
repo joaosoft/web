@@ -27,6 +27,5 @@ var (
 	ignoredPackages = []string{
 		"golang.org/x",
 		"google.golang.org",
-		"gopkg.in",
 	}
 )
