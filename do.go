@@ -32,14 +32,6 @@ func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedI
 	if _, ok := loadedImports[dir]; !ok {
 		sync.loadedImports[dir] = true
 
-		// validate ignored packages
-		for _, ignored := range ignoredPackages {
-			if strings.Contains(dir, ignored) {
-				fmt.Println("IGNORED" + dir)
-				return nil
-			}
-		}
-
 		// load imports from project
 		if err := d.doLoadImports(dir, &sync, isVendorPackage); err != nil {
 			return err
@@ -261,11 +253,18 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 		}
 
 		if !strings.Contains(imprt.Path.Value, ".") {
-			d.logger.Debugf("adding Internal dependency [%s]", name)
+			d.logger.Debugf("adding internal dependency [%s]", name)
 
 			sync.internalImports[name] = &Import{}
 		} else {
 			d.logger.Debugf("adding external dependency [%s]", name)
+
+			// validate ignored packages
+			for _, ignored := range ignoredPackages {
+				if strings.Contains(name, ignored) {
+					continue
+				}
+			}
 
 			if host, user, project, packag, ssh, https, path, vendor, save, err := d.doGetRepositoryInfo(name); err != nil {
 				d.logger.Infof("repository ignored [%s]", name)
