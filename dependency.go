@@ -3,6 +3,8 @@ package dependency
 import (
 	"fmt"
 
+	"os"
+
 	"github.com/joaosoft/logger"
 	"github.com/joaosoft/manager"
 )
@@ -20,7 +22,7 @@ type Dependency struct {
 func NewDependency(options ...DependencyOption) (*Dependency, error) {
 	pm := manager.NewManager(manager.WithRunInBackground(true))
 	log := logger.NewLogDefault("dependency", logger.InfoLevel)
-	vcs, err := NewVcs(CacheRepository, CacheRepositoryConfigFile, log)
+	vcs, err := NewVcs(fmt.Sprintf("%s/%s", os.Getenv("HOME"), CacheRepository), CacheRepositoryConfigFile, log)
 	if err != nil {
 		return nil, err
 	}
@@ -82,8 +84,8 @@ func (d *Dependency) Get() error {
 	return nil
 }
 
-func (d *Dependency) Reload() error {
-	d.logger.Debug("executing Reload")
+func (d *Dependency) Update() error {
+	d.logger.Debug("executing Update")
 	var err error
 	loadedImports := make(map[string]bool)
 	installedImports := make(Imports)
@@ -99,7 +101,7 @@ func (d *Dependency) Reload() error {
 		return err
 	}
 
-	if err = d.doReload(d.config.Path, loadedImports, installedImports, false); err != nil {
+	if err = d.doUpdate(d.config.Path, loadedImports, installedImports, false); err != nil {
 		return err
 	} else {
 		// save generated imports

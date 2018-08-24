@@ -3,38 +3,46 @@ package dependency
 type CmdDependency string
 type Imports map[string]*Import
 
-type sync struct {
+type Memory struct {
+	lockedImports    Imports
 	internalImports  Imports
 	externalImports  Imports
 	loadedImports    map[string]bool
 	installedImports Imports
+	update           bool
 }
 
 type Import struct {
 	Branch   string   `json:"branch,omitempty" yaml:"branch,omitempty"`
-	Package  []string `json:"package,omitempty" yaml:"package,omitempty"`
+	Packages []string `json:"package,omitempty" yaml:"package,omitempty"`
 	Revision string   `json:"revision,omitempty" yaml:"revision,omitempty"`
 	Version  string   `json:"version,omitempty" yaml:"version,omitempty"`
-	internal internal
+	internal Internal
 }
 
-type internal struct {
+type Internal struct {
+	repo Repo
+}
+
+type Repo struct {
 	host    string
 	user    string
 	project string
 	packag  string
-	repo    repo
+	https   string
+	ssh     string
+	path    string
 	vendor  string
-}
-
-type repo struct {
-	https string
-	ssh   string
-	path  string
+	save    string
 }
 
 type Cache struct {
 	imports Imports
 	path    string
 	config  string
+}
+
+type MovePackage struct {
+	old string
+	new string
 }

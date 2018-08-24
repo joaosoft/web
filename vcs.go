@@ -9,13 +9,18 @@ import (
 
 	"os/exec"
 
+	"strings"
+
+	"sync"
+
 	"github.com/joaosoft/logger"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type Vcs struct {
 	cache  *Cache
 	logger logger.ILogger
+	mux    sync.Mutex
 }
 
 func NewVcs(path string, config string, logger logger.ILogger) (*Vcs, error) {
@@ -26,6 +31,7 @@ func NewVcs(path string, config string, logger logger.ILogger) (*Vcs, error) {
 			config:  fmt.Sprintf("%s/%s", path, config),
 		},
 		logger: logger,
+		mux:    sync.Mutex{},
 	}
 
 	if err := vcs.StartCache(); err != nil {
@@ -74,31 +80,103 @@ func (v *Vcs) ClearCache(dir string) error {
 	return v.StartCache()
 }
 
-func (v *Vcs) Clone(imprt *Import, copyTo string) error {
+func (v *Vcs) CopyDependency(imprt *Import, copyTo string, update bool) error {
+
+	v.logger.Debugf("executing CopyDependency for [%s]", imprt.internal.repo.path)
+
+	pathCachedRepo := fmt.Sprintf("%s/%s", v.cache.path, imprt.internal.repo.save)
+
+	// locking for repository operations
+	v.mux.Lock()
+	defer v.mux.Unlock()
+
+	if _, ok := v.cache.imports[imprt.internal.repo.save]; !ok {
+		if err := v.Clone(imprt); err != nil {
+			return err
+		}
+	} else {
+		branch := imprt.Branch
+		if imprt.Version != "" {
+			branch = imprt.Version
+		}
+
+		if branch == "" {
+			if latestVersion, err := v.GetLatestVersion(pathCachedRepo); err != nil {
+				return err
+			} else {
+				imprt.Version = latestVersion
+				if err := v.Checkout(imprt); err != nil {
+					return err
+				}
+			}
+		}
+
+		if update {
+			if err := v.Pull(imprt); err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := v.doUpdateRepositoryInfo(imprt); err != nil {
+		return err
+	}
+
+	v.logger.Infof("copying import [%s%s] from cache", imprt.internal.repo.path, imprt.internal.repo.packag)
+
+	pkgCopyTo := fmt.Sprintf("%s%s", imprt.internal.repo.vendor, imprt.internal.repo.packag)
+	if _, err := os.Stat(pkgCopyTo); err == nil {
+		v.logger.Infof("package already copied to vendor [%s]", pkgCopyTo)
+		return nil
+	}
+	if err := CopyDir(fmt.Sprintf("%s%s", pathCachedRepo, imprt.internal.repo.packag), fmt.Sprintf("%s%s", imprt.internal.repo.vendor, imprt.internal.repo.packag)); err != nil {
+		return v.logger.Errorf("error executing Copying import [%s] to vendor [%s] %s", imprt.internal.repo.path, imprt.internal.repo.vendor, err).ToError()
+	}
+
+	return nil
+}
+
+func (v *Vcs) Clone(imprt *Import) error {
 
 	var gitArgs []string
 	v.logger.Debugf("executing Clone for [%s]", imprt.internal.repo.path)
 
-	// git checkout tags/v1.0
-	version := imprt.Branch
+	branch := imprt.Branch
 	if imprt.Version != "" {
-		version = imprt.Version
+		branch = imprt.Version
 	}
 
-	key := fmt.Sprintf("%s/%s", imprt.internal.repo.path, version)
-	pathCachedRepo := fmt.Sprintf("%s/%s/%s", v.cache.path, imprt.internal.repo.path, version)
+	pathCachedRepo := fmt.Sprintf("%s/%s", v.cache.path, imprt.internal.repo.save)
 
-	if _, ok := v.cache.imports[key]; !ok {
+	// remove cached temporary folder to prevent errors
+	os.Remove(imprt.internal.repo.save)
 
-		// remove cached temporary folder to prevent errors
-		os.Remove(key)
+	v.logger.Infof("ping repository with ssh protocol [%s]", imprt.internal.repo.ssh)
+	if err := exec.Command("git", "ls-remote", "-h", imprt.internal.repo.ssh).Run(); err != nil {
+		v.logger.Infof("the repository doesn't exist [%s]", imprt.internal.repo.ssh)
+		return err
+	}
 
-		v.logger.Infof("downloading repository with ssh protocol [%s] to [%s]", imprt.internal.repo.ssh, pathCachedRepo)
+	v.logger.Infof("downloading repository with ssh protocol [%s] to [%s]", imprt.internal.repo.ssh, pathCachedRepo)
 
-		if _, err := exec.Command("git", "ls-remote", "-h", imprt.internal.repo.ssh).CombinedOutput(); err != nil {
-			v.logger.Infof("the repository doesn't exist [%s]", imprt.internal.repo.ssh)
-			return err
-		}
+	gitArgs = []string{
+		"clone",
+		"--recursive",
+		"-v",
+		"--progress",
+		"--depth", "1",
+		"--shallow-submodules",
+	}
+	if branch != "" {
+		gitArgs = append(gitArgs, "--branch", branch)
+	}
+	gitArgs = append(gitArgs, imprt.internal.repo.https, pathCachedRepo)
+
+	if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
+		v.logger.Errorf("error executing git clone command %s", string(stderr))
+
+		os.Remove(imprt.internal.repo.save)
+		v.logger.Infof("retrying download with https protocol [%s] to [%s]", imprt.internal.repo.https, pathCachedRepo)
 
 		gitArgs = []string{
 			"clone",
@@ -107,68 +185,156 @@ func (v *Vcs) Clone(imprt *Import, copyTo string) error {
 			"--progress",
 			"--depth", "1",
 			"--shallow-submodules",
-			"--branch",
-			imprt.Branch,
-			imprt.internal.repo.ssh,
-			pathCachedRepo,
 		}
+		if branch != "" {
+			gitArgs = append(gitArgs, "--branch", branch)
+		}
+		gitArgs = append(gitArgs, imprt.internal.repo.https, pathCachedRepo)
+
 		if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
-			v.logger.Errorf("error executing git clone command %s", string(stderr))
-
-			os.Remove(key)
-			v.logger.Infof("retrying download with https protocol [%s] to [%s]", imprt.internal.repo.https, pathCachedRepo)
-
-			gitArgs = []string{
-				"clone",
-				"--recursive",
-				"-v",
-				"--progress",
-				"--depth", "1",
-				"--shallow-submodules",
-				"--branch",
-				imprt.Branch,
-				imprt.internal.repo.https,
-				pathCachedRepo,
-			}
-			if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
-				os.Remove(key)
-				return v.logger.Errorf("error executing git clone command %s", string(stderr)).ToError()
-			}
-		}
-
-		// git checkout tags/v1.0
-		if imprt.Version != "" {
-			v.logger.Infof("checkout version [%s]", imprt.Version)
-			gitArgs = []string{
-				"checkout",
-				imprt.Version,
-			}
-			if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
-				v.logger.Errorf("error executing [git checkout tags/%s]  command %s", imprt.Version, string(stderr))
-			}
-		}
-
-		v.logger.Infof("git clone completed for [%s]", imprt.internal.repo.path)
-		v.cache.imports[key] = imprt
-
-		v.SaveCache()
-	} else {
-		v.logger.Infof("pull version [%s]", version)
-		gitArgs = []string{
-			"pull",
-		}
-		if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
-			v.logger.Errorf("error executing [git pull]  command %s", imprt.Version, string(stderr))
+			os.Remove(imprt.internal.repo.save)
+			return v.logger.Errorf("error executing git clone command %s", string(stderr)).ToError()
 		}
 	}
 
-	v.logger.Infof("copying import [%s] from cache", imprt.internal.repo.path)
+	if err := v.doUpdateRepositoryInfo(imprt); err != nil {
+		return err
+	}
 
-	if err := CopyDir(fmt.Sprintf("%s%s", pathCachedRepo, imprt.internal.packag), imprt.internal.vendor); err != nil {
-		return v.logger.Errorf("error executing Copying import [%s] to vendor [%s] %s", imprt.internal.repo.path, imprt.internal.vendor, err).ToError()
+	v.logger.Infof("git clone completed for [%s]", imprt.internal.repo.save)
+	v.cache.imports[imprt.internal.repo.save] = imprt
+
+	v.SaveCache()
+
+	return nil
+}
+
+func (v *Vcs) Pull(imprt *Import) error {
+	v.logger.Debugf("executing Pull")
+
+	v.logger.Infof("updating repository [%s]", imprt.internal.repo.path)
+	gitArgs := []string{
+		"pull",
+	}
+	if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
+		return v.logger.Errorf("error executing [git pull] command %s", string(stderr)).ToError()
 	}
 
 	return nil
+}
+
+func (v *Vcs) Checkout(imprt *Import) error {
+	v.logger.Debugf("executing Checkout")
+
+	branch := imprt.Branch
+	if imprt.Version != "" {
+		branch = imprt.Version
+	}
+
+	v.logger.Infof("checkout repository [%s]", imprt.internal.repo.path)
+	gitArgs := []string{
+		"checkout",
+		branch,
+	}
+	if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
+		return v.logger.Errorf("error executing [git checkout] command %s", string(stderr)).ToError()
+	}
+
+	if err := v.doUpdateRepositoryInfo(imprt); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (v *Vcs) doUpdateRepositoryInfo(imprt *Import) error {
+	pathCachedRepo := fmt.Sprintf("%s/%s", v.cache.path, imprt.internal.repo.save)
+
+	imprt.Branch, _ = v.GetBranch(pathCachedRepo)
+	imprt.Revision, _ = v.GetRevision(pathCachedRepo)
+	imprt.Branch, _ = v.GetVersion(pathCachedRepo)
+
+	return nil
+}
+
+func (v *Vcs) GetBranch(path string) (string, error) {
+	v.logger.Debugf("executing Get Branch")
+
+	gitArgs := []string{
+		"rev-parse",
+		"--abbrev-ref",
+		"--abbrev-ref",
+	}
+
+	cmd := exec.Command("git", gitArgs...)
+	cmd.Dir = path
+
+	if stderr, err := cmd.CombinedOutput(); err != nil {
+		return "", v.logger.Errorf("error getting git branch: %s", string(stderr)).ToError()
+	} else {
+		return strings.TrimSpace(string(stderr)), nil
+	}
+}
+
+func (v *Vcs) GetLatestVersion(path string) (string, error) {
+	v.logger.Debugf("executing Get Latest Version")
+
+	gitArgs := []string{
+		"describe",
+		"--tags",
+		"`git rev-list --tags --max-count=1`",
+	}
+
+	cmd := exec.Command("git", gitArgs...)
+	cmd.Dir = path
+
+	if stderr, err := cmd.CombinedOutput(); err != nil {
+		v.logger.Infof("returned [%s] getting latest version", string(stderr)).ToError()
+		return "", nil
+	} else {
+		return strings.TrimSpace(string(stderr)), nil
+	}
+}
+
+func (v *Vcs) GetVersion(path string) (string, error) {
+	v.logger.Debugf("executing Get Version")
+
+	gitArgs := []string{
+		"describe",
+		"--tags",
+		"--abbrev=0",
+	}
+
+	cmd := exec.Command("git", gitArgs...)
+	cmd.Dir = path
+
+	if stderr, err := cmd.CombinedOutput(); err != nil {
+		return "", v.logger.Errorf("error getting git version: %s", string(stderr)).ToError()
+	} else {
+		return strings.TrimSpace(string(stderr)), nil
+	}
+}
+
+func (v *Vcs) GetRevision(path string) (string, error) {
+	v.logger.Debugf("executing Get Revision")
+
+	gitArgs := []string{
+		"rev-parse",
+		"HEAD",
+	}
+
+	cmd := exec.Command("git", gitArgs...)
+	cmd.Dir = path
+
+	if stderr, err := cmd.CombinedOutput(); err != nil {
+		return "", v.logger.Errorf("error getting git revision: %s", string(stderr)).ToError()
+	} else {
+		rtn := strings.TrimSpace(string(stderr))
+		if rtn == "" {
+			return "", nil
+		}
+		return strings.TrimSpace(string(stderr)), nil
+	}
 }
 
 func (v *Vcs) SaveCache() error {

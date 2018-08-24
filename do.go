@@ -16,33 +16,37 @@ import (
 
 	"io/ioutil"
 
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
-func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedImports Imports, loadExcludedPaths bool) error {
-	sync := sync{
+func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedImports Imports, isVendorPackage bool) error {
+	sync := Memory{
+		lockedImports:    make(Imports),
 		internalImports:  make(Imports),
 		externalImports:  make(Imports),
 		loadedImports:    loadedImports,
 		installedImports: installedImports,
+		update:           false,
 	}
 
-	if _, ok := loadedImports[strings.Replace(dir, "vendor/", "", 1)]; !ok {
+	if _, ok := loadedImports[dir]; !ok {
+		sync.loadedImports[dir] = true
 
 		// load imports from project
-		if err := d.doLoadImports(dir, &sync, loadExcludedPaths); err != nil {
+		if err := d.doLoadImports(dir, &sync, isVendorPackage); err != nil {
 			return err
 		}
-
-		sync.loadedImports[strings.Replace(dir, "vendor/", "", 1)] = true
+	} else {
+		d.logger.Infof("directory already copied [%s]", dir)
+		return nil
 	}
 
 	// load locked imports
-	if lockImports, err := d.doLoadLockImports(); err != nil {
+	if err := d.doLoadLockImports(dir, &sync); err != nil {
 		return err
 	} else {
 		// merge imports with lock
-		if err := d.doMergeWithLockImports(&sync, lockImports); err != nil {
+		if err := d.doMergeWithLockImports(&sync); err != nil {
 			return err
 		}
 	}
@@ -55,25 +59,33 @@ func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedI
 	return nil
 }
 
-func (d *Dependency) doReload(dir string, loadedImports map[string]bool, installedImports Imports, loadExcludedPaths bool) error {
-	sync := sync{
+func (d *Dependency) doUpdate(dir string, loadedImports map[string]bool, installedImports Imports, isVendorPackage bool) error {
+	sync := Memory{
 		internalImports:  make(Imports),
 		externalImports:  make(Imports),
 		loadedImports:    loadedImports,
 		installedImports: installedImports,
+		update:           true,
 	}
 
-	// load imports from project
-	if err := d.doLoadImports(dir, &sync, loadExcludedPaths); err != nil {
-		return err
+	if _, ok := loadedImports[dir]; !ok {
+		sync.loadedImports[dir] = true
+
+		// load imports from project
+		if err := d.doLoadImports(dir, &sync, isVendorPackage); err != nil {
+			return err
+		}
+	} else {
+		d.logger.Infof("directory already copied [%s]", dir)
+		return nil
 	}
 
 	// load locked imports
-	if lockImports, err := d.doLoadLockImports(); err != nil {
+	if err := d.doLoadLockImports(dir, &sync); err != nil {
 		return err
 	} else {
 		// merge imports with lock
-		if err := d.doMergeWithLockImports(&sync, lockImports); err != nil {
+		if err := d.doMergeWithLockImports(&sync); err != nil {
 			return err
 		}
 	}
@@ -104,7 +116,7 @@ func (d *Dependency) doReset() error {
 	return nil
 }
 
-func (d *Dependency) doLoadImports(dir string, sync *sync, loadExcludedPaths bool) error {
+func (d *Dependency) doLoadImports(dir string, sync *Memory, isVendorPackage bool) error {
 	fileInfo, err := os.Stat(dir)
 	if err != nil {
 		return err
@@ -123,7 +135,7 @@ func (d *Dependency) doLoadImports(dir string, sync *sync, loadExcludedPaths boo
 		}
 
 		// exclude validation for prefix
-		if !loadExcludedPaths {
+		if !isVendorPackage {
 			for _, exclude := range excludedPaths {
 				if strings.HasPrefix(dir, exclude) {
 					d.logger.Infof("the import [%s] is on excluded paths", dir)
@@ -132,17 +144,10 @@ func (d *Dependency) doLoadImports(dir string, sync *sync, loadExcludedPaths boo
 			}
 		}
 
-		for _, exclude := range excludedImports {
-			// also allow to validate in inner vendor projects
-			if strings.HasPrefix(strings.Replace(dir, "vendor/", "", 1), exclude) {
-				d.logger.Infof("the import [%s] is on excluded imports list", dir)
-				return nil
-			}
-		}
-
 		// exclude validation for suffix
 		for _, exclude := range excludedPaths {
 			if strings.HasSuffix(dir, exclude) {
+				d.logger.Infof("excluded path [%s]", exclude)
 				return nil
 			}
 		}
@@ -154,7 +159,7 @@ func (d *Dependency) doLoadImports(dir string, sync *sync, loadExcludedPaths boo
 			return err
 		}
 		for _, nextDir := range subDir {
-			if err := d.doLoadImports(nextDir, sync, loadExcludedPaths); err != nil {
+			if err := d.doLoadImports(nextDir, sync, isVendorPackage); err != nil {
 				return err
 			}
 		}
@@ -167,7 +172,6 @@ func (d *Dependency) doLoadImports(dir string, sync *sync, loadExcludedPaths boo
 	}
 
 	d.logger.Debugf("loading file [%s]", fileInfo.Name())
-
 	if err := d.doGetFileImports(dir, sync); err != nil {
 		return err
 	}
@@ -175,28 +179,40 @@ func (d *Dependency) doLoadImports(dir string, sync *sync, loadExcludedPaths boo
 	return nil
 }
 
-func (d *Dependency) doLoadLockImports() (Imports, error) {
+func (d *Dependency) doLoadLockImports(dir string, sync *Memory) error {
 	d.logger.Debugf("executing Load Lock Imports")
-	imports := make(map[string]*Import)
+	lockImportFile := fmt.Sprintf("%s/%s", dir, LockImportFile)
+	newLockedImports := make(Imports)
 
-	if _, err := os.Stat(LockImportFile); err == nil {
-		if bytes, err := ioutil.ReadFile(LockImportFile); err != nil {
-			return imports, d.logger.Errorf("error reading file [%s] %s", LockImportFile, err).ToError()
+	if _, err := os.Stat(lockImportFile); err == nil {
+		if bytes, err := ioutil.ReadFile(lockImportFile); err != nil {
+			return d.logger.Errorf("error reading file [%s] %s", lockImportFile, err).ToError()
 		} else {
-			if err := yaml.Unmarshal(bytes, &imports); err != nil {
-				return nil, d.logger.Errorf("error unmarshal file [%s] %s", LockImportFile, err).ToError()
+			if err := yaml.Unmarshal(bytes, newLockedImports); err != nil {
+				return d.logger.Errorf("error unmarshal file [%s] %s", lockImportFile, err).ToError()
 			}
-			return imports, nil
+		}
+
+		if !strings.Contains(dir, "vendor") {
+			sync.lockedImports = newLockedImports
+		} else {
+			for newKey, newValue := range newLockedImports {
+				if _, ok := sync.lockedImports[newKey]; !ok {
+					sync.lockedImports[newKey] = newValue
+				}
+			}
 		}
 	} else {
-		newFile, err := os.Create(LockImportFile)
-		if err != nil {
-			return nil, d.logger.Errorf("error creating file [%s] %s", LockImportFile, err).ToError()
+		if !strings.Contains(dir, "vendor") {
+			newFile, err := os.Create(LockImportFile)
+			if err != nil {
+				return d.logger.Errorf("error creating file [%s] %s", LockImportFile, err).ToError()
+			}
+			newFile.Close()
 		}
-		newFile.Close()
 	}
 
-	return imports, nil
+	return nil
 }
 
 func (d *Dependency) doSaveImports(imports Imports) error {
@@ -212,10 +228,12 @@ func (d *Dependency) doSaveImports(imports Imports) error {
 		}
 	}
 
+	d.logger.Infof("configuration saved on [%s]", GenImportFile).ToError()
+
 	return nil
 }
 
-func (d *Dependency) doGetFileImports(dir string, sync *sync) error {
+func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 	d.logger.Debugf("executing Get Imports for file %s", dir)
 
 	parsedFile, err := parser.ParseFile(token.NewFileSet(), dir, nil, parser.ImportsOnly|parser.ParseComments)
@@ -235,32 +253,47 @@ func (d *Dependency) doGetFileImports(dir string, sync *sync) error {
 		}
 
 		if !strings.Contains(imprt.Path.Value, ".") {
-			d.logger.Debugf("adding internal dependency [%s]", name)
+			d.logger.Debugf("adding Internal dependency [%s]", name)
 
 			sync.internalImports[name] = &Import{}
 		} else {
 			d.logger.Debugf("adding external dependency [%s]", name)
 
-			if host, user, project, packag, ssh, https, path, err := d.doGetRepositoryInfo(name); err != nil {
+			if host, user, project, packag, ssh, https, path, vendor, save, err := d.doGetRepositoryInfo(name); err != nil {
 				d.logger.Infof("repository ignored [%s]", name)
 				return nil
 			} else {
-				if _, ok := sync.loadedImports[ssh]; !ok {
+				if _, ok := sync.loadedImports[path]; !ok {
+					if len(packag) > 0 {
+						pkg := packag[1:]
+						pkgs := strings.Split(pkg, "/")
+						tmpPkg := ""
+						for _, p := range pkgs {
+							tmpPkg = fmt.Sprintf("%s/%s", tmpPkg, p)
+							if _, ok := sync.loadedImports[fmt.Sprintf("%s%s", path, tmpPkg)]; ok {
+								continue
+							}
+						}
+					}
+
 					sync.externalImports[path] = &Import{
-						Branch: "master",
-						internal: internal{
-							host:    host,
-							user:    user,
-							project: project,
-							packag:  packag,
-							repo: repo{
-								ssh:   ssh,
-								https: https,
-								path:  path,
+						internal: Internal{
+							repo: Repo{
+								host:    host,
+								user:    user,
+								project: project,
+								packag:  packag,
+								ssh:     ssh,
+								https:   https,
+								path:    path,
+								vendor:  vendor,
+								save:    save,
 							},
-							vendor: fmt.Sprintf("%s/%s", d.vendor, path),
 						},
 					}
+
+					sync.loadedImports[fmt.Sprintf("%s%s", path, packag)] = true
+
 				}
 			}
 		}
@@ -287,45 +320,35 @@ func (d *Dependency) doLoadLockedImports() (Imports, error) {
 	return nil, nil
 }
 
-func (d *Dependency) doMergeWithLockImports(sync *sync, lockImports Imports) error {
+func (d *Dependency) doMergeWithLockImports(sync *Memory) error {
 	d.logger.Debugf("executing Merge With Lock Imports")
-	for lockKey, lockValue := range lockImports {
+	for lockedKey, lockedValue := range sync.lockedImports {
 
-		if externalValue, ok := sync.externalImports[lockKey]; ok {
-			d.logger.Debugf("replacing [%s] with locked", lockKey)
-			lockValue.internal = externalValue.internal
-
-			if lockValue.Branch == "" {
-				lockValue.Branch = externalValue.Branch
-			}
-
-			sync.externalImports[lockKey] = lockValue
+		if externalValue, ok := sync.externalImports[lockedKey]; ok {
+			lockedValue.internal = externalValue.internal
+			d.logger.Debugf("replacing [%s] with locked [%+v]", lockedKey, lockedValue)
+			sync.externalImports[lockedKey] = lockedValue
 		}
 	}
 
 	return nil
 }
 
-func (d *Dependency) doDownloadImports(sync *sync) error {
+func (d *Dependency) doDownloadImports(sync *Memory) error {
 	d.logger.Debugf("executing Download imports to vendor")
 
 	for _, imprt := range sync.externalImports {
-
-		if _, ok := sync.installedImports[imprt.internal.repo.path]; ok {
-			continue
-		}
-
 		sync.installedImports[imprt.internal.repo.path] = imprt
 
-		if err := d.vcs.Clone(imprt, d.vendor); err != nil {
+		if err := d.vcs.CopyDependency(imprt, d.vendor, sync.update); err != nil {
 			d.logger.Infof("repository ignored [%s]", imprt.internal.repo.ssh)
 			continue
 		}
 
 		// to get inner vendor if it exists
-		if _, err := os.Stat(fmt.Sprintf("%s/%s/", d.vendor, imprt.internal.vendor)); err != nil {
-			d.logger.Infof("getting vendor of [%s] import", imprt.internal.vendor)
-			if err := d.doGet(imprt.internal.vendor, sync.loadedImports, sync.installedImports, true); err != nil {
+		if _, err := os.Stat(fmt.Sprintf("%s/%s/", d.vendor, imprt.internal.repo.vendor)); err != nil {
+			d.logger.Infof("getting vendor of [%s] import", imprt.internal.repo.vendor)
+			if err := d.doGet(imprt.internal.repo.vendor, sync.loadedImports, sync.installedImports, true); err != nil {
 				return err
 			}
 		}
@@ -334,7 +357,7 @@ func (d *Dependency) doDownloadImports(sync *sync) error {
 	return nil
 }
 
-func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, string, string, string, string, error) {
+func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, string, string, string, string, string, string, error) {
 	var host string
 	var user string
 	var project string
@@ -342,10 +365,17 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 	var ssh string
 	var https string
 	var path string
+	var save string
+
+	save = name
 
 	// moved packages
-	for old, new := range movedPackages {
-		name = strings.Replace(name, old, new, 1)
+	for _, rename := range movedPackages {
+		if strings.Contains(name, rename.old) {
+			d.logger.Infof("renaming package [%s] from [%s] to [%s]", name, rename.old, rename.new)
+			name = strings.Replace(name, rename.old, rename.new, 1)
+			break
+		}
 	}
 
 	// example [github.com/username/path1/path2] and should be [git@github.com:username/path1]
@@ -360,7 +390,7 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 		}
 
 		ssh = fmt.Sprintf("git@%s:%s/%s", host, user, project)
-		https = fmt.Sprintf("https://%s/%s/%s", user, host, project)
+		https = fmt.Sprintf("https://%s/%s/%s", host, user, project)
 		path = fmt.Sprintf("%s/%s/%s", host, user, project)
 
 	} else if len(nSplit) == 2 {
@@ -373,10 +403,12 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 		path = fmt.Sprintf("%s/%s", host, project)
 
 	} else {
-		return "", "", "", "", "", "", "", d.logger.Errorf("invalid import [%s]", name).ToError()
+		return "", "", "", "", "", "", "", "", "", d.logger.Errorf("invalid import [%s]", name).ToError()
 	}
 
-	return host, user, project, packag, ssh, https, path, nil
+	vendor := fmt.Sprintf("%s/%s", d.vendor, save)
+
+	return host, user, project, packag, ssh, https, path, vendor, save, nil
 }
 
 func (d *Dependency) doBackupVendor() error {

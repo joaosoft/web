@@ -24,6 +24,10 @@ func main() {
 		if err := d.Get(); err != nil {
 			panic(err)
 		}
+	case dependency.CmdDependencyUpdate:
+		if err := d.Update(); err != nil {
+			panic(err)
+		}
 	case dependency.CmdDependencyReset:
 		if err := d.Reset(); err != nil {
 			panic(err)
