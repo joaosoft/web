@@ -4,6 +4,7 @@ type CmdDependency string
 type Imports map[string]*Import
 
 type Memory struct {
+	generatedImports Imports
 	lockedImports    Imports
 	internalImports  Imports
 	externalImports  Imports

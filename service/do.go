@@ -19,14 +19,15 @@ import (
 	yaml "github.com/go-yaml/yaml"
 )
 
-func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedImports Imports, isVendorPackage bool) error {
+func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedImports Imports, isVendorPackage bool, update bool) error {
 	sync := Memory{
+		generatedImports: make(Imports),
 		lockedImports:    make(Imports),
 		internalImports:  make(Imports),
 		externalImports:  make(Imports),
 		loadedImports:    loadedImports,
 		installedImports: installedImports,
-		update:           false,
+		update:           update,
 	}
 
 	if _, ok := loadedImports[dir]; !ok {
@@ -36,66 +37,42 @@ func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedI
 		if err := d.doLoadImports(dir, &sync, isVendorPackage); err != nil {
 			return err
 		}
+
+		// load locked imports
+		if err := d.doLoadLockedImports(dir, &sync); err != nil {
+			return err
+		}
+
+		// load generated imports
+		if err := d.doLoadGeneratedImports(dir, &sync); err != nil {
+			return err
+		}
+
+		// merge with locked imports
+		if err := d.doMergeWithLockedImports(&sync); err != nil {
+			return err
+		}
+
+		// merge with generated imports
+		if err := d.doMergeWithGeneratedImports(&sync); err != nil {
+			return err
+		}
+
+		// download imports
+		if err := d.doDownloadImports(&sync); err != nil {
+			return err
+		}
 	} else {
 		d.logger.Infof("directory already copied [%s]", dir)
 		return nil
-	}
-
-	// load locked imports
-	if err := d.doLoadLockImports(dir, &sync); err != nil {
-		return err
-	} else {
-		// merge imports with lock
-		if err := d.doMergeWithLockImports(&sync); err != nil {
-			return err
-		}
-	}
-
-	// download imports
-	if err := d.doDownloadImports(&sync); err != nil {
-		return err
 	}
 
 	return nil
 }
 
 func (d *Dependency) doUpdate(dir string, loadedImports map[string]bool, installedImports Imports, isVendorPackage bool) error {
-	sync := Memory{
-		internalImports:  make(Imports),
-		externalImports:  make(Imports),
-		loadedImports:    loadedImports,
-		installedImports: installedImports,
-		update:           true,
-	}
 
-	if _, ok := loadedImports[dir]; !ok {
-		sync.loadedImports[dir] = true
-
-		// load imports from project
-		if err := d.doLoadImports(dir, &sync, isVendorPackage); err != nil {
-			return err
-		}
-	} else {
-		d.logger.Infof("directory already copied [%s]", dir)
-		return nil
-	}
-
-	// load locked imports
-	if err := d.doLoadLockImports(dir, &sync); err != nil {
-		return err
-	} else {
-		// merge imports with lock
-		if err := d.doMergeWithLockImports(&sync); err != nil {
-			return err
-		}
-	}
-
-	// download imports
-	if err := d.doDownloadImports(&sync); err != nil {
-		return err
-	}
-
-	return nil
+	return d.doGet(dir, loadedImports, installedImports, isVendorPackage, true)
 }
 
 func (d *Dependency) doReset() error {
@@ -174,42 +151,6 @@ func (d *Dependency) doLoadImports(dir string, sync *Memory, isVendorPackage boo
 	d.logger.Debugf("loading file [%s]", fileInfo.Name())
 	if err := d.doGetFileImports(dir, sync); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (d *Dependency) doLoadLockImports(dir string, sync *Memory) error {
-	d.logger.Debugf("executing Load Lock Imports")
-	lockImportFile := fmt.Sprintf("%s/%s", dir, LockImportFile)
-	newLockedImports := make(Imports)
-
-	if _, err := os.Stat(lockImportFile); err == nil {
-		if bytes, err := ioutil.ReadFile(lockImportFile); err != nil {
-			return d.logger.Errorf("error reading file [%s] %s", lockImportFile, err).ToError()
-		} else {
-			if err := yaml.Unmarshal(bytes, newLockedImports); err != nil {
-				return d.logger.Errorf("error unmarshal file [%s] %s", lockImportFile, err).ToError()
-			}
-		}
-
-		if !strings.Contains(dir, "vendor") {
-			sync.lockedImports = newLockedImports
-		} else {
-			for newKey, newValue := range newLockedImports {
-				if _, ok := sync.lockedImports[newKey]; !ok {
-					sync.lockedImports[newKey] = newValue
-				}
-			}
-		}
-	} else {
-		if !strings.Contains(dir, "vendor") {
-			newFile, err := os.Create(LockImportFile)
-			if err != nil {
-				return d.logger.Errorf("error creating file [%s] %s", LockImportFile, err).ToError()
-			}
-			newFile.Close()
-		}
 	}
 
 	return nil
@@ -309,32 +250,86 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 	return nil
 }
 
-func (d *Dependency) doLoadLockedImports() (Imports, error) {
-	d.logger.Debugf("executing Load Locked Imports")
+func (d *Dependency) doLoadLockedImports(dir string, sync *Memory) error {
+	d.logger.Debugf("executing Load Lock Imports")
+	lockImportFile := fmt.Sprintf("%s/%s", dir, LockImportFile)
+	newLockedImports := make(Imports)
 
-	if _, err := os.Stat(LockImportFile); err != nil {
-		if bytes, err := ioutil.ReadFile(LockImportFile); err != nil {
-			return nil, d.logger.Errorf("error reading file [%s] %s", LockImportFile, err).ToError()
+	if _, err := os.Stat(lockImportFile); err == nil {
+		if bytes, err := ioutil.ReadFile(lockImportFile); err != nil {
+			return d.logger.Errorf("error reading file [%s] %s", lockImportFile, err).ToError()
 		} else {
-			imports := make(map[string]*Import)
-			if err := yaml.Unmarshal(bytes, &imports); err != nil {
-				return nil, d.logger.Errorf("error unmarshal file [%s] %s", LockImportFile, err).ToError()
+			if err := yaml.Unmarshal(bytes, newLockedImports); err != nil {
+				return d.logger.Errorf("error unmarshal file [%s] %s", lockImportFile, err).ToError()
 			}
-			return imports, nil
+		}
+		for newKey, newValue := range newLockedImports {
+			if _, ok := sync.lockedImports[newKey]; !ok {
+				sync.lockedImports[newKey] = newValue
+			}
+		}
+	} else {
+		if !strings.Contains(dir, "vendor") {
+			newFile, err := os.Create(LockImportFile)
+			if err != nil {
+				return d.logger.Errorf("error creating file [%s] %s", LockImportFile, err).ToError()
+			}
+			newFile.Close()
 		}
 	}
 
-	return nil, nil
+	return nil
 }
 
-func (d *Dependency) doMergeWithLockImports(sync *Memory) error {
-	d.logger.Debugf("executing Merge With Lock Imports")
+func (d *Dependency) doMergeWithLockedImports(sync *Memory) error {
+	d.logger.Debugf("executing Merge With Locked Imports")
 	for lockedKey, lockedValue := range sync.lockedImports {
 
 		if externalValue, ok := sync.externalImports[lockedKey]; ok {
 			lockedValue.internal = externalValue.internal
 			d.logger.Debugf("replacing [%s] with locked [%+v]", lockedKey, lockedValue)
 			sync.externalImports[lockedKey] = lockedValue
+		}
+	}
+
+	return nil
+}
+
+func (d *Dependency) doLoadGeneratedImports(dir string, sync *Memory) error {
+	d.logger.Debugf("executing Load Generated Imports")
+	lockImportFile := fmt.Sprintf("%s/%s", dir, GenImportFile)
+	newGeneratedImports := make(Imports)
+
+	if _, err := os.Stat(lockImportFile); err == nil {
+		if bytes, err := ioutil.ReadFile(lockImportFile); err != nil {
+			return d.logger.Errorf("error reading file [%s] %s", lockImportFile, err).ToError()
+		} else {
+			if err := yaml.Unmarshal(bytes, &newGeneratedImports); err != nil {
+				return d.logger.Errorf("error unmarshal file [%s] %s", lockImportFile, err).ToError()
+			}
+		}
+
+		for key, value := range newGeneratedImports {
+			if _, ok := sync.generatedImports[key]; !ok {
+				sync.generatedImports[key] = value
+			}
+		}
+	}
+
+	return nil
+}
+
+func (d *Dependency) doMergeWithGeneratedImports(sync *Memory) error {
+	d.logger.Debugf("executing Merge With Generated Imports")
+	for generatedKey, generatedValue := range sync.generatedImports {
+
+		if _, ok := sync.lockedImports[generatedKey]; !ok {
+
+			if externalValue, ok := sync.externalImports[generatedKey]; ok {
+				generatedValue.internal = externalValue.internal
+				d.logger.Debugf("replacing [%s] with generated [%+v]", generatedKey, generatedValue)
+				sync.externalImports[generatedKey] = generatedValue
+			}
 		}
 	}
 

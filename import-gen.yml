@@ -1,4 +1,3 @@
-../../logger: {}
 github.com/BurntSushi/toml:
   revision: 3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005
 github.com/alphazero/Go-Redis:
@@ -15,8 +14,6 @@ github.com/go-sql-driver/mysql:
   revision: 99ff426eb706cffe92ff3d058e168b278cabf7c7
 github.com/go-yaml/yaml:
   revision: bec87e4332aede01fb63a4ab299d8af28480cd96
-github.com/golang/check.v1: {}
-github.com/golang/gemnasium: {}
 github.com/golang/snappy:
   revision: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
 github.com/hashicorp/hcl:
@@ -88,4 +85,5 @@ github.com/valyala/bytebufferpool:
   revision: e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7
 github.com/valyala/fasttemplate:
   revision: dcecefd839c4193db0d35b88ec65b4c12d360ab0
-github.com/xordataexchange/crypt: {}
+github.com/xordataexchange/crypt:
+  revision: b2862e3d0a775f18c7cfe02273500ae307b61218

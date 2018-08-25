@@ -141,6 +141,7 @@ func (v *Vcs) Clone(imprt *Import) error {
 	var gitArgs []string
 	v.logger.Debugf("executing Clone for [%s]", imprt.internal.repo.path)
 
+
 	branch := imprt.Branch
 	if imprt.Version != "" {
 		branch = imprt.Version
