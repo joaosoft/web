@@ -335,7 +335,6 @@ func (d *Dependency) doDownloadImports(sync *Memory) error {
 	d.logger.Debugf("executing Download imports to vendor")
 
 	for _, imprt := range sync.externalImports {
-		sync.installedImports[imprt.internal.repo.path] = imprt
 
 		if err := d.vcs.CopyDependency(imprt, d.vendor, sync.update); err != nil {
 			d.logger.Infof("repository ignored [%s]", imprt.internal.repo.ssh)
@@ -349,6 +348,8 @@ func (d *Dependency) doDownloadImports(sync *Memory) error {
 				return err
 			}
 		}
+
+		sync.installedImports[imprt.internal.repo.path] = imprt
 	}
 
 	return nil
