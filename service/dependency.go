@@ -73,7 +73,7 @@ func (d *Dependency) Get() error {
 	}
 
 	dir, _ := os.Getwd()
-	if err = d.doGet(dir, loadedImports, installedImports, false); err != nil {
+	if err = d.doGet(dir, loadedImports, installedImports, false, false); err != nil {
 		return err
 	} else {
 		// save generated imports
@@ -103,7 +103,7 @@ func (d *Dependency) Update() error {
 	}
 
 	dir, _ := os.Getwd()
-	if err = d.doUpdate(dir, loadedImports, installedImports, false); err != nil {
+	if err = d.doGet(dir, loadedImports, installedImports, false, true); err != nil {
 		return err
 	} else {
 		// save generated imports

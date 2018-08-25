@@ -70,11 +70,6 @@ func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedI
 	return nil
 }
 
-func (d *Dependency) doUpdate(dir string, loadedImports map[string]bool, installedImports Imports, isVendorPackage bool) error {
-
-	return d.doGet(dir, loadedImports, installedImports, isVendorPackage, true)
-}
-
 func (d *Dependency) doReset() error {
 	if file, err := os.OpenFile(LockImportFile, os.O_RDWR, 0666); err != nil {
 		d.logger.Infof("creating file [%s]", LockImportFile)
@@ -350,7 +345,7 @@ func (d *Dependency) doDownloadImports(sync *Memory) error {
 		// to get inner vendor if it exists
 		if _, err := os.Stat(fmt.Sprintf("%s/%s/", d.vendor, imprt.internal.repo.vendor)); err != nil {
 			d.logger.Infof("getting vendor of [%s] import", imprt.internal.repo.vendor)
-			if err := d.doGet(imprt.internal.repo.vendor, sync.loadedImports, sync.installedImports, true); err != nil {
+			if err := d.doGet(imprt.internal.repo.vendor, sync.loadedImports, sync.installedImports, true, sync.update); err != nil {
 				return err
 			}
 		}
