@@ -20,6 +20,12 @@
   version = "v1.4.0"
 
 [[projects]]
+  name = "github.com/go-yaml/yaml"
+  packages = ["."]
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/golang/snappy"
   packages = ["."]
@@ -226,6 +232,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d37f5e7980d8043bf69278f38308b10585f9d5c2bfdb9511e0972d2ad5355376"
+  inputs-digest = "d2a77fde02c57604403abeecf2e185f3d80427c2a506ef250dd66f55e406d2da"
   solver-name = "gps-cdcl"
   solver-version = 1
