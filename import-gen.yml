@@ -14,8 +14,7 @@ github.com/fsnotify/fsnotify:
 github.com/go-sql-driver/mysql:
   revision: 99ff426eb706cffe92ff3d058e168b278cabf7c7
 github.com/go-yaml/yaml:
-  branch: v2.2.1
-  revision: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+  revision: bec87e4332aede01fb63a4ab299d8af28480cd96
 github.com/golang/check.v1: {}
 github.com/golang/gemnasium: {}
 github.com/golang/snappy:
@@ -79,6 +78,7 @@ github.com/spf13/pflag:
 github.com/spf13/viper:
   branch: v1.0.2
   revision: b5e8006cbee93ec955a89ab31e0e3ce3204f3736
+  version: v1.0.2
 github.com/streadway/amqp:
   revision: 70e15c650864f4fc47f5d3c82ea117285480895d
 github.com/stretchr/testify:
