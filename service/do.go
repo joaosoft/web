@@ -16,7 +16,7 @@ import (
 
 	"io/ioutil"
 
-	yaml "github.com/go-yaml/yaml"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedImports Imports, isVendorPackage bool, update bool) error {

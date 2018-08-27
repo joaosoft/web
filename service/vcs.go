@@ -13,8 +13,8 @@ import (
 
 	"sync"
 
-	"github.com/go-yaml/yaml"
 	"github.com/joaosoft/logger"
+	"gopkg.in/yaml.v2"
 )
 
 type Vcs struct {
