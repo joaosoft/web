@@ -17,12 +17,7 @@ var (
 		"vendor",
 	}
 
-	movedPackages = []*PackageAction{
-		{old: "gopkg.in/yaml.v2", new: "github.com/go-yaml/yaml"},
-		{old: "golang.org/x", new: "github.com/golang"},
-		{old: "google.golang.org", new: "github.com/golang"},
-		{old: "gopkg.in", new: "github.com/golang"},
-	}
+	movedPackages = []*PackageAction{}
 
 	ignoredPackages = []string{
 		"golang.org/x",

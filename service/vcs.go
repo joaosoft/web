@@ -13,8 +13,8 @@ import (
 
 	"sync"
 
-	"github.com/joaosoft/logger"
 	"github.com/go-yaml/yaml"
+	"github.com/joaosoft/logger"
 )
 
 type Vcs struct {
@@ -141,7 +141,6 @@ func (v *Vcs) Clone(imprt *Import) error {
 	var gitArgs []string
 	v.logger.Debugf("executing Clone for [%s]", imprt.internal.repo.path)
 
-
 	branch := imprt.Branch
 	if imprt.Version != "" {
 		branch = imprt.Version
@@ -152,14 +151,7 @@ func (v *Vcs) Clone(imprt *Import) error {
 	// remove cached temporary folder to prevent errors
 	os.Remove(imprt.internal.repo.save)
 
-	v.logger.Infof("ping repository with ssh protocol [%s]", imprt.internal.repo.ssh)
-	if err := exec.Command("git", "ls-remote", "-h", imprt.internal.repo.ssh).Run(); err != nil {
-		v.logger.Infof("the repository doesn't exist [%s]", imprt.internal.repo.ssh)
-		return err
-	}
-
-	v.logger.Infof("downloading repository with ssh protocol [%s] to [%s]", imprt.internal.repo.ssh, pathCachedRepo)
-
+	v.logger.Infof("downloading repository with https protocol [%s] to [%s]", imprt.internal.repo.https, pathCachedRepo)
 	gitArgs = []string{
 		"clone",
 		"--recursive",
@@ -177,7 +169,7 @@ func (v *Vcs) Clone(imprt *Import) error {
 		v.logger.Errorf("error executing git clone command %s", string(stderr))
 
 		os.Remove(imprt.internal.repo.save)
-		v.logger.Infof("retrying download with https protocol [%s] to [%s]", imprt.internal.repo.https, pathCachedRepo)
+		v.logger.Infof("retrying download with ssh protocol [%s] to [%s]", imprt.internal.repo.ssh, pathCachedRepo)
 
 		gitArgs = []string{
 			"clone",
@@ -190,11 +182,12 @@ func (v *Vcs) Clone(imprt *Import) error {
 		if branch != "" {
 			gitArgs = append(gitArgs, "--branch", branch)
 		}
-		gitArgs = append(gitArgs, imprt.internal.repo.https, pathCachedRepo)
+		gitArgs = append(gitArgs, imprt.internal.repo.ssh, pathCachedRepo)
 
 		if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
 			os.Remove(imprt.internal.repo.save)
-			return v.logger.Errorf("error executing git clone command %s", string(stderr)).ToError()
+			v.logger.Errorf("error executing git clone command %s", string(stderr))
+			return nil
 		}
 	}
 
