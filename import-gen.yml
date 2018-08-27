@@ -13,14 +13,15 @@ github.com/fsnotify/fsnotify:
   revision: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 github.com/go-sql-driver/mysql:
   revision: 99ff426eb706cffe92ff3d058e168b278cabf7c7
-github.com/go-yaml/yaml:
-  revision: bec87e4332aede01fb63a4ab299d8af28480cd96
-github.com/golang/check.v1: {}
-github.com/golang/gemnasium: {}
+github.com/golang/protobuf:
+  revision: b27b920f9e71b439b873b17bf99f56467623814a
 github.com/golang/snappy:
   revision: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
 github.com/hashicorp/hcl:
-  revision: ef8a98b0bbce4a65b5aa4c368430a80ddc533168
+  branch: v1.0.0
+  revision: 8cb6e5b959231cc1119e43259c4a608f9c51a241
+github.com/hpcloud/tail:
+  revision: a1dbeea552b7c8df4b542c66073e393de198a800
 github.com/joaosoft/errors:
   revision: 35a9ecf62784a4615d1f0d68de7e8bc6029e6767
 github.com/joaosoft/logger:
@@ -32,6 +33,15 @@ github.com/joaosoft/writers:
 github.com/kr/fs:
   branch: v0.1.0
   revision: 1455def202f6e05b95cc7bfc7e8ae67ae5141eba
+github.com/kr/pretty:
+  branch: v0.1.0
+  revision: 73f6ac0b30a98e433b289500d779f50c1a6f0712
+github.com/kr/pty:
+  branch: v1.1.2
+  revision: fa756f09eeb418bf1cc6268c66ceaad9bb98f598
+github.com/kr/text:
+  branch: v0.1.0
+  revision: e2ffdb16a802fe2bb95e2e35ff34f0e53aeef34f
 github.com/labstack/echo:
   revision: 74f9806b34424e53aa1ad066d5219d7eab3a3b6c
 github.com/labstack/gommon:
@@ -51,20 +61,24 @@ github.com/mitchellh/mapstructure:
   revision: fa473d140ef3c6adf42d6b391fe76707f1f243c8
 github.com/nsqio/go-nsq:
   revision: be2eb35667954359e06a56f76dd629c54895b8b9
+github.com/onsi/ginkgo:
+  branch: v1.6.0
+  revision: 3774a09d95489ccaa16032e0770d08ea77ba6184
+github.com/onsi/gomega:
+  revision: 38ca19236de6fbe62537be60136602cf095daa35
 github.com/pelletier/go-toml:
   revision: c2dbbc24a97911339e01bda0b8cabdbd8f13b602
 github.com/pkg/errors:
   revision: 816c9085562cd7ee03e7f8188a1cfd942858cded
 github.com/pkg/sftp:
-  branch: v1.8.2
-  revision: 718e6477175d68cfcef67eb0a19ddcb74563a777
+  revision: b9345f483dc30f2e9d44786ee1a7e5700bb2341b
 github.com/pmezard/go-difflib:
   branch: v1.0.0
   revision: 792786c7400a136282c1664665ae0a8db921c6c2
 github.com/satori/go.uuid:
   revision: 36e9d2ebbde5e3f13ab2e25625fd453271d6522e
 github.com/sirupsen/logrus:
-  revision: fc587f31c804fe6853cd90f0d8d90af588eca5bd
+  revision: 51df1d314861d341546c26e4354ce760fe4bb02b
 github.com/spf13/afero:
   branch: v1.1.1
   revision: 787d034dfe70e44075ccc060d346146ef53270ad
@@ -88,4 +102,21 @@ github.com/valyala/bytebufferpool:
   revision: e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7
 github.com/valyala/fasttemplate:
   revision: dcecefd839c4193db0d35b88ec65b4c12d360ab0
-github.com/xordataexchange/crypt: {}
+github.com/xordataexchange/crypt:
+  revision: b2862e3d0a775f18c7cfe02273500ae307b61218
+gopkg.in/airbrake/gobrake.v2:
+  branch: v2.0.9
+  revision: 668876711219e8b0206e2994bf0a59d889c775aa
+gopkg.in/check.v1:
+  revision: 788fd78401277ebd861206a03c884797c6ec5541
+gopkg.in/fsnotify/fsnotify.v1:
+  branch: v1.4.7
+  revision: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
+gopkg.in/gemnasium/logrus-airbrake-hook.v2:
+  branch: v2.1.2
+  revision: e928b033a891c0175fb643d5aa0779e86325eb12
+gopkg.in/tomb.v1:
+  revision: dd632973f1e7218eb1089048e0798ec9ae7dceb8
+gopkg.in/yaml.v2:
+  branch: v2.2.1
+  revision: 5420a8b6744d3b0345ab293f6fcba19c978f1183
