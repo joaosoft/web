@@ -80,9 +80,9 @@ func (v *Vcs) ClearCache(dir string) error {
 	return v.StartCache()
 }
 
-func (v *Vcs) CopyDependency(imprt *Import, copyTo string, update bool) error {
+func (v *Vcs) CopyDependency(sync *Memory, imprt *Import, copyTo string, update bool) error {
 
-	v.logger.Debugf("executing CopyDependency for [%s]", imprt.internal.repo.path)
+	v.logger.Debugf("executing Copy Dependency for [%s]", imprt.internal.repo.path)
 
 	pathCachedRepo := fmt.Sprintf("%s/%s", v.cache.path, imprt.internal.repo.save)
 
@@ -95,31 +95,58 @@ func (v *Vcs) CopyDependency(imprt *Import, copyTo string, update bool) error {
 			return err
 		}
 	} else {
-		branch := imprt.Branch
-		if imprt.Version != "" {
-			branch = imprt.Version
-		}
+		if v.cache.imports[imprt.internal.repo.save].Branch != imprt.Branch ||
+			v.cache.imports[imprt.internal.repo.save].Version != imprt.Version ||
+			v.cache.imports[imprt.internal.repo.save].Revision != imprt.Revision {
 
-		if branch == "" {
-			if latestVersion, err := v.GetLatestVersion(pathCachedRepo); err != nil {
-				return err
-			} else {
-				imprt.Version = latestVersion
-				if err := v.Checkout(imprt); err != nil {
+			// can be a new branch (remote)
+			if imprt.Version == "" || imprt.Revision == "" {
+				if err := v.Pull(pathCachedRepo, imprt); err != nil {
 					return err
 				}
+			}
+
+			if imprt.Version != "" {
+				if err := v.FetchAllTags(pathCachedRepo); err != nil {
+					return err
+				}
+			}
+
+			if err := v.Checkout(pathCachedRepo, imprt); err != nil {
+				return err
 			}
 		}
 
 		if update {
-			if err := v.Pull(imprt); err != nil {
-				return err
+			if _, ok := sync.lockedImports[imprt.internal.repo.path]; !ok {
+				if imprt.Version == "" || imprt.Revision == "" {
+					if err := v.Pull(pathCachedRepo, imprt); err != nil {
+						return err
+					}
+				}
+
+				// fetching all tags
+				if err := v.FetchAllTags(pathCachedRepo); err != nil {
+					return err
+				}
+
+				if latestBranch, latestVersion, err := v.GetLatest(pathCachedRepo); err != nil {
+					return err
+				} else {
+					imprt.Branch = latestBranch
+					imprt.Version = latestVersion
+
+					if err := v.Checkout(pathCachedRepo, imprt); err != nil {
+						return err
+					}
+				}
 			}
 		}
-	}
 
-	if err := v.doUpdateRepositoryInfo(imprt); err != nil {
-		return err
+		// update import
+		if err := v.doUpdateImportInfo(imprt); err != nil {
+			return err
+		}
 	}
 
 	v.logger.Infof("copying import [%s%s] from cache", imprt.internal.repo.path, imprt.internal.repo.packag)
@@ -130,7 +157,7 @@ func (v *Vcs) CopyDependency(imprt *Import, copyTo string, update bool) error {
 		return nil
 	}
 	if err := CopyDir(fmt.Sprintf("%s%s", pathCachedRepo, imprt.internal.repo.packag), fmt.Sprintf("%s%s", imprt.internal.repo.vendor, imprt.internal.repo.packag)); err != nil {
-		return v.logger.Errorf("error executing Copying import [%s] to vendor [%s] %s", imprt.internal.repo.path, imprt.internal.repo.vendor, err).ToError()
+		return v.logger.Errorf("error executing copy of import [%s] to vendor [%s] %s", imprt.internal.repo.path, imprt.internal.repo.vendor, err).ToError()
 	}
 
 	return nil
@@ -142,8 +169,13 @@ func (v *Vcs) Clone(imprt *Import) error {
 	v.logger.Debugf("executing Clone for [%s]", imprt.internal.repo.path)
 
 	branch := imprt.Branch
+
 	if imprt.Version != "" {
 		branch = imprt.Version
+	}
+
+	if imprt.Revision != "" {
+		branch = imprt.Revision
 	}
 
 	pathCachedRepo := fmt.Sprintf("%s/%s", v.cache.path, imprt.internal.repo.save)
@@ -165,8 +197,11 @@ func (v *Vcs) Clone(imprt *Import) error {
 	}
 	gitArgs = append(gitArgs, imprt.internal.repo.https, pathCachedRepo)
 
-	if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
-		v.logger.Errorf("error executing git clone command %s", string(stderr))
+	cmd := exec.Command("git", gitArgs...)
+	cmd.Dir = pathCachedRepo
+
+	if stderr, err := cmd.CombinedOutput(); err != nil {
+		v.logger.Errorf("error executing [git clone] command %s", string(stderr))
 
 		os.Remove(imprt.internal.repo.save)
 		v.logger.Infof("retrying download with ssh protocol [%s] to [%s]", imprt.internal.repo.ssh, pathCachedRepo)
@@ -184,14 +219,18 @@ func (v *Vcs) Clone(imprt *Import) error {
 		}
 		gitArgs = append(gitArgs, imprt.internal.repo.ssh, pathCachedRepo)
 
-		if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
+		cmd = exec.Command("git", gitArgs...)
+		cmd.Dir = pathCachedRepo
+
+		if stderr, err := cmd.CombinedOutput(); err != nil {
 			os.Remove(imprt.internal.repo.save)
-			v.logger.Errorf("error executing git clone command %s", string(stderr))
+			v.logger.Errorf("error executing [git clone] command %s", string(stderr))
 			return nil
 		}
 	}
 
-	if err := v.doUpdateRepositoryInfo(imprt); err != nil {
+	// update import
+	if err := v.doUpdateImportInfo(imprt); err != nil {
 		return err
 	}
 
@@ -203,50 +242,107 @@ func (v *Vcs) Clone(imprt *Import) error {
 	return nil
 }
 
-func (v *Vcs) Pull(imprt *Import) error {
+func (v *Vcs) Fetch(path string) error {
+	v.logger.Debugf("executing Fetch")
+
+	gitArgs := []string{
+		"fetch",
+	}
+
+	cmd := exec.Command("git", gitArgs...)
+	cmd.Dir = path
+
+	if stderr, err := cmd.CombinedOutput(); err != nil {
+		return v.logger.Errorf("error executing [git fetch] command %s", string(stderr)).ToError()
+	}
+
+	return nil
+}
+
+func (v *Vcs) FetchAllTags(path string) error {
+	v.logger.Debugf("executing Fetch All Tags")
+
+	v.logger.Infof("fetching all tags")
+	gitArgs := []string{
+		"fetch",
+		"--all",
+		"--tags",
+		"--prune",
+	}
+
+	cmd := exec.Command("git", gitArgs...)
+	cmd.Dir = path
+
+	if stderr, err := cmd.CombinedOutput(); err != nil {
+		return v.logger.Errorf("error executing [git --all --tags --prune] command %s", string(stderr)).ToError()
+	}
+
+	return nil
+}
+
+func (v *Vcs) Pull(path string, imprt *Import) error {
 	v.logger.Debugf("executing Pull")
 
 	v.logger.Infof("updating repository [%s]", imprt.internal.repo.path)
 	gitArgs := []string{
 		"pull",
 	}
-	if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
+
+	cmd := exec.Command("git", gitArgs...)
+	cmd.Dir = path
+
+	if stderr, err := cmd.CombinedOutput(); err != nil {
 		return v.logger.Errorf("error executing [git pull] command %s", string(stderr)).ToError()
 	}
 
-	return nil
-}
-
-func (v *Vcs) Checkout(imprt *Import) error {
-	v.logger.Debugf("executing Checkout")
-
-	branch := imprt.Branch
-	if imprt.Version != "" {
-		branch = imprt.Version
-	}
-
-	v.logger.Infof("checkout repository [%s]", imprt.internal.repo.path)
-	gitArgs := []string{
-		"checkout",
-		branch,
-	}
-	if stderr, err := exec.Command("git", gitArgs...).CombinedOutput(); err != nil {
-		return v.logger.Errorf("error executing [git checkout] command %s", string(stderr)).ToError()
-	}
-
-	if err := v.doUpdateRepositoryInfo(imprt); err != nil {
+	// update cache
+	if err := v.doUpdateImportInfo(v.cache.imports[imprt.internal.repo.save]); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (v *Vcs) doUpdateRepositoryInfo(imprt *Import) error {
+func (v *Vcs) Checkout(path string, imprt *Import) error {
+	v.logger.Debugf("executing Checkout")
+
+	branch := imprt.Branch
+
+	if imprt.Version != "" {
+		branch = imprt.Version
+	}
+
+	if imprt.Revision != "" {
+		branch = imprt.Revision
+	}
+
+	v.logger.Infof("checkout repository [%s] branch [%s]", imprt.internal.repo.path, branch)
+	gitArgs := []string{
+		"checkout",
+		branch,
+	}
+
+	cmd := exec.Command("git", gitArgs...)
+	cmd.Dir = path
+
+	if stderr, err := cmd.CombinedOutput(); err != nil {
+		return v.logger.Errorf("error executing [git checkout] command %s", string(stderr)).ToError()
+	}
+
+	// update cache
+	if err := v.doUpdateImportInfo(v.cache.imports[imprt.internal.repo.save]); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (v *Vcs) doUpdateImportInfo(imprt *Import) error {
 	pathCachedRepo := fmt.Sprintf("%s/%s", v.cache.path, imprt.internal.repo.save)
 
 	imprt.Branch, _ = v.GetBranch(pathCachedRepo)
+	imprt.Version, _ = v.GetVersion(pathCachedRepo)
 	imprt.Revision, _ = v.GetRevision(pathCachedRepo)
-	imprt.Branch, _ = v.GetVersion(pathCachedRepo)
 
 	return nil
 }
@@ -265,13 +361,17 @@ func (v *Vcs) GetBranch(path string) (string, error) {
 
 	if stderr, err := cmd.CombinedOutput(); err != nil {
 		v.logger.Infof("error getting git branch: %s", string(stderr))
-		return "", nil
+		return "master", nil
 	} else {
-		return strings.TrimSpace(string(stderr)), nil
+		branch := strings.TrimSpace(string(stderr))
+		if branch == "" {
+			branch = "master"
+		}
+		return branch, nil
 	}
 }
 
-func (v *Vcs) GetLatestVersion(path string) (string, error) {
+func (v *Vcs) GetLatest(path string) (string, string, error) {
 	v.logger.Debugf("executing Get Latest Version")
 
 	gitArgs := []string{
@@ -285,9 +385,9 @@ func (v *Vcs) GetLatestVersion(path string) (string, error) {
 
 	if stderr, err := cmd.CombinedOutput(); err != nil {
 		v.logger.Infof("returned [%s] getting latest version", string(stderr))
-		return "", nil
+		return "master", "", nil
 	} else {
-		return strings.TrimSpace(string(stderr)), nil
+		return "", strings.TrimSpace(string(stderr)), nil
 	}
 }
 

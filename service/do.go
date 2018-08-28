@@ -12,11 +12,11 @@ import (
 
 	"strconv"
 
-	"time"
-
 	"io/ioutil"
 
-	yaml "gopkg.in/yaml.v2"
+	"time"
+
+	"gopkg.in/yaml.v2"
 )
 
 func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedImports Imports, isVendorPackage bool, update bool) error {
@@ -292,15 +292,15 @@ func (d *Dependency) doMergeWithLockedImports(sync *Memory) error {
 
 func (d *Dependency) doLoadGeneratedImports(dir string, sync *Memory) error {
 	d.logger.Debugf("executing Load Generated Imports")
-	lockImportFile := fmt.Sprintf("%s/%s", dir, GenImportFile)
+	genImportFile := fmt.Sprintf("%s/%s", dir, GenImportFile)
 	newGeneratedImports := make(Imports)
 
-	if _, err := os.Stat(lockImportFile); err == nil {
-		if bytes, err := ioutil.ReadFile(lockImportFile); err != nil {
-			return d.logger.Errorf("error reading file [%s] %s", lockImportFile, err).ToError()
+	if _, err := os.Stat(genImportFile); err == nil {
+		if bytes, err := ioutil.ReadFile(genImportFile); err != nil {
+			return d.logger.Errorf("error reading file [%s] %s", genImportFile, err).ToError()
 		} else {
 			if err := yaml.Unmarshal(bytes, &newGeneratedImports); err != nil {
-				return d.logger.Errorf("error unmarshal file [%s] %s", lockImportFile, err).ToError()
+				return d.logger.Errorf("error unmarshal file [%s] %s", genImportFile, err).ToError()
 			}
 		}
 
@@ -336,7 +336,7 @@ func (d *Dependency) doDownloadImports(sync *Memory) error {
 
 	for _, imprt := range sync.externalImports {
 
-		if err := d.vcs.CopyDependency(imprt, d.vendor, sync.update); err != nil {
+		if err := d.vcs.CopyDependency(sync, imprt, d.vendor, sync.update); err != nil {
 			d.logger.Infof("repository ignored [%s]", imprt.internal.repo.ssh)
 			continue
 		}
@@ -410,19 +410,18 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 }
 
 func (d *Dependency) doBackupVendor() error {
-	d.oldVendor = fmt.Sprintf("%s_%s", d.vendor, time.Now().Format("20060102150405"))
-	d.logger.Debugf("executing Backup Vendor to [%s]", d.oldVendor)
-
 	if _, err := os.Stat(d.vendor); err == nil {
+		d.oldVendor = fmt.Sprintf("%s_%s", d.vendor, time.Now().Format("20060102150405"))
+		d.logger.Debugf("executing Backup Vendor to [%s]", d.oldVendor)
+
 		os.Rename(d.vendor, d.oldVendor)
 	}
 	return nil
 }
 
 func (d *Dependency) doUndoBackupVendor() error {
-	d.logger.Debugf("executing Undo Backup Vendor to [%s]", d.oldVendor)
-
 	if _, err := os.Stat(d.oldVendor); err == nil {
+		d.logger.Debugf("executing Undo Backup Vendor to [%s]", d.oldVendor)
 		os.Rename(d.oldVendor, d.vendor)
 	}
 	return nil
