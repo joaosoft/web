@@ -1,11 +1,15 @@
 package examples
 
 import (
-	"dependency"
+	service "dependency/service"
 )
 
 func main() {
-	dependency := dependency.NewDependency()
+	dependency, err := service.NewDependency()
+	if err != nil {
+		panic(err)
+	}
+
 	if err := dependency.Get(); err != nil {
 		panic(err)
 	}
