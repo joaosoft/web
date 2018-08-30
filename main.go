@@ -22,6 +22,7 @@ func main() {
 	d, err := service.NewDependency(service.WithProtocol(protocol))
 	if err != nil {
 		panic(err)
+		os.Exit(1)
 	}
 
 	switch cmd {
