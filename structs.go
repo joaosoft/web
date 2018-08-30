@@ -1,4 +1,4 @@
-package service
+package main
 
 type CmdDependency string
 type Imports map[string]*Import
