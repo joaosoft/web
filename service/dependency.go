@@ -21,7 +21,7 @@ type Dependency struct {
 
 func NewDependency(options ...DependencyOption) (*Dependency, error) {
 	pm := manager.NewManager(manager.WithRunInBackground(true))
-	log := logger.NewLogDefault("dependency", logger.DebugLevel)
+	log := logger.NewLogDefault("dependency", logger.ErrorLevel)
 	vcs, err := NewVcs(fmt.Sprintf("%s/%s", os.Getenv("HOME"), CacheRepository), CacheRepositoryConfigFile, log)
 	if err != nil {
 		return nil, err
