@@ -21,7 +21,7 @@ type Dependency struct {
 
 func NewDependency(options ...DependencyOption) (*Dependency, error) {
 	pm := manager.NewManager(manager.WithRunInBackground(true))
-	log := logger.NewLogDefault("dependency", logger.ErrorLevel)
+	log := logger.NewLogDefault("dependency", logger.WarnLevel)
 	vcs, err := NewVcs(fmt.Sprintf("%s/%s", os.Getenv("HOME"), CacheRepository), CacheRepositoryConfigFile, ProtocolSSH, log)
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func NewDependency(options ...DependencyOption) (*Dependency, error) {
 	// load configuration File
 	appConfig := &AppConfig{}
 	if simpleConfig, err := manager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
-		service.logger.Error(err.Error())
+		service.logger.Warn(err)
 	} else {
 		service.pm.AddConfig("config_app", simpleConfig)
 		level, _ := logger.ParseLevel(appConfig.Dependency.Log.Level)

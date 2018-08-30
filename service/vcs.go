@@ -209,7 +209,7 @@ func (v *Vcs) Clone(imprt *Import) error {
 
 	if stderr, err := cmd.CombinedOutput(); err != nil {
 		os.Remove(imprt.internal.repo.save)
-		return v.logger.Errorf("error executing [git clone] command %s", string(stderr)).ToError()
+		return v.logger.Warnf("error executing [git clone] command %s", string(stderr)).ToError()
 	}
 
 	v.logger.Infof("git clone completed for [%s]", imprt.internal.repo.save)
