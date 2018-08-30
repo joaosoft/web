@@ -4,5 +4,11 @@
     "log": {
       "level": "debug"
     }
+  },
+  "manager": {
+    "path": "./",
+    "log": {
+      "level": "none"
+    }
   }
 }
