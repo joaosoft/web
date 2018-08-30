@@ -417,7 +417,7 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 			packag = fmt.Sprintf("/%s", nSplit[3])
 		}
 
-		ssh = fmt.Sprintf("git@%s:%s/%s.git", host, user, project)
+		ssh = fmt.Sprintf("git@%s:%s/%s", host, user, project)
 		https = fmt.Sprintf("https://%s/%s/%s", host, user, project)
 		path = fmt.Sprintf("%s/%s/%s", host, user, project)
 
@@ -426,7 +426,7 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 		host = nSplit[0]
 		project = nSplit[1]
 
-		ssh = fmt.Sprintf("git@%s:/%s.git", host, project)
+		ssh = fmt.Sprintf("git@%s:/%s", host, project)
 		https = fmt.Sprintf("https://%s/%s", host, project)
 		path = fmt.Sprintf("%s/%s", host, project)
 
