@@ -41,6 +41,7 @@ func NewDependency(options ...DependencyOption) (*Dependency, error) {
 	// load configuration File
 	appConfig := &AppConfig{}
 	if simpleConfig, err := manager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
+		service.logger.Warn(err)
 	} else {
 		service.pm.AddConfig("config_app", simpleConfig)
 		level, _ := logger.ParseLevel(appConfig.Dependency.Log.Level)

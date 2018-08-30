@@ -11,7 +11,7 @@ const (
 	CacheRepository           = ".dependency/cache"
 	CacheRepositoryConfigFile = "cache.yml"
 
-	RegexForVendorFiles = `^vendor_[0-9]{14}$`
+	RegexForVendorFiles = `^_vendor_[0-9]{14}$`
 
 	ProtocolSSH   Protocol = "ssh"
 	ProtocolHTTPS Protocol = "https"

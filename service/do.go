@@ -294,7 +294,7 @@ func (d *Dependency) doLoadLockedImports(dir string, sync *Memory) error {
 			}
 		}
 	} else {
-		if !strings.Contains(dir, "vendor") {
+		if !strings.HasPrefix(dir, "vendor") {
 			newFile, err := os.Create(LockImportFile)
 			if err != nil {
 				return d.logger.Errorf("error creating file [%s] %s", LockImportFile, err).ToError()
@@ -441,7 +441,7 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 
 func (d *Dependency) doBackupVendor() error {
 	if _, err := os.Stat(d.vendor); err == nil {
-		d.bkVendor = fmt.Sprintf("%s_%s", d.vendor, time.Now().Format("20060102150405"))
+		d.bkVendor = fmt.Sprintf("_%s_%s", d.vendor, time.Now().Format("20060102150405"))
 		d.logger.Debugf("executing Backup Vendor to [%s]", d.bkVendor)
 
 		os.Rename(d.vendor, d.bkVendor)
