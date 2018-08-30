@@ -16,7 +16,7 @@ type Dependency struct {
 	logger        logger.ILogger
 	vcs           *Vcs
 	vendor        string
-	oldVendor     string
+	bkVendor      string
 }
 
 func NewDependency(options ...DependencyOption) (*Dependency, error) {
@@ -57,6 +57,7 @@ func NewDependency(options ...DependencyOption) (*Dependency, error) {
 
 func (d *Dependency) Get() error {
 	d.logger.Debug("executing Get")
+
 	var err error
 	loadedImports := make(map[string]bool)
 	installedImports := make(Imports)
@@ -73,7 +74,6 @@ func (d *Dependency) Get() error {
 	}
 
 	dir, _ := os.Getwd()
-	fmt.Println("DIR" + dir)
 	if err = d.doGet(dir, loadedImports, installedImports, false, false); err != nil {
 		return err
 	} else {
@@ -88,6 +88,7 @@ func (d *Dependency) Get() error {
 
 func (d *Dependency) Update() error {
 	d.logger.Debug("executing Update")
+
 	var err error
 	loadedImports := make(map[string]bool)
 	installedImports := make(Imports)
@@ -100,6 +101,10 @@ func (d *Dependency) Update() error {
 
 	// backup old vendor folder
 	if err = d.doBackupVendor(); err != nil {
+		return err
+	}
+
+	if err := d.doClearGen(); err != nil {
 		return err
 	}
 
@@ -119,7 +124,11 @@ func (d *Dependency) Update() error {
 func (d *Dependency) Reset() error {
 	d.logger.Debug("executing Reset")
 
-	if err := d.doReset(); err != nil {
+	if err := d.doClearGen(); err != nil {
+		return err
+	}
+
+	if err := d.doClearLock(); err != nil {
 		return err
 	}
 

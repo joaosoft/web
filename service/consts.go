@@ -10,6 +10,8 @@ const (
 
 	CacheRepository           = ".dependency/cache"
 	CacheRepositoryConfigFile = "cache.yml"
+
+	RegexForVendorFiles = `^vendor_[0-9]{14}$`
 )
 
 var (
@@ -22,5 +24,6 @@ var (
 	ignoredPackages = []string{
 		"golang.org/x",
 		"google.golang.org",
+		"../",
 	}
 )

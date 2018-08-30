@@ -16,6 +16,8 @@ import (
 
 	"time"
 
+	"regexp"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -31,7 +33,11 @@ func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedI
 	}
 
 	if _, ok := loadedImports[dir]; !ok {
-		sync.loadedImports[dir] = true
+		key := dir
+		if strings.HasPrefix(dir, "vendor/") {
+			key = strings.SplitN(dir, "vendor/", 2)[1]
+		}
+		sync.loadedImports[key] = true
 
 		// load imports from project
 		if err := d.doLoadImports(dir, &sync, isVendorPackage); err != nil {
@@ -70,7 +76,7 @@ func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedI
 	return nil
 }
 
-func (d *Dependency) doReset() error {
+func (d *Dependency) doClearLock() error {
 	if file, err := os.OpenFile(LockImportFile, os.O_RDWR, 0666); err != nil {
 		d.logger.Infof("creating file [%s]", LockImportFile)
 
@@ -88,6 +94,24 @@ func (d *Dependency) doReset() error {
 	return nil
 }
 
+func (d *Dependency) doClearGen() error {
+	if file, err := os.OpenFile(GenImportFile, os.O_RDWR, 0666); err != nil {
+		d.logger.Infof("creating file [%s]", GenImportFile)
+
+		newFile, err := os.Create(GenImportFile)
+		if err != nil {
+			return d.logger.Errorf("error creating file [%s] %s", GenImportFile, err).ToError()
+		}
+		newFile.Close()
+	} else {
+		defer file.Close()
+		if err := file.Truncate(0); err != nil {
+			return d.logger.Errorf("error cleaning [%s] file", GenImportFile).ToError()
+		}
+	}
+	return nil
+}
+
 func (d *Dependency) doLoadImports(dir string, sync *Memory, isVendorPackage bool) error {
 	fileInfo, err := os.Stat(dir)
 	if err != nil {
@@ -99,10 +123,16 @@ func (d *Dependency) doLoadImports(dir string, sync *Memory, isVendorPackage boo
 		return nil
 	}
 
+	if regx, err := regexp.Compile(RegexForVendorFiles); err != nil {
+		return d.logger.Errorf("error compiling regex for vendor folders: %s", err).ToError()
+	} else if regx.MatchString(fileInfo.Name()) {
+		return nil
+	}
+
 	// if it is a directory
 	if fileInfo.IsDir() {
 
-		if dir == d.oldVendor {
+		if dir == d.bkVendor {
 			return nil
 		}
 
@@ -214,11 +244,10 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 						for _, p := range pkgs {
 							tmpPkg = fmt.Sprintf("%s/%s", tmpPkg, p)
 							if _, ok := sync.loadedImports[fmt.Sprintf("%s%s", path, tmpPkg)]; ok {
-								continue
+								goto next
 							}
 						}
 					}
-
 					sync.externalImports[path] = &Import{
 						internal: Internal{
 							repo: Repo{
@@ -246,7 +275,7 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 }
 
 func (d *Dependency) doLoadLockedImports(dir string, sync *Memory) error {
-	d.logger.Debugf("executing Load Lock Imports")
+	d.logger.Debugf("executing Load Lock Imports on [%s]", dir)
 	lockImportFile := fmt.Sprintf("%s/%s", dir, LockImportFile)
 	newLockedImports := make(Imports)
 
@@ -260,6 +289,7 @@ func (d *Dependency) doLoadLockedImports(dir string, sync *Memory) error {
 		}
 		for newKey, newValue := range newLockedImports {
 			if _, ok := sync.lockedImports[newKey]; !ok {
+				d.logger.Debugf("reading locked [%s] [%+v]", newKey, newValue).ToError()
 				sync.lockedImports[newKey] = newValue
 			}
 		}
@@ -291,7 +321,7 @@ func (d *Dependency) doMergeWithLockedImports(sync *Memory) error {
 }
 
 func (d *Dependency) doLoadGeneratedImports(dir string, sync *Memory) error {
-	d.logger.Debugf("executing Load Generated Imports")
+	d.logger.Debugf("executing Load Generated Imports on [%s]", dir)
 	genImportFile := fmt.Sprintf("%s/%s", dir, GenImportFile)
 	newGeneratedImports := make(Imports)
 
@@ -342,7 +372,7 @@ func (d *Dependency) doDownloadImports(sync *Memory) error {
 		}
 
 		// to get inner vendor if it exists
-		if _, err := os.Stat(fmt.Sprintf("%s/%s/", d.vendor, imprt.internal.repo.vendor)); err != nil {
+		if _, err := os.Stat(imprt.internal.repo.vendor); err == nil {
 			d.logger.Infof("getting vendor of [%s] import", imprt.internal.repo.vendor)
 			if err := d.doGet(imprt.internal.repo.vendor, sync.loadedImports, sync.installedImports, true, sync.update); err != nil {
 				return err
@@ -411,18 +441,19 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 
 func (d *Dependency) doBackupVendor() error {
 	if _, err := os.Stat(d.vendor); err == nil {
-		d.oldVendor = fmt.Sprintf("%s_%s", d.vendor, time.Now().Format("20060102150405"))
-		d.logger.Debugf("executing Backup Vendor to [%s]", d.oldVendor)
+		d.bkVendor = fmt.Sprintf("%s_%s", d.vendor, time.Now().Format("20060102150405"))
+		d.logger.Debugf("executing Backup Vendor to [%s]", d.bkVendor)
 
-		os.Rename(d.vendor, d.oldVendor)
+		os.Rename(d.vendor, d.bkVendor)
 	}
 	return nil
 }
 
 func (d *Dependency) doUndoBackupVendor() error {
-	if _, err := os.Stat(d.oldVendor); err == nil {
-		d.logger.Debugf("executing Undo Backup Vendor to [%s]", d.oldVendor)
-		os.Rename(d.oldVendor, d.vendor)
+	os.Remove(d.vendor)
+	if _, err := os.Stat(d.bkVendor); err == nil {
+		d.logger.Debugf("executing Undo Backup Vendor to [%s]", d.bkVendor)
+		os.Rename(d.bkVendor, d.vendor)
 	}
 	return nil
 }
