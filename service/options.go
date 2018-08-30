@@ -43,3 +43,10 @@ func WithManager(mgr *manager.Manager) DependencyOption {
 		builder.pm = mgr
 	}
 }
+
+// WithProtocol ...
+func WithProtocol(protocol Protocol) DependencyOption {
+	return func(builder *Dependency) {
+		builder.vcs.protocol = protocol
+	}
+}

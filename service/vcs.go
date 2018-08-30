@@ -20,20 +20,22 @@ import (
 )
 
 type Vcs struct {
-	cache  *Cache
-	logger logger.ILogger
-	mux    sync.Mutex
+	cache    *Cache
+	logger   logger.ILogger
+	mux      sync.Mutex
+	protocol Protocol
 }
 
-func NewVcs(path string, config string, logger logger.ILogger) (*Vcs, error) {
+func NewVcs(path string, config string, protocol Protocol, logger logger.ILogger) (*Vcs, error) {
 	vcs := &Vcs{
 		cache: &Cache{
 			imports: make(Imports),
 			path:    path,
 			config:  fmt.Sprintf("%s/%s", path, config),
 		},
-		logger: logger,
-		mux:    sync.Mutex{},
+		protocol: protocol,
+		logger:   logger,
+		mux:      sync.Mutex{},
 	}
 
 	if err := vcs.StartCache(); err != nil {
@@ -182,7 +184,14 @@ func (v *Vcs) Clone(imprt *Import) error {
 	// remove cached temporary folder to prevent errors
 	os.Remove(imprt.internal.repo.save)
 
-	v.logger.Infof("downloading repository with https protocol [%s] to [%s]", imprt.internal.repo.https, pathCachedRepo)
+	var repo string
+	if v.protocol == ProtocolSSH {
+		repo = imprt.internal.repo.ssh
+	} else {
+		repo = imprt.internal.repo.https
+	}
+
+	v.logger.Infof("downloading repository with %s protocol [%s] to [%s]", v.protocol, repo, pathCachedRepo)
 	gitArgs = []string{
 		"clone",
 		"--recursive",
@@ -194,36 +203,13 @@ func (v *Vcs) Clone(imprt *Import) error {
 	if imprt.Branch != "" {
 		gitArgs = append(gitArgs, "--branch", imprt.Branch)
 	}
-	gitArgs = append(gitArgs, imprt.internal.repo.https, pathCachedRepo)
+	gitArgs = append(gitArgs, repo, pathCachedRepo)
 
 	cmd := exec.Command("git", gitArgs...)
 
 	if stderr, err := cmd.CombinedOutput(); err != nil {
-		v.logger.Errorf("error executing [git clone] command %s", string(stderr))
-
 		os.Remove(imprt.internal.repo.save)
-		v.logger.Infof("retrying download with ssh protocol [%s] to [%s]", imprt.internal.repo.ssh, pathCachedRepo)
-
-		gitArgs = []string{
-			"clone",
-			"--recursive",
-			"-v",
-			"--progress",
-			"--depth", "1",
-			"--shallow-submodules",
-		}
-		if imprt.Branch != "" {
-			gitArgs = append(gitArgs, "--branch", imprt.Branch)
-		}
-		gitArgs = append(gitArgs, imprt.internal.repo.ssh, pathCachedRepo)
-
-		cmd = exec.Command("git", gitArgs...)
-		cmd.Dir = pathCachedRepo
-
-		if stderr, err := cmd.CombinedOutput(); err != nil {
-			os.Remove(imprt.internal.repo.save)
-			return v.logger.Errorf("error executing [git clone] command %s", string(stderr)).ToError()
-		}
+		return v.logger.Errorf("error executing [git clone] command %s", string(stderr)).ToError()
 	}
 
 	v.logger.Infof("git clone completed for [%s]", imprt.internal.repo.save)

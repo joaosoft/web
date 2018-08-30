@@ -12,6 +12,9 @@ const (
 	CacheRepositoryConfigFile = "cache.yml"
 
 	RegexForVendorFiles = `^vendor_[0-9]{14}$`
+
+	ProtocolSSH   Protocol = "ssh"
+	ProtocolHTTPS Protocol = "https"
 )
 
 var (

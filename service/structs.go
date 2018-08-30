@@ -2,6 +2,7 @@ package service
 
 type CmdDependency string
 type Imports map[string]*Import
+type Protocol string
 
 type Memory struct {
 	generatedImports Imports

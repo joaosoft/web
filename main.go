@@ -8,13 +8,18 @@ import (
 
 func main() {
 	cmd := service.CmdDependencyGet
+	protocol := service.ProtocolSSH
 
 	args := os.Args
 	if len(args) > 1 {
 		cmd = service.CmdDependency(args[1])
 	}
 
-	d, err := service.NewDependency()
+	if len(args) > 2 {
+		protocol = service.Protocol(args[2])
+	}
+
+	d, err := service.NewDependency(service.WithProtocol(protocol))
 	if err != nil {
 		panic(err)
 	}
