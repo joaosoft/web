@@ -88,11 +88,7 @@ func (v *Vcs) CopyDependency(sync *Memory, imprt *Import, copyTo string, update 
 			return err
 		}
 
-		if imprt.Version != "" || imprt.Revision != "" {
-			if err := v.Checkout(pathCachedRepo, imprt); err != nil {
-				return err
-			}
-		} else {
+		if imprt.Version == "" && imprt.Revision == "" {
 			// update branch
 			imprt.Branch, _ = v.GetBranch(pathCachedRepo)
 		}
@@ -176,6 +172,13 @@ func (v *Vcs) CopyDependency(sync *Memory, imprt *Import, copyTo string, update 
 
 func (v *Vcs) Clone(imprt *Import) error {
 
+	branch := imprt.Branch
+	if imprt.Version != "" {
+		branch = imprt.Version
+	} else if imprt.Revision != "" {
+		branch = imprt.Revision
+	}
+
 	var gitArgs []string
 	v.logger.Debugf("executing Clone for [%s]", imprt.internal.repo.path)
 
@@ -200,8 +203,8 @@ func (v *Vcs) Clone(imprt *Import) error {
 		"--depth", "1",
 		"--shallow-submodules",
 	}
-	if imprt.Branch != "" {
-		gitArgs = append(gitArgs, "--branch", imprt.Branch)
+	if branch != "" {
+		gitArgs = append(gitArgs, "--branch", branch)
 	}
 	gitArgs = append(gitArgs, repo, pathCachedRepo)
 
