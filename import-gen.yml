@@ -27,10 +27,10 @@ github.com/joaosoft/errors:
   revision: 35a9ecf62784a4615d1f0d68de7e8bc6029e6767
 github.com/joaosoft/logger:
   branch: master
-  revision: 0a5e59f7ede098d7493c365d0d3551ad49aaadac
+  revision: 7cc0c8aead365cf0c474dca730a15d5e5915f493
 github.com/joaosoft/manager:
   branch: master
-  revision: 2363ded3ea574d939ff0f782f0bf87b392204e39
+  revision: 02df84e23777690e549883a77e08a14b22dcab18
 github.com/joaosoft/writers:
   branch: master
   revision: a1cd188c0e3ffca9bb227ea1fea39ed900a867a6
