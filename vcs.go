@@ -198,9 +198,6 @@ func (v *Vcs) Clone(imprt *Import) error {
 	gitArgs = []string{
 		"clone",
 		"--recursive",
-		"-v",
-		"--progress",
-		"--depth", "1",
 		"--shallow-submodules",
 	}
 	if branch != "" {
