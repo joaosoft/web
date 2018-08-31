@@ -232,10 +232,26 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 				}
 			}
 
+			// moved packages
+			var newPackage string
+			for _, action := range packageActions {
+				if strings.HasPrefix(name, action.old) {
+					d.logger.Infof("renaming package [%s] from [%s] to [%s]", name, action.old, action.new)
+					newPackage = strings.Replace(name, action.old, action.new, 1)
+					break
+				}
+			}
+
 			if host, user, project, packag, ssh, https, path, vendor, save, err := d.doGetRepositoryInfo(name); err != nil {
 				d.logger.Infof("repository ignored [%s]", name)
 				return nil
 			} else {
+				if newPackage != "" {
+					if _, _, _, _, ssh, https, _, _, _, err = d.doGetRepositoryInfo(newPackage); err != nil {
+						d.logger.Infof("repository ignored [%s]", name)
+						return nil
+					}
+				}
 				if _, ok := sync.loadedImports[path]; !ok {
 					if len(packag) > 0 {
 						pkg := packag[1:]
@@ -394,15 +410,6 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 	var https string
 	var path string
 	var save string
-
-	// moved packages
-	for _, rename := range movedPackages {
-		if strings.Contains(name, rename.old) {
-			d.logger.Infof("renaming package [%s] from [%s] to [%s]", name, rename.old, rename.new)
-			name = strings.Replace(name, rename.old, rename.new, 1)
-			break
-		}
-	}
 
 	// example [github.com/username/path1/path2] and should be [git@github.com:username/path1]
 	if nSplit := strings.SplitN(name, "/", 4); len(nSplit) >= 3 {

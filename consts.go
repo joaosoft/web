@@ -22,7 +22,10 @@ var (
 		"vendor",
 	}
 
-	movedPackages = []*PackageAction{}
+	packageActions = []*PackageAction{
+		{old: "golang.org/x/net", new: "go.googlesource.com/net"},
+		{old: "golang.org/x/exp", new: "go.googlesource.com/exp"},
+	}
 
 	ignoredPackages = []string{
 		"golang.org/x",
