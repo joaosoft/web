@@ -395,8 +395,6 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 	var path string
 	var save string
 
-	save = name
-
 	// moved packages
 	for _, rename := range movedPackages {
 		if strings.Contains(name, rename.old) {
@@ -434,6 +432,7 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 		return "", "", "", "", "", "", "", "", "", d.logger.Errorf("invalid import [%s]", name).ToError()
 	}
 
+	save = path
 	vendor := fmt.Sprintf("%s/%s", d.vendor, save)
 
 	return host, user, project, packag, ssh, https, path, vendor, save, nil
