@@ -16,11 +16,10 @@ go get github.com/joaosoft/dependency
 ```
 
 ## Usage 
-This examples are available in the project at [dependency/examples/main.go](https://github.com/joaosoft/dependency/tree/master/examples/main.go)
 > Commands
 ```
 // generate dependencies
-dependency get (takes in consideration the import-gen.yml and the import-lock.yml)
+dependency get (takes in consideration the import-gen.yml (is exists) and the import-lock.yml)
 
 // update dependencies (just takes in consideration the import-lock.yml)
 dependency update
