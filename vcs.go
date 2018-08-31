@@ -192,7 +192,7 @@ func (v *Vcs) Clone(imprt *Import) error {
 	var repo string
 	var protocol Protocol
 
-	if v.protocol == ProtocolHTTPS || strings.Contains(imprt.internal.repo.path, GoogleSourcePath) {
+	if v.protocol == ProtocolHTTPS || strings.HasPrefix(imprt.internal.repo.path, GoogleSourcePath) {
 		protocol = ProtocolHTTPS
 		repo = imprt.internal.repo.https
 	} else {
