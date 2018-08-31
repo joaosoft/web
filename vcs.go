@@ -152,15 +152,17 @@ func (v *Vcs) CopyDependency(sync *Memory, imprt *Import, copyTo string, update 
 		return err
 	}
 
-	if _, err := os.Stat(imprt.internal.repo.path); err == nil {
-		v.logger.Infof("package already copied to vendor [%s]", imprt.internal.repo.path)
+	pkgCopyTo := fmt.Sprintf("%s%s", imprt.internal.repo.vendor, imprt.internal.repo.packag)
+	if _, err := os.Stat(pkgCopyTo); err == nil {
+		v.logger.Infof("package already copied to vendor [%s]", pkgCopyTo)
 		return nil
 	}
 
-	if _, err := os.Stat(pathCachedRepo); err == nil {
-		v.logger.Infof("copying import [%s] from cache", imprt.internal.repo.path)
+	pkgCopyFrom := fmt.Sprintf("%s%s", pathCachedRepo, imprt.internal.repo.packag)
+	if _, err := os.Stat(pkgCopyFrom); err == nil {
+		v.logger.Infof("copying import [%s%s] from cache", imprt.internal.repo.path, imprt.internal.repo.packag)
 
-		if err := CopyDir(pathCachedRepo, imprt.internal.repo.vendor); err != nil {
+		if err := CopyDir(pkgCopyFrom, pkgCopyTo); err != nil {
 			return v.logger.Errorf("error executing copy of import [%s] to vendor [%s] %s", imprt.internal.repo.path, imprt.internal.repo.vendor, err).ToError()
 		}
 	} else {
@@ -188,13 +190,17 @@ func (v *Vcs) Clone(imprt *Import) error {
 	os.Remove(imprt.internal.repo.save)
 
 	var repo string
-	if v.protocol == ProtocolSSH {
-		repo = imprt.internal.repo.ssh
-	} else {
+	var protocol Protocol
+
+	if v.protocol == ProtocolHTTPS || strings.Contains(imprt.internal.repo.path, GoogleSourcePath) {
+		protocol = ProtocolHTTPS
 		repo = imprt.internal.repo.https
+	} else {
+		protocol = ProtocolSSH
+		repo = imprt.internal.repo.ssh
 	}
 
-	v.logger.Infof("downloading repository with %s protocol [%s] to [%s]", v.protocol, repo, pathCachedRepo)
+	v.logger.Infof("downloading repository with %s protocol [%s] to [%s]", protocol, repo, pathCachedRepo)
 	gitArgs = []string{
 		"clone",
 		"--recursive",

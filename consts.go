@@ -15,6 +15,8 @@ const (
 
 	ProtocolSSH   Protocol = "ssh"
 	ProtocolHTTPS Protocol = "https"
+
+	GoogleSourcePath = "go.googlesource.com"
 )
 
 var (

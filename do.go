@@ -22,9 +22,6 @@ import (
 )
 
 func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedImports Imports, isVendorPackage bool, update bool) error {
-	var err error
-	var path string
-
 	sync := Memory{
 		generatedImports: make(Imports),
 		lockedImports:    make(Imports),
@@ -35,11 +32,7 @@ func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedI
 		update:           update,
 	}
 
-	if _, _, _, _, _, _, path, _, _, err = d.doGetRepositoryInfo(dir); err != nil {
-		d.logger.Infof("error getting repository information on [%s]", dir)
-	}
-
-	if _, ok := loadedImports[path]; !ok {
+	if _, ok := loadedImports[dir]; !ok {
 		key := dir
 		if strings.HasPrefix(dir, "vendor/") {
 			key = strings.SplitN(dir, "vendor/", 2)[1]
@@ -260,7 +253,7 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 					}
 				}
 				if _, ok := sync.loadedImports[path]; !ok {
-					sync.externalImports[path] = &Import{
+					sync.externalImports[fmt.Sprintf("%s%s", path, packag)] = &Import{
 						internal: Internal{
 							repo: Repo{
 								host:    host,
@@ -276,7 +269,7 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 						},
 					}
 
-					sync.loadedImports[path] = true
+					sync.loadedImports[fmt.Sprintf("%s%s", path, packag)] = true
 				}
 			}
 		}
@@ -379,7 +372,7 @@ func (d *Dependency) doDownloadImports(sync *Memory) error {
 	for _, imprt := range sync.externalImports {
 
 		if err := d.vcs.CopyDependency(sync, imprt, d.vendor, sync.update); err != nil {
-			d.logger.Infof("repository ignored [%s]", imprt.internal.repo.ssh)
+			d.logger.Infof("repository ignored [%s]", imprt.internal.repo.path)
 			continue
 		}
 
@@ -391,7 +384,7 @@ func (d *Dependency) doDownloadImports(sync *Memory) error {
 			}
 		}
 
-		sync.installedImports[imprt.internal.repo.path] = imprt
+		sync.installedImports[fmt.Sprintf("%s%s", imprt.internal.repo.path, imprt.internal.repo.packag)] = imprt
 	}
 
 	return nil
@@ -418,8 +411,12 @@ func (d *Dependency) doGetRepositoryInfo(name string) (string, string, string, s
 			packag = fmt.Sprintf("/%s", nSplit[3])
 		}
 
-		ssh = fmt.Sprintf("git@%s:%s/%s.git", host, user, project)
-		https = fmt.Sprintf("https://%s/%s/%s", host, user, project)
+		if !strings.HasPrefix(name, GoogleSourcePath) {
+			ssh = fmt.Sprintf("git@%s:%s/%s.git", host, user, project)
+			https = fmt.Sprintf("https://%s/%s/%s", host, user, project)
+		} else {
+			https = fmt.Sprintf("https://%s/%s", host, user)
+		}
 		path = fmt.Sprintf("%s/%s/%s", host, user, project)
 
 	} else if len(nSplit) == 2 {
