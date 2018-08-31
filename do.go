@@ -252,7 +252,7 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 						return nil
 					}
 				}
-				if _, ok := sync.loadedImports[path]; !ok {
+				if _, ok := sync.loadedImports[fmt.Sprintf("%s%s", path, packag)]; !ok {
 					sync.externalImports[fmt.Sprintf("%s%s", path, packag)] = &Import{
 						internal: Internal{
 							repo: Repo{
