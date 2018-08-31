@@ -7,7 +7,7 @@ import (
 
 func main() {
 	cmd := CmdDependencyGet
-	protocol := ProtocolSSH
+	protocol := ProtocolHTTPS
 
 	args := os.Args
 	if len(args) > 1 {

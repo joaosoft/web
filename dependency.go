@@ -22,7 +22,7 @@ type Dependency struct {
 func NewDependency(options ...DependencyOption) (*Dependency, error) {
 	pm := manager.NewManager(manager.WithRunInBackground(true), manager.WithLogLevel(logger.NoneLevel))
 	log := logger.NewLogDefault("dependency", logger.WarnLevel)
-	vcs, err := NewVcs(fmt.Sprintf("%s/%s", os.Getenv("HOME"), CacheRepository), CacheRepositoryConfigFile, ProtocolSSH, log)
+	vcs, err := NewVcs(fmt.Sprintf("%s/%s", os.Getenv("HOME"), CacheRepository), CacheRepositoryConfigFile, ProtocolHTTPS, log)
 	if err != nil {
 		return nil, err
 	}
