@@ -25,6 +25,7 @@ var (
 	packageActions = []*PackageAction{
 		{old: "golang.org/x/net", new: "go.googlesource.com/net"},
 		{old: "golang.org/x/exp", new: "go.googlesource.com/exp"},
+		{old: "golang.org/x", new: "go.googlesource.com"},
 	}
 
 	ignoredPackages = []string{

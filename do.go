@@ -22,6 +22,9 @@ import (
 )
 
 func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedImports Imports, isVendorPackage bool, update bool) error {
+	var err error
+	var path string
+
 	sync := Memory{
 		generatedImports: make(Imports),
 		lockedImports:    make(Imports),
@@ -32,7 +35,11 @@ func (d *Dependency) doGet(dir string, loadedImports map[string]bool, installedI
 		update:           update,
 	}
 
-	if _, ok := loadedImports[dir]; !ok {
+	if _, _, _, _, _, _, path, _, _, err = d.doGetRepositoryInfo(dir); err != nil {
+		d.logger.Infof("error getting repository information on [%s]", dir)
+	}
+
+	if _, ok := loadedImports[path]; !ok {
 		key := dir
 		if strings.HasPrefix(dir, "vendor/") {
 			key = strings.SplitN(dir, "vendor/", 2)[1]
@@ -253,17 +260,6 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 					}
 				}
 				if _, ok := sync.loadedImports[path]; !ok {
-					if len(packag) > 0 {
-						pkg := packag[1:]
-						pkgs := strings.Split(pkg, "/")
-						tmpPkg := ""
-						for _, p := range pkgs {
-							tmpPkg = fmt.Sprintf("%s/%s", tmpPkg, p)
-							if _, ok := sync.loadedImports[fmt.Sprintf("%s%s", path, tmpPkg)]; ok {
-								goto next
-							}
-						}
-					}
 					sync.externalImports[path] = &Import{
 						internal: Internal{
 							repo: Repo{
@@ -280,7 +276,7 @@ func (d *Dependency) doGetFileImports(dir string, sync *Memory) error {
 						},
 					}
 
-					sync.loadedImports[fmt.Sprintf("%s%s", path, packag)] = true
+					sync.loadedImports[path] = true
 				}
 			}
 		}
