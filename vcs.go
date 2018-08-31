@@ -152,13 +152,8 @@ func (v *Vcs) CopyDependency(sync *Memory, imprt *Import, copyTo string, update 
 		return err
 	}
 
-	pkgCopyTo := fmt.Sprintf("%s%s", imprt.internal.repo.vendor, imprt.internal.repo.packag)
-	if _, err := os.Stat(pkgCopyTo); err == nil {
-		v.logger.Infof("package already copied to vendor [%s]", pkgCopyTo)
-		return nil
-	}
-
 	pkgCopyFrom := fmt.Sprintf("%s%s", pathCachedRepo, imprt.internal.repo.packag)
+	pkgCopyTo := fmt.Sprintf("%s%s", imprt.internal.repo.vendor, imprt.internal.repo.packag)
 	if _, err := os.Stat(pkgCopyFrom); err == nil {
 		v.logger.Infof("copying import [%s%s] from cache", imprt.internal.repo.path, imprt.internal.repo.packag)
 
