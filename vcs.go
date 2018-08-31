@@ -158,9 +158,9 @@ func (v *Vcs) CopyDependency(sync *Memory, imprt *Import, copyTo string, update 
 	}
 
 	if _, err := os.Stat(pathCachedRepo); err == nil {
-		v.logger.Infof("copying import [%s%s] from cache", imprt.internal.repo.path, imprt.internal.repo.packag)
+		v.logger.Infof("copying import [%s] from cache", imprt.internal.repo.path)
 
-		if err := CopyDir(pathCachedRepo, imprt.internal.repo.path); err != nil {
+		if err := CopyDir(pathCachedRepo, imprt.internal.repo.vendor); err != nil {
 			return v.logger.Errorf("error executing copy of import [%s] to vendor [%s] %s", imprt.internal.repo.path, imprt.internal.repo.vendor, err).ToError()
 		}
 	} else {
