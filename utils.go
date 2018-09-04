@@ -1,10 +1,12 @@
-package main
+package webserver
 
 import (
 	"bufio"
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"reflect"
+	"runtime"
 
 	"io"
 
@@ -154,4 +156,8 @@ func CopyDir(src string, dst string) error {
 		}
 	}
 	return nil
+}
+
+func GetFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }

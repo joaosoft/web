@@ -1,52 +1,45 @@
-package main
+package webserver
 
 import (
 	"github.com/joaosoft/logger"
 	"github.com/joaosoft/manager"
 )
 
-// DependencyOption ...
-type DependencyOption func(builder *Dependency)
+// WebServerOption ...
+type WebServerOption func(builder *WebServer)
 
 // Reconfigure ...
-func (d *Dependency) Reconfigure(options ...DependencyOption) {
+func (w *WebServer) Reconfigure(options ...WebServerOption) {
 	for _, option := range options {
-		option(d)
+		option(w)
 	}
 }
 
 // WithConfiguration ...
-func WithConfiguration(config *DependencyConfig) DependencyOption {
-	return func(builder *Dependency) {
+func WithConfiguration(config *WebServerConfig) WebServerOption {
+	return func(builder *WebServer) {
 		builder.config = config
 	}
 }
 
 // WithLogger ...
-func WithLogger(logger logger.ILogger) DependencyOption {
-	return func(builder *Dependency) {
+func WithLogger(logger logger.ILogger) WebServerOption {
+	return func(builder *WebServer) {
 		builder.logger = logger
 		builder.isLogExternal = true
 	}
 }
 
 // WithLogLevel ...
-func WithLogLevel(level logger.Level) DependencyOption {
-	return func(builder *Dependency) {
+func WithLogLevel(level logger.Level) WebServerOption {
+	return func(builder *WebServer) {
 		builder.logger.SetLevel(level)
 	}
 }
 
 // WithManager ...
-func WithManager(mgr *manager.Manager) DependencyOption {
-	return func(builder *Dependency) {
+func WithManager(mgr *manager.Manager) WebServerOption {
+	return func(builder *WebServer) {
 		builder.pm = mgr
-	}
-}
-
-// WithProtocol ...
-func WithProtocol(protocol Protocol) DependencyOption {
-	return func(builder *Dependency) {
-		builder.vcs.protocol = protocol
 	}
 }

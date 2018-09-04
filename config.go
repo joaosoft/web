@@ -1,4 +1,4 @@
-package main
+package webserver
 
 import (
 	"fmt"
@@ -8,19 +8,18 @@ import (
 
 // AppConfig ...
 type AppConfig struct {
-	Dependency DependencyConfig `json:"dependency"`
+	Dependency WebServerConfig `json:"dependency"`
 }
 
-// DependencyConfig ...
-type DependencyConfig struct {
-	Path string `json:"path"`
-	Log  struct {
+// WebServerConfig ...
+type WebServerConfig struct {
+	Log struct {
 		Level string `json:"level"`
 	} `json:"log"`
 }
 
 // NewConfig ...
-func NewConfig() (*DependencyConfig, error) {
+func NewConfig() (*WebServerConfig, error) {
 	appConfig := &AppConfig{}
 	if _, err := manager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
 		return nil, err

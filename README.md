@@ -1,36 +1,29 @@
-# dependency
-[![Build Status](https://travis-ci.org/joaosoft/dependency.svg?branch=master)](https://travis-ci.org/joaosoft/dependency) | [![codecov](https://codecov.io/gh/joaosoft/dependency/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/dependency) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/dependency)](https://goreportcard.com/report/github.com/joaosoft/dependency) | [![GoDoc](https://godoc.org/github.com/joaosoft/dependency?status.svg)](https://godoc.org/github.com/joaosoft/dependency)
+# webserver
+[![Build Status](https://travis-ci.org/joaosoft/webserver.svg?branch=master)](https://travis-ci.org/joaosoft/webserver) | [![codecov](https://codecov.io/gh/joaosoft/webserver/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/webserver) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/webserver)](https://goreportcard.com/report/github.com/joaosoft/webserver) | [![GoDoc](https://godoc.org/github.com/joaosoft/webserver?status.svg)](https://godoc.org/github.com/joaosoft/webserver)
 
-A simple dependency manager with a internal vcs.
-This dependency manager is being used in all my personal projects :)
+A simple web server. [UNDER DEVELOPMENT]
 
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 
 ## With support for
-* Get, to get the dependencies
-* Reset, to delete the user locked dependencies and Get dependencies
+* Methods (HEAD, GET, POST, PUT, CONNECT, PATCH, DELETE, OPTIONS, TRACE)
 
 >### Go
 ```
-go get github.com/joaosoft/dependency
+go get github.com/joaosoft/webserver
 ```
 
 ## Usage 
-> Commands
 ```
-// generate dependencies
-dependency get (takes in consideration the import-gen.yml (is exists) and the import-lock.yml)
+w, err := webserver.NewWebServer()
+if err != nil {
+    panic(err)
+}
 
-// update dependencies (just takes in consideration the import-lock.yml)
-dependency update
-
-// delete lock configuration
-dependency reset
+if err := w.Start(); err != nil {
+    panic(err)
+}
 ```
-
-> Files
-* import-gen.yml, generated files with dependencies
-* import-lock.yml, user dependencies lock
 
 ## Known issues
 

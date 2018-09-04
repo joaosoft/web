@@ -1,12 +1,10 @@
 {
-  "dependency": {
-    "path": "./",
+  "webserver": {
     "log": {
       "level": "debug"
     }
   },
   "manager": {
-    "path": "./",
     "log": {
       "level": "none"
     }
