@@ -1,17 +1,69 @@
 package webserver
 
-import "net/http"
+import (
+	"net"
+	"time"
+)
 
-type HandlerFunc func(w http.ResponseWriter, r *http.Request)
-
+type HandlerFunc func(ctx *Context) error
 type MiddlewareFunc func(HandlerFunc) HandlerFunc
 
+type Header []string
+type Headers map[string]Header
+
+type Cookie struct {
+	Name    string
+	Value   string
+	Path    string    // optional
+	Domain  string    // optional
+	Expires time.Time // optional
+	// MaxAge=0 means no 'Max-Age' attribute specified.
+	// MaxAge<0 means delete cookie now, equivalently 'Max-Age: 0'
+	// MaxAge>0 means Max-Age attribute present and given in seconds
+	MaxAge   int
+	Secure   bool
+	HttpOnly bool
+}
+type Cookies map[string]Cookie
+
+type Context struct {
+	StartTime time.Time
+	Request   *Request
+	Response  *Response
+}
+
+type Base struct {
+	Url      string
+	Method   Method
+	Protocol string
+	Headers  Headers
+	Cookies  Cookies
+}
+
+type Request struct {
+	Base
+	Body []byte
+}
+
+type Response struct {
+	Base
+	Body   []byte
+	Status int
+}
+
+type RequestHandler struct {
+	Conn    net.Conn
+	Handler HandlerFunc
+}
+
+type Routes map[string]*Route
+
 type Route struct {
-	method      Method
-	path        string
-	name        string
-	handler     HandlerFunc
-	middlewares []MiddlewareFunc
+	Method      Method
+	Path        string
+	Name        string
+	Handler     HandlerFunc
+	Middlewares []MiddlewareFunc
 }
 
 // Method
@@ -44,68 +96,68 @@ var (
 )
 
 // Mime type
-type MimeType string
+type ContentType string
 
 const (
-	MIMEApplicationJSON       MimeType = "application/json"
-	MIMEApplicationJavaScript MimeType = "application/javascript"
-	MIMEApplicationXML        MimeType = "application/xml"
-	MIMETextXML               MimeType = "text/xml"
-	MIMEApplicationForm       MimeType = "application/x-www-form-urlencoded"
-	MIMEApplicationProtobuf   MimeType = "application/protobuf"
-	MIMEApplicationMsgpack    MimeType = "application/msgpack"
-	MIMETextHTML              MimeType = "text/html"
-	MIMETextPlain             MimeType = "text/plain"
-	MIMEMultipartForm         MimeType = "multipart/form-data"
-	MIMEOctetStream           MimeType = "application/octet-stream"
+	MIMEApplicationJSON       ContentType = "application/json"
+	MIMEApplicationJavaScript ContentType = "application/javascript"
+	MIMEApplicationXML        ContentType = "application/xml"
+	MIMETextXML               ContentType = "text/xml"
+	MIMEApplicationForm       ContentType = "application/x-www-form-urlencoded"
+	MIMEApplicationProtobuf   ContentType = "application/protobuf"
+	MIMEApplicationMsgpack    ContentType = "application/msgpack"
+	MIMETextHTML              ContentType = "text/html"
+	MIMETextPlain             ContentType = "text/plain"
+	MIMEMultipartForm         ContentType = "multipart/form-data"
+	MIMEOctetStream           ContentType = "application/octet-stream"
 )
 
-// Header
-type Header string
+// HeaderType
+type HeaderType string
 
 const (
-	HeaderAccept              Header = "Accept"
-	HeaderAcceptEncoding      Header = "Accept-Encoding"
-	HeaderAllow               Header = "Allow"
-	HeaderAuthorization       Header = "Authorization"
-	HeaderContentDisposition  Header = "Content-Disposition"
-	HeaderContentEncoding     Header = "Content-Encoding"
-	HeaderContentLength       Header = "Content-Length"
-	HeaderContentType         Header = "Content-Type"
-	HeaderCookie              Header = "Cookie"
-	HeaderSetCookie           Header = "Set-Cookie"
-	HeaderIfModifiedSince     Header = "If-Modified-Since"
-	HeaderLastModified        Header = "Last-Modified"
-	HeaderLocation            Header = "Location"
-	HeaderUpgrade             Header = "Upgrade"
-	HeaderVary                Header = "Vary"
-	HeaderWWWAuthenticate     Header = "WWW-Authenticate"
-	HeaderXForwardedFor       Header = "X-Forwarded-For"
-	HeaderXForwardedProto     Header = "X-Forwarded-Proto"
-	HeaderXForwardedProtocol  Header = "X-Forwarded-Protocol"
-	HeaderXForwardedSsl       Header = "X-Forwarded-Ssl"
-	HeaderXUrlScheme          Header = "X-Url-Scheme"
-	HeaderXHTTPMethodOverride Header = "X-HTTP-Method-Override"
-	HeaderXRealIP             Header = "X-Real-IP"
-	HeaderXRequestID          Header = "X-Request-ID"
-	HeaderXRequestedWith      Header = "X-Requested-With"
-	HeaderServer              Header = "Server"
+	HeaderTypeAccept              HeaderType = "Accept"
+	HeaderTypeAcceptEncoding      HeaderType = "Accept-Encoding"
+	HeaderTypeAllow               HeaderType = "Allow"
+	HeaderTypeAuthorization       HeaderType = "Authorization"
+	HeaderTypeContentDisposition  HeaderType = "Content-Disposition"
+	HeaderTypeContentEncoding     HeaderType = "Content-Encoding"
+	HeaderTypeContentLength       HeaderType = "Content-Length"
+	HeaderTypeContentType         HeaderType = "Content-Type"
+	HeaderTypeCookie              HeaderType = "Cookie"
+	HeaderTypeSetCookie           HeaderType = "Set-Cookie"
+	HeaderTypeIfModifiedSince     HeaderType = "If-Modified-Since"
+	HeaderTypeLastModified        HeaderType = "Last-Modified"
+	HeaderTypeLocation            HeaderType = "Location"
+	HeaderTypeUpgrade             HeaderType = "Upgrade"
+	HeaderTypeVary                HeaderType = "Vary"
+	HeaderTypeWWWAuthenticate     HeaderType = "WWW-Authenticate"
+	HeaderTypeXForwardedFor       HeaderType = "X-Forwarded-For"
+	HeaderTypeXForwardedProto     HeaderType = "X-Forwarded-Proto"
+	HeaderTypeXForwardedProtocol  HeaderType = "X-Forwarded-Protocol"
+	HeaderTypeXForwardedSsl       HeaderType = "X-Forwarded-Ssl"
+	HeaderTypeXUrlScheme          HeaderType = "X-Url-Scheme"
+	HeaderTypeXHTTPMethodOverride HeaderType = "X-HTTP-Method-Override"
+	HeaderTypeXRealIP             HeaderType = "X-Real-IP"
+	HeaderTypeXRequestID          HeaderType = "X-Request-ID"
+	HeaderTypeXRequestedWith      HeaderType = "X-Requested-With"
+	HeaderTypeServer              HeaderType = "Server"
 
 	// Access control
-	HeaderAccessControlRequestMethod    Header = "Access-Control-Request-Method"
-	HeaderAccessControlRequestHeaders   Header = "Access-Control-Request-Headers"
-	HeaderAccessControlAllowOrigin      Header = "Access-Control-Allow-Origin"
-	HeaderAccessControlAllowMethods     Header = "Access-Control-Allow-Methods"
-	HeaderAccessControlAllowHeaders     Header = "Access-Control-Allow-Headers"
-	HeaderAccessControlAllowCredentials Header = "Access-Control-Allow-Credentials"
-	HeaderAccessControlExposeHeaders    Header = "Access-Control-Expose-Headers"
-	HeaderAccessControlMaxAge           Header = "Access-Control-Max-Age"
+	HeaderTypeAccessControlRequestMethod      HeaderType = "Access-Control-Request-Method"
+	HeaderTypeAccessControlRequestHeaderTypes HeaderType = "Access-Control-Request-HeaderTypes"
+	HeaderTypeAccessControlAllowOrigin        HeaderType = "Access-Control-Allow-Origin"
+	HeaderTypeAccessControlAllowMethods       HeaderType = "Access-Control-Allow-Methods"
+	HeaderTypeAccessControlAllowHeaderTypes   HeaderType = "Access-Control-Allow-HeaderTypes"
+	HeaderTypeAccessControlAllowCredentials   HeaderType = "Access-Control-Allow-Credentials"
+	HeaderTypeAccessControlExposeHeaderTypes  HeaderType = "Access-Control-Expose-HeaderTypes"
+	HeaderTypeAccessControlMaxAge             HeaderType = "Access-Control-Max-Age"
 
 	// Security
-	HeaderStrictTransportSecurity Header = "Strict-Transport-Security"
-	HeaderXContentTypeOptions     Header = "X-Content-Type-Options"
-	HeaderXXSSProtection          Header = "X-XSS-Protection"
-	HeaderXFrameOptions           Header = "X-Frame-Options"
-	HeaderContentSecurityPolicy   Header = "Content-Security-Policy"
-	HeaderXCSRFToken              Header = "X-CSRF-Token"
+	HeaderTypeStrictTransportSecurity HeaderType = "Strict-Transport-Security"
+	HeaderTypeXContentTypeOptions     HeaderType = "X-Content-Type-Options"
+	HeaderTypeXXSSProtection          HeaderType = "X-XSS-Protection"
+	HeaderTypeXFrameOptions           HeaderType = "X-Frame-Options"
+	HeaderTypeContentSecurityPolicy   HeaderType = "Content-Security-Policy"
+	HeaderTypeXCSRFToken              HeaderType = "X-CSRF-Token"
 )
