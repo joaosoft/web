@@ -46,5 +46,9 @@ func MyMiddlewareTwo() webserver.MiddlewareFunc {
 
 func HandlerHello(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER")
+
+	ctx.Response.Status = webserver.StatusOK
+	ctx.Response.Body = []byte("{ \"test\": \"ok\" }")
+
 	return nil
 }

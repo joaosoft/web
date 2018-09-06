@@ -131,7 +131,12 @@ func (w *WebServer) handleConnection(conn net.Conn) error {
 		return err
 	}
 
-	w.GetUrlParms(request, route)
+	// get url parameters
+	if err := w.GetUrlParms(request, route); err != nil {
+		return err
+	}
+
+	// route handler
 	handler := route.Handler
 
 	length := len(w.middlewares)
@@ -156,11 +161,6 @@ func (w *WebServer) handleConnection(conn net.Conn) error {
 	}
 
 	w.logger.Infof("from [%s], received on [%s]", conn.RemoteAddr(), ctx.StartTime)
-
-	// hammer
-	response.Status = StatusOK
-	response.Body = []byte("{ \"test\": \"ok\" }")
-	// end hammer
 
 	// header
 	var buf bytes.Buffer

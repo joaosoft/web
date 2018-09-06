@@ -27,7 +27,7 @@ func (r *Request) read(conn net.Conn) error {
 	reader := bufio.NewReader(conn)
 
 	// read one line (ended with \n or \r\n)
-	conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
+	conn.SetReadDeadline(time.Now().Add(time.Second * 1))
 	line, _, err := reader.ReadLine()
 	fmt.Println(string(line))
 	if err != nil {
@@ -77,7 +77,17 @@ func (r *Request) read(conn net.Conn) error {
 				value = string(split[1])
 			}
 
-			r.Headers[string(split[0])] = Header{value}
+			switch string(split[0]) {
+			case "cookie":
+				var cookieValue string
+				splitCookie := strings.Split(value, "=")
+				if len(splitCookie) > 1 {
+					cookieValue = splitCookie[1]
+				}
+				r.Cookies[string(split[0])] = Cookie{Name: splitCookie[0], Value: cookieValue}
+			default:
+				r.Headers[string(split[0])] = Header{value}
+			}
 		}
 	}
 
