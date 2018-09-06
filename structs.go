@@ -26,6 +26,12 @@ type Cookie struct {
 }
 type Cookies map[string]Cookie
 
+type UrlParm string
+type UrlParms map[string]UrlParm
+
+type Parm []string
+type Parms map[string]Parm
+
 type Context struct {
 	StartTime time.Time
 	Request   *Request
@@ -33,11 +39,14 @@ type Context struct {
 }
 
 type Base struct {
+	FullUrl  string
 	Url      string
 	Method   Method
 	Protocol string
 	Headers  Headers
 	Cookies  Cookies
+	Parms    Parms
+	UrlParms UrlParms
 }
 
 type Request struct {
@@ -56,11 +65,12 @@ type RequestHandler struct {
 	Handler HandlerFunc
 }
 
-type Routes map[string]*Route
+type Routes map[Method][]*Route
 
 type Route struct {
 	Method      Method
 	Path        string
+	Regex       string
 	Name        string
 	Handler     HandlerFunc
 	Middlewares []MiddlewareFunc

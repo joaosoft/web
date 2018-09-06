@@ -9,6 +9,7 @@ func NewResponse(request *Request) *Response {
 		Base: Base{
 			Method:   request.Method,
 			Url:      request.Url,
+			Parms:    request.Parms,
 			Protocol: request.Protocol,
 			Headers:  request.Headers,
 			Cookies:  request.Cookies,

@@ -8,6 +8,10 @@ import (
 
 	"bytes"
 
+	"regexp"
+
+	"strings"
+
 	"github.com/joaosoft/logger"
 	"github.com/joaosoft/manager"
 )
@@ -35,10 +39,6 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 		port:        9001,
 	}
 
-	service.routes["a"] = &Route{
-		Handler: hello,
-	}
-
 	if service.isLogExternal {
 		service.pm.Reconfigure(manager.WithLogger(service.logger))
 	}
@@ -60,17 +60,26 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 	return service, nil
 }
 
-func (w *WebServer) AddMiddleware(middlewares ...MiddlewareFunc) {
+func (w *WebServer) AddMiddlewares(middlewares ...MiddlewareFunc) {
 	w.middlewares = append(w.middlewares, middlewares...)
 }
 
 func (w *WebServer) AddRoute(method Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
-	w.routes[path] = &Route{
+	w.routes[method] = append(w.routes[method], &Route{
 		Method:      method,
 		Path:        path,
+		Regex:       w.ConvertPathToRegex(path),
 		Handler:     handler,
 		Middlewares: middleware,
 		Name:        GetFunctionName(handler),
+	})
+
+	return nil
+}
+
+func (w *WebServer) AddRoutes(route ...Route) error {
+	for _, r := range route {
+		w.routes[r.Method] = append(w.routes[r.Method], &r)
 	}
 	return nil
 }
@@ -100,29 +109,53 @@ func (w *WebServer) Start() error {
 	return err
 }
 
-func hello(ctx *Context) error {
-	return nil
-}
-
-func (w *WebServer) handleConnection(conn net.Conn) {
+func (w *WebServer) handleConnection(conn net.Conn) error {
 	defer conn.Close()
 
+	// create and load request
 	request, err := NewRequest(conn)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return err
 	}
 
+	// create response from request
 	response := NewResponse(request)
 
+	// create context with request and response
 	ctx := NewContext(request, response)
 
-	w.logger.Infof("from [%s], received on [%s]", conn.RemoteAddr(), ctx.StartTime)
-
-	// route
-	if err := w.routes["a"].Handler(ctx); err != nil {
-		conn.Write([]byte(err.Error()))
+	// middleware's of the server
+	route, err := w.GetUrlRoute(request.Method, request.Url)
+	if err != nil {
+		return err
 	}
+
+	w.GetUrlParms(request, route)
+	handler := route.Handler
+
+	length := len(w.middlewares)
+	for i, _ := range w.middlewares {
+		if w.middlewares[length-1-i] != nil {
+			handler = w.middlewares[length-1-i](handler)
+		}
+	}
+
+	// middleware's of the specific route
+	length = len(route.Middlewares)
+	for i, _ := range route.Middlewares {
+		if w.middlewares[length-1-i] != nil {
+			handler = w.middlewares[length-1-i](handler)
+		}
+	}
+
+	// run handlers with middleware's
+	if err := handler(ctx); err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	w.logger.Infof("from [%s], received on [%s]", conn.RemoteAddr(), ctx.StartTime)
 
 	// hammer
 	response.Status = StatusOK
@@ -141,10 +174,10 @@ func (w *WebServer) handleConnection(conn net.Conn) {
 
 	buf.Write(response.Body)
 
-	fmt.Println("RESPONSE: \n" + buf.String())
 	conn.Write(buf.Bytes())
 	w.logger.Infof("from [%s], finished on [%s]", conn.RemoteAddr(), ctx.StartTime.Add(time.Since(ctx.StartTime)))
 
+	return nil
 }
 
 func (w *WebServer) Stop() error {
@@ -152,6 +185,43 @@ func (w *WebServer) Stop() error {
 
 	if w.listener != nil {
 		w.listener.Close()
+	}
+
+	return nil
+}
+
+func (w *WebServer) ConvertPathToRegex(path string) string {
+
+	var re = regexp.MustCompile(`:[a-zA-Z0-9-_]+[^/]`)
+	regx := re.ReplaceAllString(path, `[a-zA-Z0-9-_]+[^/]`)
+
+	return regx
+}
+
+func (w *WebServer) GetUrlRoute(method Method, url string) (*Route, error) {
+
+	for _, route := range w.routes[method] {
+		if regx, err := regexp.Compile(route.Regex); err != nil {
+			return nil, err
+		} else {
+			if regx.MatchString(url) {
+				return route, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("route not found")
+}
+
+func (w *WebServer) GetUrlParms(request *Request, route *Route) error {
+
+	routeUrl := strings.Split(route.Path, "/")
+	url := strings.Split(request.Url, "/")
+
+	for i, name := range routeUrl {
+		if name != url[i] {
+			request.UrlParms[name] = UrlParm(url[i])
+		}
 	}
 
 	return nil
