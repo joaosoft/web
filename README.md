@@ -25,8 +25,8 @@ func main() {
 	// add middleware's
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
 	w.AddRoutes(
-		webserver.Route{Method: webserver.MethodGet, Path: "/hello/:name", Handler: HandlerHello},
-		webserver.Route{Method: webserver.MethodPost, Path: "/hello/:name", Handler: HandlerHello},
+		webserver.Route{Method: webserver.MethodGet, Path: "/hello/:name", Handler: HandlerHelloForGet},
+		webserver.Route{Method: webserver.MethodPost, Path: "/hello/:name", Handler: HandlerHelloForPost},
 	)
 
 	// start the server
@@ -54,11 +54,20 @@ func MyMiddlewareTwo() webserver.MiddlewareFunc {
 	}
 }
 
-func HandlerHello(ctx *webserver.Context) error {
-	fmt.Println("HELLO I'M THE HELLO HANDER")
+func HandlerHelloForGet(ctx *webserver.Context) error {
+	fmt.Println("HELLO I'M THE HELLO HANDER FOR GET")
 
 	ctx.Response.Status = webserver.StatusOK
 	ctx.Response.Body = []byte("{ \"test\": \"ok\" }")
+
+	return nil
+}
+
+func HandlerHelloForPost(ctx *webserver.Context) error {
+	fmt.Println("HELLO I'M THE HELLO HANDER FOR POST")
+
+	ctx.Response.Status = webserver.StatusOK
+	ctx.Response.Body = []byte("{ \"test\": \"nok\" }")
 
 	return nil
 }
