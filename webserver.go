@@ -65,7 +65,7 @@ func (w *WebServer) AddMiddlewares(middlewares ...MiddlewareFunc) {
 }
 
 func (w *WebServer) AddRoute(method Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
-	w.routes[method] = append(w.routes[method], &Route{
+	w.routes[method] = append(w.routes[method], Route{
 		Method:      method,
 		Path:        path,
 		Regex:       w.ConvertPathToRegex(path),
@@ -79,7 +79,7 @@ func (w *WebServer) AddRoute(method Method, path string, handler HandlerFunc, mi
 
 func (w *WebServer) AddRoutes(route ...Route) error {
 	for _, r := range route {
-		w.routes[r.Method] = append(w.routes[r.Method], &r)
+		w.routes[r.Method] = append(w.routes[r.Method], r)
 	}
 	return nil
 }
@@ -117,6 +117,10 @@ func (w *WebServer) handleConnection(conn net.Conn) error {
 	if err != nil {
 		fmt.Println(err)
 		return err
+	}
+
+	if request.FullUrl == "/favicon.ico" {
+		return nil
 	}
 
 	// create response from request
@@ -205,7 +209,7 @@ func (w *WebServer) GetUrlRoute(method Method, url string) (*Route, error) {
 			return nil, err
 		} else {
 			if regx.MatchString(url) {
-				return route, nil
+				return &route, nil
 			}
 		}
 	}

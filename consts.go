@@ -1,4 +1,3 @@
 package webserver
 
-const (
-)
+const ()

@@ -65,7 +65,7 @@ type RequestHandler struct {
 	Handler HandlerFunc
 }
 
-type Routes map[Method][]*Route
+type Routes map[Method][]Route
 
 type Route struct {
 	Method      Method
