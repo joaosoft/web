@@ -48,13 +48,16 @@ func (r *Request) read(conn net.Conn) error {
 		// load query parameters
 		if split := strings.SplitN(r.FullUrl, "?", 2); len(split) > 0 {
 			r.Url = string(split[0])
-			if parms := strings.Split(r.FullUrl, "&"); len(parms) > 0 {
-				if parm := strings.Split(r.FullUrl, "="); len(parm) > 1 {
-					r.Params[parm[0]] = []string{parm[1]}
-				}
-			} else {
-				if parm := strings.Split(r.FullUrl, "="); len(parm) > 0 {
-					r.Params[parm[0]] = []string{parm[1]}
+			if parms := strings.Split(split[1], "&"); len(parms) > 0 {
+				for _, parm := range parms {
+					if p := strings.Split(parm, "="); len(p) > 1 {
+						if split := strings.SplitN(p[1], ",", -1); len(split) > 0 {
+							for _, s := range split {
+								r.Params[p[0]] = append(r.Params[p[0]], s)
+							}
+						}
+						r.Params[p[0]] = append(r.Params[p[0]], p[1])
+					}
 				}
 			}
 		} else {

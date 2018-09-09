@@ -44,11 +44,18 @@ func (r *Response) GetCookie(name string) *Cookie {
 	return nil
 }
 
-func (r *Response) SetParam(name string, param Param) {
+func (r *Response) SetParam(name string, param []string) {
 	r.Params[name] = param
 }
 
-func (r *Response) GetParam(name string) []string {
+func (r *Response) GetParam(name string) string {
+	if param, ok := r.Params[name]; ok {
+		return param[0]
+	}
+	return ""
+}
+
+func (r *Response) GetParams(name string) []string {
 	if param, ok := r.Params[name]; ok {
 		return param
 	}

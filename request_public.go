@@ -24,14 +24,20 @@ func (r *Request) GetCookie(name string) *Cookie {
 	return nil
 }
 
-func (r *Request) SetParam(name string, param Param) {
+func (r *Request) SetParam(name string, param []string) {
 	r.Params[name] = param
 }
 
-func (r *Request) GetParam(name string) *Param {
+func (r *Request) GetParam(name string) string {
 	if param, ok := r.Params[name]; ok {
-		return &param
+		return param[0]
 	}
+	return ""
+}
 
+func (r *Request) GetParams(name string) []string {
+	if param, ok := r.Params[name]; ok {
+		return param
+	}
 	return nil
 }
