@@ -31,8 +31,8 @@ type Cookies map[string]Cookie
 type UrlParm []string
 type UrlParms map[string]UrlParm
 
-type Parm []string
-type Parms map[string]Parm
+type Param []string
+type Params map[string]Param
 
 type Context struct {
 	StartTime time.Time
@@ -48,7 +48,7 @@ type Base struct {
 	Protocol string
 	Headers  Headers
 	Cookies  Cookies
-	Parms    Parms
+	Params   Params
 	UrlParms UrlParms
 	conn     net.Conn
 }

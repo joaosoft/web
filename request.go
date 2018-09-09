@@ -18,7 +18,7 @@ func NewRequest(conn net.Conn) (*Request, error) {
 			IP:       conn.RemoteAddr().String(),
 			Headers:  make(Headers),
 			Cookies:  make(Cookies),
-			Parms:    make(Parms),
+			Params:   make(Params),
 			UrlParms: make(UrlParms),
 			conn:     conn,
 		},
@@ -50,11 +50,11 @@ func (r *Request) read(conn net.Conn) error {
 			r.Url = string(split[0])
 			if parms := strings.Split(r.FullUrl, "&"); len(parms) > 0 {
 				if parm := strings.Split(r.FullUrl, "="); len(parm) > 1 {
-					r.Parms[parm[0]] = []string{parm[1]}
+					r.Params[parm[0]] = []string{parm[1]}
 				}
 			} else {
 				if parm := strings.Split(r.FullUrl, "="); len(parm) > 0 {
-					r.Parms[parm[0]] = []string{parm[1]}
+					r.Params[parm[0]] = []string{parm[1]}
 				}
 			}
 		} else {
