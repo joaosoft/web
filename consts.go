@@ -1,3 +1,5 @@
-package webserver
+package web
 
 const ()
+
+var ()

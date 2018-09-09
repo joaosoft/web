@@ -1,4 +1,4 @@
-package webserver
+package web
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 
 // AppConfig ...
 type AppConfig struct {
-	Dependency WebServerConfig `json:"dependency"`
+	Dependency WebServerConfig `json:"webserver"`
 }
 
 // WebServerConfig ...

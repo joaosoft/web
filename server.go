@@ -1,12 +1,10 @@
-package webserver
+package web
 
 import (
 	"fmt"
 	"net"
 
 	"time"
-
-	"bytes"
 
 	"regexp"
 
@@ -25,6 +23,7 @@ type WebServer struct {
 	middlewares   []MiddlewareFunc
 	listener      net.Listener
 	port          int
+	errorhandler  ErrorHandler
 }
 
 func NewWebServer(options ...WebServerOption) (*WebServer, error) {
@@ -57,6 +56,9 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 	service.config = &appConfig.Dependency
 	service.Reconfigure(options...)
 
+	service.AddRoute(MethodGet, "/favicon.ico", service.handlerFile)
+	service.errorhandler = service.DefaultErrorHandler
+
 	return service, nil
 }
 
@@ -68,7 +70,7 @@ func (w *WebServer) AddRoute(method Method, path string, handler HandlerFunc, mi
 	w.routes[method] = append(w.routes[method], Route{
 		Method:      method,
 		Path:        path,
-		Regex:       w.ConvertPathToRegex(path),
+		Regex:       ConvertPathToRegex(path),
 		Handler:     handler,
 		Middlewares: middleware,
 		Name:        GetFunctionName(handler),
@@ -79,8 +81,32 @@ func (w *WebServer) AddRoute(method Method, path string, handler HandlerFunc, mi
 
 func (w *WebServer) AddRoutes(route ...Route) error {
 	for _, r := range route {
-		w.routes[r.Method] = append(w.routes[r.Method], r)
+		if err := w.AddRoute(r.Method, r.Path, r.Handler, r.Middlewares...); err != nil {
+			return err
+		}
 	}
+	return nil
+}
+
+func (w *WebServer) AddNamespace(path string, middlewares ...MiddlewareFunc) *Namespace {
+	return &Namespace{
+		Path:        path,
+		Middlewares: middlewares,
+		WebServer:   w,
+	}
+}
+
+func (n *Namespace) AddRoutes(route ...Route) error {
+	for _, r := range route {
+		if err := n.WebServer.AddRoute(r.Method, fmt.Sprintf("%s%s", n.Path, r.Path), r.Handler, append(r.Middlewares, n.Middlewares...)...); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (w *WebServer) SetErrorHandler(handler ErrorHandler) error {
+	w.errorhandler = handler
 	return nil
 }
 
@@ -89,10 +115,11 @@ func (w *WebServer) Start() error {
 	var err error
 
 	w.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", w.port))
-	w.logger.Infof("http server started on %d", w.port)
+	w.logger.Printf("http server started on %d", w.port)
 
 	for {
 		conn, err := w.listener.Accept()
+		w.logger.Info("accepted connection")
 		if err != nil {
 			w.logger.Errorf("error accepting connection: %s", err)
 			continue
@@ -109,41 +136,48 @@ func (w *WebServer) Start() error {
 	return err
 }
 
-func (w *WebServer) handleConnection(conn net.Conn) error {
-	defer conn.Close()
+func (w *WebServer) handleConnection(conn net.Conn) (err error) {
+	var ctx *Context
+	var handler HandlerFunc
+	var length int
+	startTime := time.Now()
 
-	// create and load request
+	defer func() {
+		conn.Close()
+	}()
+
+	// read response from connection
 	request, err := NewRequest(conn)
 	if err != nil {
-		fmt.Println(err)
+		w.logger.Errorf("error getting request: [%s]", err)
 		return err
 	}
 
-	if request.FullUrl == "/favicon.ico" {
-		return nil
-	}
-
-	// create response from request
+	// create response for request
 	response := NewResponse(request)
 
 	// create context with request and response
-	ctx := NewContext(request, response)
+	ctx = NewContext(startTime, request, response)
 
 	// middleware's of the server
-	route, err := w.GetUrlRoute(request.Method, request.Url)
+	var route *Route
+	route, err = w.GetRoute(request.Method, request.Url)
 	if err != nil {
-		return err
+		w.logger.Errorf("error getting route: [%s]", err)
+		goto on_error
 	}
 
 	// get url parameters
-	if err := w.GetUrlParms(request, route); err != nil {
-		return err
+	if err = w.LoadUrlParms(request, route); err != nil {
+		w.logger.Errorf("error loading url parameters: [%s]", err)
+		goto on_error
 	}
 
 	// route handler
-	handler := route.Handler
+	handler = route.Handler
 
-	length := len(w.middlewares)
+	// execute middlewares
+	length = len(w.middlewares)
 	for i, _ := range w.middlewares {
 		if w.middlewares[length-1-i] != nil {
 			handler = w.middlewares[length-1-i](handler)
@@ -153,33 +187,28 @@ func (w *WebServer) handleConnection(conn net.Conn) error {
 	// middleware's of the specific route
 	length = len(route.Middlewares)
 	for i, _ := range route.Middlewares {
-		if w.middlewares[length-1-i] != nil {
-			handler = w.middlewares[length-1-i](handler)
+		if route.Middlewares[length-1-i] != nil {
+			handler = route.Middlewares[length-1-i](handler)
 		}
 	}
 
 	// run handlers with middleware's
-	if err := handler(ctx); err != nil {
-		fmt.Println(err)
-		return err
+	if err = handler(ctx); err != nil {
+		w.logger.Errorf("error executing handler: [%s]", err)
+		goto on_error
 	}
 
-	w.logger.Infof("from [%s], received on [%s]", conn.RemoteAddr(), ctx.StartTime)
-
-	// header
-	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("%s %d %s\n", response.Protocol, response.Status, StatusText(response.Status)))
-
-	// headers
-	for key, value := range response.Headers {
-		buf.WriteString(fmt.Sprintf("%s: %s\n", key, value[0]))
+on_error:
+	if err != nil {
+		w.errorhandler(ctx, err)
 	}
-	buf.WriteString("\n")
 
-	buf.Write(response.Body)
+	// write response to connection
+	if err = ctx.Response.write(); err != nil {
+		w.logger.Errorf("error writing response: [%s]", err)
+	}
 
-	conn.Write(buf.Bytes())
-	w.logger.Infof("from [%s], finished on [%s]", conn.RemoteAddr(), ctx.StartTime.Add(time.Since(ctx.StartTime)))
+	w.logger.Printf("Address[ %s ] Method[ %s ] Url[ %s ] Protocol[ %s ] Elapsed[ %s ]", ctx.Request.IP, ctx.Request.Method, ctx.Request.Url, ctx.Request.Protocol, startTime)
 
 	return nil
 }
@@ -194,15 +223,15 @@ func (w *WebServer) Stop() error {
 	return nil
 }
 
-func (w *WebServer) ConvertPathToRegex(path string) string {
+func ConvertPathToRegex(path string) string {
 
-	var re = regexp.MustCompile(`:[a-zA-Z0-9-_]+[^/]`)
+	var re = regexp.MustCompile(`:[a-zA-Z0-9\-_]+[^/]`)
 	regx := re.ReplaceAllString(path, `[a-zA-Z0-9-_]+[^/]`)
 
-	return regx
+	return fmt.Sprintf("^%s", regx)
 }
 
-func (w *WebServer) GetUrlRoute(method Method, url string) (*Route, error) {
+func (w *WebServer) GetRoute(method Method, url string) (*Route, error) {
 
 	for _, route := range w.routes[method] {
 		if regx, err := regexp.Compile(route.Regex); err != nil {
@@ -214,17 +243,17 @@ func (w *WebServer) GetUrlRoute(method Method, url string) (*Route, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("route not found")
+	return nil, ErrorNotFound
 }
 
-func (w *WebServer) GetUrlParms(request *Request, route *Route) error {
+func (w *WebServer) LoadUrlParms(request *Request, route *Route) error {
 
 	routeUrl := strings.Split(route.Path, "/")
 	url := strings.Split(request.Url, "/")
 
 	for i, name := range routeUrl {
 		if name != url[i] {
-			request.UrlParms[name] = UrlParm(url[i])
+			request.UrlParms[name[1:]] = UrlParm([]string{url[i]})
 		}
 	}
 

@@ -1,7 +1,7 @@
 {
   "webserver": {
     "log": {
-      "level": "debug"
+      "level": "error"
     }
   },
   "manager": {

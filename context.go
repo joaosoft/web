@@ -1,12 +1,12 @@
-package webserver
+package web
 
 import (
 	"time"
 )
 
-func NewContext(request *Request, response *Response) *Context {
+func NewContext(startTime time.Time, request *Request, response *Response) *Context {
 	return &Context{
-		StartTime: time.Now(),
+		StartTime: startTime,
 		Request:   request,
 		Response:  response,
 	}

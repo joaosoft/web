@@ -1,23 +1,28 @@
-package webserver
+package web
 
 import (
 	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"strings"
 	"time"
 )
 
 func NewRequest(conn net.Conn) (*Request, error) {
+
 	request := &Request{
 		Base: Base{
+			IP:       conn.RemoteAddr().String(),
 			Headers:  make(Headers),
 			Cookies:  make(Cookies),
 			Parms:    make(Parms),
 			UrlParms: make(UrlParms),
+			conn:     conn,
 		},
+		Reader: conn.(io.Reader),
 	}
 
 	return request, request.read(conn)
@@ -29,9 +34,7 @@ func (r *Request) read(conn net.Conn) error {
 	// read one line (ended with \n or \r\n)
 	conn.SetReadDeadline(time.Now().Add(time.Second * 1))
 	line, _, err := reader.ReadLine()
-	fmt.Println(string(line))
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("invalid http request: %s", err)
 	}
 
@@ -59,13 +62,10 @@ func (r *Request) read(conn net.Conn) error {
 		}
 	}
 
-	fmt.Printf("%+v", *r)
-
 	// headers
 	for {
 		conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
 		line, _, err = reader.ReadLine()
-		fmt.Println(string(line))
 		if err != nil || len(line) == 0 {
 			break
 		}
@@ -86,7 +86,7 @@ func (r *Request) read(conn net.Conn) error {
 				}
 				r.Cookies[string(split[0])] = Cookie{Name: splitCookie[0], Value: cookieValue}
 			default:
-				r.Headers[string(split[0])] = Header{value}
+				r.Headers[HeaderType(string(split[0]))] = Header{value}
 			}
 		}
 	}
