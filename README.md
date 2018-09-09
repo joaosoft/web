@@ -32,8 +32,8 @@ go get github.com/joaosoft/webserver
 ## Usage 
 ```
 func main() {
-    // create a new server
-	w, err := web.NewWebServer()
+	// create a new server
+	w, err := webserver.NewWebServer()
 	if err != nil {
 		panic(err)
 	}
@@ -41,27 +41,27 @@ func main() {
 	// add middleware's
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
 	w.AddRoutes(
-		web.NewRoute(web.MethodHead, "/hello/:name", HandlerHelloForHead),
-		web.NewRoute(web.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareThree()),
-		web.NewRoute(web.MethodPost, "/hello/:name", HandlerHelloForPost),
-		web.NewRoute(web.MethodPut, "/hello/:name", HandlerHelloForPut),
-		web.NewRoute(web.MethodDelete, "/hello/:name", HandlerHelloForDelete),
-		web.NewRoute(web.MethodPatch, "/hello/:name", HandlerHelloForPatch),
-		web.NewRoute(web.MethodCopy, "/hello/:name", HandlerHelloForCopy),
-		web.NewRoute(web.MethodConnect, "/hello/:name", HandlerHelloForConnect),
-		web.NewRoute(web.MethodOptions, "/hello/:name", HandlerHelloForOptions),
-		web.NewRoute(web.MethodTrace, "/hello/:name", HandlerHelloForTrace),
-		web.NewRoute(web.MethodLink, "/hello/:name", HandlerHelloForLink),
-		web.NewRoute(web.MethodUnlink, "/hello/:name", HandlerHelloForUnlink),
-		web.NewRoute(web.MethodPurge, "/hello/:name", HandlerHelloForPurge),
-		web.NewRoute(web.MethodLock, "/hello/:name", HandlerHelloForLock),
-		web.NewRoute(web.MethodUnlock, "/hello/:name", HandlerHelloForUnlock),
-		web.NewRoute(web.MethodPropFind, "/hello/:name", HandlerHelloForPropFind),
-		web.NewRoute(web.MethodView, "/hello/:name", HandlerHelloForView),
+		webserver.NewRoute(webserver.MethodHead, "/hello/:name", HandlerHelloForHead),
+		webserver.NewRoute(webserver.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareThree()),
+		webserver.NewRoute(webserver.MethodPost, "/hello/:name", HandlerHelloForPost),
+		webserver.NewRoute(webserver.MethodPut, "/hello/:name", HandlerHelloForPut),
+		webserver.NewRoute(webserver.MethodDelete, "/hello/:name", HandlerHelloForDelete),
+		webserver.NewRoute(webserver.MethodPatch, "/hello/:name", HandlerHelloForPatch),
+		webserver.NewRoute(webserver.MethodCopy, "/hello/:name", HandlerHelloForCopy),
+		webserver.NewRoute(webserver.MethodConnect, "/hello/:name", HandlerHelloForConnect),
+		webserver.NewRoute(webserver.MethodOptions, "/hello/:name", HandlerHelloForOptions),
+		webserver.NewRoute(webserver.MethodTrace, "/hello/:name", HandlerHelloForTrace),
+		webserver.NewRoute(webserver.MethodLink, "/hello/:name", HandlerHelloForLink),
+		webserver.NewRoute(webserver.MethodUnlink, "/hello/:name", HandlerHelloForUnlink),
+		webserver.NewRoute(webserver.MethodPurge, "/hello/:name", HandlerHelloForPurge),
+		webserver.NewRoute(webserver.MethodLock, "/hello/:name", HandlerHelloForLock),
+		webserver.NewRoute(webserver.MethodUnlock, "/hello/:name", HandlerHelloForUnlock),
+		webserver.NewRoute(webserver.MethodPropFind, "/hello/:name", HandlerHelloForPropFind),
+		webserver.NewRoute(webserver.MethodView, "/hello/:name", HandlerHelloForView),
 	)
 
 	w.AddNamespace("/p").AddRoutes(
-		web.NewRoute(web.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareFour()),
+		webserver.NewRoute(webserver.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareFour()),
 	)
 
 	// start the server
@@ -70,189 +70,189 @@ func main() {
 	}
 }
 
-func MyMiddlewareOne() web.MiddlewareFunc {
-	return func(next web.HandlerFunc) web.HandlerFunc {
-		return func(ctx *web.Context) error {
+func MyMiddlewareOne() webserver.MiddlewareFunc {
+	return func(next webserver.HandlerFunc) webserver.HandlerFunc {
+		return func(ctx *webserver.Context) error {
 			fmt.Println("HELLO I'M THE MIDDLEWARE ONE")
 			return next(ctx)
 		}
 	}
 }
 
-func MyMiddlewareTwo() web.MiddlewareFunc {
-	return func(next web.HandlerFunc) web.HandlerFunc {
-		return func(ctx *web.Context) error {
+func MyMiddlewareTwo() webserver.MiddlewareFunc {
+	return func(next webserver.HandlerFunc) webserver.HandlerFunc {
+		return func(ctx *webserver.Context) error {
 			fmt.Println("HELLO I'M THE MIDDLEWARE TWO")
 			return next(ctx)
 		}
 	}
 }
 
-func MyMiddlewareThree() web.MiddlewareFunc {
-	return func(next web.HandlerFunc) web.HandlerFunc {
-		return func(ctx *web.Context) error {
+func MyMiddlewareThree() webserver.MiddlewareFunc {
+	return func(next webserver.HandlerFunc) webserver.HandlerFunc {
+		return func(ctx *webserver.Context) error {
 			fmt.Println("HELLO I'M THE MIDDLEWARE THREE")
 			return next(ctx)
 		}
 	}
 }
-func MyMiddlewareFour() web.MiddlewareFunc {
-	return func(next web.HandlerFunc) web.HandlerFunc {
-		return func(ctx *web.Context) error {
+func MyMiddlewareFour() webserver.MiddlewareFunc {
+	return func(next webserver.HandlerFunc) webserver.HandlerFunc {
+		return func(ctx *webserver.Context) error {
 			fmt.Println("HELLO I'M THE MIDDLEWARE FOUR")
 			return next(ctx)
 		}
 	}
 }
-func HandlerHelloForHead(ctx *web.Context) error {
+func HandlerHelloForHead(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR HEAD")
 
-	return ctx.Response.NoContent(web.StatusOK)
+	return ctx.Response.NoContent(webserver.StatusOK)
 }
 
-func HandlerHelloForGet(ctx *web.Context) error {
+func HandlerHelloForGet(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR GET")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForPost(ctx *web.Context) error {
+func HandlerHelloForPost(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR POST")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForPut(ctx *web.Context) error {
+func HandlerHelloForPut(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR PUT")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForDelete(ctx *web.Context) error {
+func HandlerHelloForDelete(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR DELETE")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForPatch(ctx *web.Context) error {
+func HandlerHelloForPatch(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR PATCH")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForCopy(ctx *web.Context) error {
+func HandlerHelloForCopy(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR COPY")
 
-	return ctx.Response.NoContent(web.StatusOK)
+	return ctx.Response.NoContent(webserver.StatusOK)
 }
 
-func HandlerHelloForConnect(ctx *web.Context) error {
+func HandlerHelloForConnect(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR CONNECT")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForOptions(ctx *web.Context) error {
+func HandlerHelloForOptions(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR OPTIONS")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForTrace(ctx *web.Context) error {
+func HandlerHelloForTrace(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR TRACE")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForLink(ctx *web.Context) error {
+func HandlerHelloForLink(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR LINK")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForUnlink(ctx *web.Context) error {
+func HandlerHelloForUnlink(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR UNLINK")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForPurge(ctx *web.Context) error {
+func HandlerHelloForPurge(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR PURGE")
 
-	return ctx.Response.NoContent(web.StatusOK)
+	return ctx.Response.NoContent(webserver.StatusOK)
 }
 
-func HandlerHelloForLock(ctx *web.Context) error {
+func HandlerHelloForLock(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR LOCK")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForUnlock(ctx *web.Context) error {
+func HandlerHelloForUnlock(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR UNLOCK")
 
-	return ctx.Response.NoContent(web.StatusOK)
+	return ctx.Response.NoContent(webserver.StatusOK)
 }
-func HandlerHelloForPropFind(ctx *web.Context) error {
+func HandlerHelloForPropFind(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR PROPFIND")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }
 
-func HandlerHelloForView(ctx *web.Context) error {
+func HandlerHelloForView(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR VIEW")
 
 	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentApplicationJSON,
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
 	)
 }

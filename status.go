@@ -1,4 +1,4 @@
-package web
+package webserver
 
 // HTTP status codes as registered with IANA.
 // See: http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml

@@ -1,4 +1,4 @@
-package web
+package webserver
 
 type Routes map[Method][]Route
 

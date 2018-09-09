@@ -1,4 +1,4 @@
-package web
+package webserver
 
 func (r *Request) SetHeader(name string, header Header) {
 	r.Headers[HeaderType(name)] = header

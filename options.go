@@ -1,4 +1,4 @@
-package web
+package webserver
 
 import (
 	"github.com/joaosoft/logger"
