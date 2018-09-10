@@ -33,7 +33,6 @@ func (r *Response) write() error {
 		buf.WriteString("\r\n")
 		buf.Write(r.Body)
 
-		fmt.Println(buf.String())
 		r.conn.Write(buf.Bytes())
 	}
 
