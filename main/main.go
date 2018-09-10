@@ -97,6 +97,13 @@ func HandlerHelloForGet(ctx *webserver.Context) error {
 func HandlerHelloForPost(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR POST")
 
+	data := struct {
+		Name string `json:"name"`
+		Age  int    `json:"age"`
+	}{}
+	ctx.Request.Bind(&data)
+	fmt.Printf("%+v", data)
+
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,

@@ -3,6 +3,7 @@ package webserver
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -25,14 +26,21 @@ func NewRequest(conn net.Conn) (*Request, error) {
 		Reader: conn.(io.Reader),
 	}
 
-	return request, request.read(conn)
+	return request, request.read()
 }
 
-func (r *Request) read(conn net.Conn) error {
-	reader := bufio.NewReader(conn)
+func (r *Request) Bind(i interface{}) error {
+	if err := json.Unmarshal(r.Body, i); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *Request) read() error {
+	reader := bufio.NewReader(r.conn)
 
 	// read one line (ended with \n or \r\n)
-	conn.SetReadDeadline(time.Now().Add(time.Second * 1))
+	r.conn.SetReadDeadline(time.Now().Add(time.Second * 1))
 	line, _, err := reader.ReadLine()
 	if err != nil {
 		return fmt.Errorf("invalid http request: %s", err)
@@ -67,7 +75,7 @@ func (r *Request) read(conn net.Conn) error {
 
 	// headers
 	for {
-		conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
+		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
 		line, _, err = reader.ReadLine()
 		if err != nil || len(line) == 0 {
 			break
@@ -97,7 +105,7 @@ func (r *Request) read(conn net.Conn) error {
 	// body
 	var buf bytes.Buffer
 	for {
-		conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
+		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
 		line, _, err = reader.ReadLine()
 		if err != nil {
 			break
