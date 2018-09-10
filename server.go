@@ -22,7 +22,7 @@ type WebServer struct {
 	routes        Routes
 	middlewares   []MiddlewareFunc
 	listener      net.Listener
-	port          int
+	address       string
 	errorhandler  ErrorHandler
 }
 
@@ -35,7 +35,7 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 		logger:      log,
 		routes:      make(Routes),
 		middlewares: make([]MiddlewareFunc, 0),
-		port:        80,
+		address:     ":80",
 	}
 
 	if service.isLogExternal {
@@ -54,8 +54,8 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 	}
 
 	service.config = &appConfig.WebServer
-	if appConfig.WebServer.Port > 0 {
-		service.port = appConfig.WebServer.Port
+	if appConfig.WebServer.Address != "" {
+		service.address = appConfig.WebServer.Address
 	}
 
 	service.Reconfigure(options...)
@@ -118,8 +118,8 @@ func (w *WebServer) Start() error {
 	w.logger.Debug("executing Start")
 	var err error
 
-	w.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", w.port))
-	w.logger.Printf("http server started on %d", w.port)
+	w.listener, err = net.Listen("tcp", w.address)
+	w.logger.Printf("http server started on %s", w.address)
 
 	for {
 		conn, err := w.listener.Accept()
