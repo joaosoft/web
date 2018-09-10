@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -30,8 +31,24 @@ func NewRequest(conn net.Conn) (*Request, error) {
 }
 
 func (r *Request) Bind(i interface{}) error {
-	if err := json.Unmarshal(r.Body, i); err != nil {
-		return err
+	contentType := r.GetContentType()
+
+	if len(r.Body) == 0 || contentType == nil {
+		return nil
+	}
+
+	switch *contentType {
+	case ContentApplicationJSON:
+		if err := json.Unmarshal(r.Body, i); err != nil {
+			return err
+		}
+	case ContentApplicationXML:
+		if err := xml.Unmarshal(r.Body, i); err != nil {
+			return err
+		}
+	default:
+		tmp := string(r.Body)
+		i = &tmp
 	}
 	return nil
 }
