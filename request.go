@@ -112,9 +112,9 @@ func (r *Request) read() error {
 				if len(splitCookie) > 1 {
 					cookieValue = splitCookie[1]
 				}
-				r.Cookies[string(split[0])] = Cookie{Name: splitCookie[0], Value: cookieValue}
+				r.Cookies[strings.Title(string(split[0]))] = Cookie{Name: splitCookie[0], Value: cookieValue}
 			default:
-				r.Headers[HeaderType(string(split[0]))] = []string{value}
+				r.Headers[HeaderType(strings.Title(string(split[0])))] = []string{value}
 			}
 		}
 	}

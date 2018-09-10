@@ -30,6 +30,7 @@ const (
 	HeaderXRequestID          HeaderType = "X-Request-ID"
 	HeaderXRequestedWith      HeaderType = "X-Requested-With"
 	HeaderServer              HeaderType = "Server"
+	HeaderDate                HeaderType = "Date"
 
 	// Access control
 	HeaderAccessControlRequestMethod      HeaderType = "Access-Control-Request-Method"

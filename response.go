@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strconv"
+	"time"
 )
 
 func NewResponse(request *Request) *Response {
@@ -16,17 +18,22 @@ func NewResponse(request *Request) *Response {
 func (r *Response) write() error {
 	// header
 	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("%s %d %s\n", r.Protocol, r.Status, StatusText(r.Status)))
+	buf.WriteString(fmt.Sprintf("%s %d %s\r\n", r.Protocol, r.Status, StatusText(r.Status)))
 
 	// headers
+	r.Headers[HeaderContentLength] = []string{strconv.Itoa(len(r.Body))}
+	r.Headers[HeaderServer] = []string{"webserver"}
+	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
+
 	for key, value := range r.Headers {
-		buf.WriteString(fmt.Sprintf("%s: %s\n", key, value[0]))
+		buf.WriteString(fmt.Sprintf("%s: %s\r\n", key, value[0]))
 	}
 
 	if methodHasBody[r.Method] {
-		buf.WriteString("\n")
+		buf.WriteString("\r\n")
 		buf.Write(r.Body)
 
+		fmt.Println(buf.String())
 		r.conn.Write(buf.Bytes())
 	}
 

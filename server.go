@@ -236,10 +236,10 @@ func (w *WebServer) Stop() error {
 
 func ConvertPathToRegex(path string) string {
 
-	var re = regexp.MustCompile(`:[a-zA-Z0-9\-_]+[^/]`)
-	regx := re.ReplaceAllString(path, `[a-zA-Z0-9-_]+[^/]`)
+	var re = regexp.MustCompile(`:[a-zA-Z0-9\-_]+`)
+	regx := re.ReplaceAllString(path, `[a-zA-Z0-9-_]+`)
 
-	return fmt.Sprintf("^%s", regx)
+	return fmt.Sprintf("^%s$", regx)
 }
 
 func (w *WebServer) GetRoute(method Method, url string) (*Route, error) {
