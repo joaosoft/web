@@ -3,7 +3,6 @@ package webserver
 import (
 	"fmt"
 
-	"github.com/joaosoft/manager"
 )
 
 // AppConfig ...
@@ -22,7 +21,7 @@ type WebServerConfig struct {
 // NewConfig ...
 func NewConfig(address string) (*WebServerConfig, error) {
 	appConfig := &AppConfig{}
-	if _, err := manager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
+	if err := NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
 		return nil, err
 	}
 

@@ -3,21 +3,16 @@ package webserver
 import (
 	"fmt"
 	"net"
-
+	"regexp"
+	"strings"
 	"time"
 
-	"regexp"
-
-	"strings"
-
 	"github.com/joaosoft/logger"
-	"github.com/joaosoft/manager"
 )
 
 type WebServer struct {
 	config        *WebServerConfig
 	isLogExternal bool
-	pm            *manager.Manager
 	logger        logger.ILogger
 	routes        Routes
 	middlewares   []MiddlewareFunc
@@ -27,11 +22,9 @@ type WebServer struct {
 }
 
 func NewWebServer(options ...WebServerOption) (*WebServer, error) {
-	pm := manager.NewManager(manager.WithRunInBackground(true), manager.WithLogLevel(logger.NoneLevel))
 	log := logger.NewLogDefault("webserver", logger.WarnLevel)
 
 	service := &WebServer{
-		pm:          pm,
 		logger:      log,
 		routes:      make(Routes),
 		middlewares: make([]MiddlewareFunc, 0),
@@ -39,15 +32,14 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 	}
 
 	if service.isLogExternal {
-		service.pm.Reconfigure(manager.WithLogger(service.logger))
+		// set logger of internal processes
 	}
 
 	// load configuration File
 	appConfig := &AppConfig{}
-	if simpleConfig, err := manager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
+	if err := NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
 		service.logger.Warn(err)
 	} else {
-		service.pm.AddConfig("config_app", simpleConfig)
 		level, _ := logger.ParseLevel(appConfig.WebServer.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
@@ -64,6 +56,14 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 	service.errorhandler = service.DefaultErrorHandler
 
 	return service, nil
+}
+
+// NewSimpleConfig...
+func NewSimpleConfig(file string, obj interface{}) error {
+	if _, err := ReadFile(file, obj); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (w *WebServer) AddMiddlewares(middlewares ...MiddlewareFunc) {

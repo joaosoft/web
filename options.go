@@ -2,7 +2,6 @@ package webserver
 
 import (
 	"github.com/joaosoft/logger"
-	"github.com/joaosoft/manager"
 )
 
 // WebServerOption ...
@@ -34,13 +33,6 @@ func WithLogger(logger logger.ILogger) WebServerOption {
 func WithLogLevel(level logger.Level) WebServerOption {
 	return func(builder *WebServer) {
 		builder.logger.SetLevel(level)
-	}
-}
-
-// WithManager ...
-func WithManager(mgr *manager.Manager) WebServerOption {
-	return func(builder *WebServer) {
-		builder.pm = mgr
 	}
 }
 

@@ -4,10 +4,5 @@
     "log": {
       "level": "debug"
     }
-  },
-  "manager": {
-    "log": {
-      "level": "none"
-    }
   }
 }
