@@ -16,12 +16,12 @@ func NewRequest(conn net.Conn) (*Request, error) {
 
 	request := &Request{
 		Base: Base{
-			IP:       conn.RemoteAddr().String(),
-			Headers:  make(Headers),
-			Cookies:  make(Cookies),
-			Params:   make(Params),
-			UrlParms: make(UrlParms),
-			conn:     conn,
+			IP:        conn.RemoteAddr().String(),
+			Headers:   make(Headers),
+			Cookies:   make(Cookies),
+			Params:    make(Params),
+			UrlParams: make(UrlParams),
+			conn:      conn,
 		},
 		Reader: conn.(io.Reader),
 	}

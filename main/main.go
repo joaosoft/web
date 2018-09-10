@@ -90,7 +90,7 @@ func HandlerHelloForGet(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -107,7 +107,7 @@ func HandlerHelloForPost(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -117,7 +117,7 @@ func HandlerHelloForPut(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -127,7 +127,7 @@ func HandlerHelloForDelete(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -137,7 +137,7 @@ func HandlerHelloForPatch(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -153,7 +153,7 @@ func HandlerHelloForConnect(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -163,7 +163,7 @@ func HandlerHelloForOptions(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -173,7 +173,7 @@ func HandlerHelloForTrace(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -183,7 +183,7 @@ func HandlerHelloForLink(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -193,7 +193,7 @@ func HandlerHelloForUnlink(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -209,7 +209,7 @@ func HandlerHelloForLock(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -224,7 +224,7 @@ func HandlerHelloForPropFind(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -234,6 +234,6 @@ func HandlerHelloForView(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }

@@ -10,58 +10,6 @@ import (
 	"strconv"
 )
 
-func (r *Response) SetHeader(name HeaderType, header []string) {
-	r.Headers[name] = header
-}
-
-func (r *Response) GetHeader(name HeaderType) string {
-	if header, ok := r.Headers[name]; ok {
-		return header[0]
-	}
-	return ""
-}
-
-func (r *Response) SetContentType(contentType ContentType) {
-	r.Headers[HeaderContentType] = []string{string(contentType)}
-}
-
-func (r *Response) GetContentType() *ContentType {
-	if value, ok := r.Headers[HeaderContentType]; ok {
-		contentType := ContentType(value[0])
-		return &contentType
-	}
-	return nil
-}
-
-func (r *Response) SetCookie(name string, cookie Cookie) {
-	r.Cookies[name] = cookie
-}
-
-func (r *Response) GetCookie(name string) *Cookie {
-	if cookie, ok := r.Cookies[name]; ok {
-		return &cookie
-	}
-	return nil
-}
-
-func (r *Response) SetParam(name string, param []string) {
-	r.Params[name] = param
-}
-
-func (r *Response) GetParam(name string) string {
-	if param, ok := r.Params[name]; ok {
-		return param[0]
-	}
-	return ""
-}
-
-func (r *Response) GetParams(name string) []string {
-	if param, ok := r.Params[name]; ok {
-		return param
-	}
-	return nil
-}
-
 func (r *Response) Set(status Status, contentType ContentType, b []byte) error {
 	r.SetContentType(contentType)
 	r.Status = status
@@ -92,7 +40,7 @@ func (r *Response) String(status Status, s string) error {
 
 func (r *Response) JSON(status Status, i interface{}) error {
 	var pretty bool
-	if value, ok := r.UrlParms["pretty"]; ok {
+	if value, ok := r.UrlParams["pretty"]; ok {
 		pretty, _ = strconv.ParseBool(value[0])
 	}
 
@@ -124,7 +72,7 @@ func (r *Response) JSONPretty(status Status, i interface{}, indent string) error
 
 func (r *Response) XML(status Status, i interface{}) error {
 	var pretty bool
-	if value, ok := r.UrlParms["pretty"]; ok {
+	if value, ok := r.UrlParams["pretty"]; ok {
 		pretty, _ = strconv.ParseBool(value[0])
 	}
 

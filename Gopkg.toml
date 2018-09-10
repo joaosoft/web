@@ -37,6 +37,10 @@
   name = "github.com/labstack/gommon"
   version = "0.2.6"
 
+[[override]]
+  name = "github.com/satori/go.uuid"
+  branch = "master"
+
 [prune]
   go-tests = true
   unused-packages = true

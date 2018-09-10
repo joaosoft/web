@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"os"
+
 	"github.com/joaosoft/logger"
 )
 
@@ -60,7 +62,8 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 
 // NewSimpleConfig...
 func NewSimpleConfig(file string, obj interface{}) error {
-	if _, err := ReadFile(file, obj); err != nil {
+	dir, _ := os.Getwd()
+	if _, err := ReadFile(fmt.Sprintf("%s%s", dir, file), obj); err != nil {
 		return err
 	}
 	return nil
@@ -119,6 +122,10 @@ func (w *WebServer) Start() error {
 	var err error
 
 	w.listener, err = net.Listen("tcp", w.address)
+	if err != nil {
+		w.logger.Errorf("error connecting to %s: %s", w.address, err)
+		return err
+	}
 	w.logger.Printf("http server started on %s", w.address)
 
 	for {
@@ -257,7 +264,7 @@ func (w *WebServer) LoadUrlParms(request *Request, route *Route) error {
 
 	for i, name := range routeUrl {
 		if name != url[i] {
-			request.UrlParms[name[1:]] = []string{url[i]}
+			request.UrlParams[name[1:]] = []string{url[i]}
 		}
 	}
 

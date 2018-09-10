@@ -27,7 +27,7 @@ type Cookie struct {
 }
 type Cookies map[string]Cookie
 
-type UrlParms map[string][]string
+type UrlParams map[string][]string
 
 type Params map[string][]string
 
@@ -38,16 +38,16 @@ type Context struct {
 }
 
 type Base struct {
-	IP       string
-	FullUrl  string
-	Url      string
-	Method   Method
-	Protocol string
-	Headers  Headers
-	Cookies  Cookies
-	Params   Params
-	UrlParms UrlParms
-	conn     net.Conn
+	IP        string
+	FullUrl   string
+	Url       string
+	Method    Method
+	Protocol  string
+	Headers   Headers
+	Cookies   Cookies
+	Params    Params
+	UrlParams UrlParams
+	conn      net.Conn
 }
 
 type Request struct {
