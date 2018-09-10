@@ -54,7 +54,7 @@ func (r *Request) read() error {
 		r.Protocol = string(firstLine[2])
 
 		// load query parameters
-		if split := strings.SplitN(r.FullUrl, "?", 2); len(split) > 0 {
+		if split := strings.SplitN(r.FullUrl, "?", 2); len(split) > 1 {
 			r.Url = string(split[0])
 			if parms := strings.Split(split[1], "&"); len(parms) > 0 {
 				for _, parm := range parms {
