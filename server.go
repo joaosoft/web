@@ -219,7 +219,7 @@ on_error:
 		w.logger.Errorf("error writing response: [%s]", err)
 	}
 
-	w.logger.Printf("Address[ %s ] Method[ %s ] Url[ %s ] Protocol[ %s ] Elapsed[ %s ]", ctx.Request.IP, ctx.Request.Method, ctx.Request.Url, ctx.Request.Protocol, startTime)
+	w.logger.Printf("Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s] Elapsed[%s]", ctx.Request.IP, ctx.Request.Method, ctx.Request.Url, ctx.Request.Protocol, startTime, time.Since(startTime))
 
 	return nil
 }

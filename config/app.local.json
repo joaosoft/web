@@ -2,7 +2,7 @@
   "webserver": {
     "port": ":9001",
     "log": {
-      "level": "error"
+      "level": "debug"
     }
   }
 }
