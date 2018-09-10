@@ -43,3 +43,10 @@ func WithManager(mgr *manager.Manager) WebServerOption {
 		builder.pm = mgr
 	}
 }
+
+// WithPort ...
+func WithPort(port int) WebServerOption {
+	return func(builder *WebServer) {
+		builder.port = port
+	}
+}

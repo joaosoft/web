@@ -35,7 +35,7 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 		logger:      log,
 		routes:      make(Routes),
 		middlewares: make([]MiddlewareFunc, 0),
-		port:        9001,
+		port:        80,
 	}
 
 	if service.isLogExternal {
@@ -48,12 +48,16 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 		service.logger.Warn(err)
 	} else {
 		service.pm.AddConfig("config_app", simpleConfig)
-		level, _ := logger.ParseLevel(appConfig.Dependency.Log.Level)
+		level, _ := logger.ParseLevel(appConfig.WebServer.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
 	}
 
-	service.config = &appConfig.Dependency
+	service.config = &appConfig.WebServer
+	if appConfig.WebServer.Port > 0 {
+		service.port = appConfig.WebServer.Port
+	}
+
 	service.Reconfigure(options...)
 
 	service.AddRoute(MethodGet, "/favicon.ico", service.handlerFile)

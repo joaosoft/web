@@ -117,7 +117,7 @@ var statusText = map[Status]string{
 	StatusTeapot:                       "I'm a teapot",
 	StatusUnprocessableEntity:          "Unprocessable Entity",
 	StatusLocked:                       "Locked",
-	StatusFailedDependency:             "Failed Dependency",
+	StatusFailedDependency:             "Failed WebServer",
 	StatusUpgradeRequired:              "Upgrade Required",
 	StatusPreconditionRequired:         "Precondition Required",
 	StatusTooManyRequests:              "Too Many Requests",
