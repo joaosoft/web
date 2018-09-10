@@ -10,8 +10,7 @@ type ErrorHandler func(ctx *Context, err error) error
 type HandlerFunc func(ctx *Context) error
 type MiddlewareFunc func(HandlerFunc) HandlerFunc
 
-type Header []string
-type Headers map[HeaderType]Header
+type Headers map[HeaderType][]string
 
 type Cookie struct {
 	Name    string
@@ -28,11 +27,9 @@ type Cookie struct {
 }
 type Cookies map[string]Cookie
 
-type UrlParm []string
-type UrlParms map[string]UrlParm
+type UrlParms map[string][]string
 
-type Param []string
-type Params map[string]Param
+type Params map[string][]string
 
 type Context struct {
 	StartTime time.Time
@@ -70,8 +67,6 @@ type RequestHandler struct {
 	Conn    net.Conn
 	Handler HandlerFunc
 }
-
-
 
 type Method string
 

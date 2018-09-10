@@ -89,7 +89,7 @@ func (r *Request) read(conn net.Conn) error {
 				}
 				r.Cookies[string(split[0])] = Cookie{Name: splitCookie[0], Value: cookieValue}
 			default:
-				r.Headers[HeaderType(string(split[0]))] = Header{value}
+				r.Headers[HeaderType(string(split[0]))] = []string{value}
 			}
 		}
 	}

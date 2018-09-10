@@ -253,7 +253,7 @@ func (w *WebServer) LoadUrlParms(request *Request, route *Route) error {
 
 	for i, name := range routeUrl {
 		if name != url[i] {
-			request.UrlParms[name[1:]] = UrlParm([]string{url[i]})
+			request.UrlParms[name[1:]] = []string{url[i]}
 		}
 	}
 

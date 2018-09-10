@@ -10,8 +10,8 @@ import (
 	"strconv"
 )
 
-func (r *Response) SetHeader(name HeaderType, header string) {
-	r.Headers[name] = Header{header}
+func (r *Response) SetHeader(name HeaderType, header []string) {
+	r.Headers[name] = header
 }
 
 func (r *Response) GetHeader(name HeaderType) string {
@@ -22,7 +22,7 @@ func (r *Response) GetHeader(name HeaderType) string {
 }
 
 func (r *Response) SetContentType(contentType ContentType) {
-	r.Headers[HeaderContentType] = Header{string(contentType)}
+	r.Headers[HeaderContentType] = []string{string(contentType)}
 }
 
 func (r *Response) GetContentType() *ContentType {
@@ -181,12 +181,12 @@ func (r *Response) File(fileName string) error {
 }
 
 func (r *Response) Attachment(file, name string) error {
-	r.SetHeader(HeaderContentDisposition, fmt.Sprintf("attachment; filename=%q", name))
+	r.SetHeader(HeaderContentDisposition, []string{fmt.Sprintf("attachment; filename=%q", name)})
 	return r.File(file)
 }
 
 func (r *Response) Inline(file, name string) error {
-	r.SetHeader(HeaderContentDisposition, fmt.Sprintf("inline; filename=%q", name))
+	r.SetHeader(HeaderContentDisposition, []string{fmt.Sprintf("inline; filename=%q", name)})
 	return r.File(file)
 }
 

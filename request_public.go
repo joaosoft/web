@@ -1,12 +1,12 @@
 package webserver
 
-func (r *Request) SetHeader(name string, header Header) {
+func (r *Request) SetHeader(name string, header []string) {
 	r.Headers[HeaderType(name)] = header
 }
 
-func (r *Request) GetHeader(name string) *Header {
+func (r *Request) GetHeader(name string) []string {
 	if header, ok := r.Headers[HeaderType(name)]; ok {
-		return &header
+		return header
 	}
 
 	return nil
