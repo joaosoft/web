@@ -3,6 +3,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/joaosoft/color"
+  packages = ["."]
+  revision = "07e4266c4252ee4e6f602930d170877ba009d142"
+
+[[projects]]
+  branch = "master"
   name = "github.com/joaosoft/errors"
   packages = ["."]
   revision = "3ebf6983bd704eae5217e69e4371dd3f13834572"
@@ -41,10 +47,10 @@
   version = "v0.0.4"
 
 [[projects]]
+  branch = "master"
   name = "github.com/satori/go.uuid"
   packages = ["."]
-  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
-  version = "v1.2.0"
+  revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
 
 [[projects]]
   name = "github.com/valyala/bytebufferpool"
@@ -67,6 +73,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "90c6ed538bf806edc496428c9a0f4b038dc07733dfa4ef54e868875036025d5b"
+  inputs-digest = "c9884d662d8afae54f82f8c64ef2877d34a2d9c7efb5e59d51489d8b46a515da"
   solver-name = "gps-cdcl"
   solver-version = 1

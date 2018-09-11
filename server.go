@@ -9,6 +9,7 @@ import (
 
 	"os"
 
+	"github.com/joaosoft/color"
 	"github.com/joaosoft/logger"
 )
 
@@ -126,7 +127,7 @@ func (w *WebServer) Start() error {
 		w.logger.Errorf("error connecting to %s: %s", w.address, err)
 		return err
 	}
-	w.logger.Printf("http server started on %s", w.address)
+	fmt.Println(color.WithColor("http server started on [%s]", color.FormatBold, color.ForegroundRed, color.BackgroundBlack, w.address))
 
 	for {
 		conn, err := w.listener.Accept()
@@ -219,7 +220,7 @@ on_error:
 		w.logger.Errorf("error writing response: [%s]", err)
 	}
 
-	w.logger.Printf("Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s] Elapsed[%s]", ctx.Request.IP, ctx.Request.Method, ctx.Request.Url, ctx.Request.Protocol, startTime, time.Since(startTime))
+	fmt.Println(color.WithColor("Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, ctx.Request.IP, ctx.Request.Method, ctx.Request.Url, ctx.Request.Protocol, startTime, time.Since(startTime)))
 
 	return nil
 }
