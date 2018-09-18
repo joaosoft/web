@@ -63,6 +63,8 @@ func main() {
 		webserver.NewRoute(webserver.MethodUnlock, "/hello/:name", HandlerHelloForUnlock),
 		webserver.NewRoute(webserver.MethodPropFind, "/hello/:name", HandlerHelloForPropFind),
 		webserver.NewRoute(webserver.MethodView, "/hello/:name", HandlerHelloForView),
+		webserver.NewRoute(webserver.MethodGet, "/hello/:name/download", HandlerHelloForDownloadFiles),
+		webserver.NewRoute(webserver.MethodPost, "/hello/:name/upload", HandlerHelloForUploadFiles),
 	)
 
 	w.AddNamespace("/p").AddRoutes(
@@ -121,17 +123,24 @@ func HandlerHelloForGet(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
 func HandlerHelloForPost(ctx *webserver.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR POST")
 
+	data := struct {
+		Name string `json:"name"`
+		Age  int    `json:"age"`
+	}{}
+	ctx.Request.Bind(&data)
+	fmt.Printf("%+v", data)
+
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -141,7 +150,7 @@ func HandlerHelloForPut(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -151,7 +160,7 @@ func HandlerHelloForDelete(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -161,7 +170,7 @@ func HandlerHelloForPatch(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -177,7 +186,7 @@ func HandlerHelloForConnect(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -187,7 +196,7 @@ func HandlerHelloForOptions(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -197,7 +206,7 @@ func HandlerHelloForTrace(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -207,7 +216,7 @@ func HandlerHelloForLink(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -217,7 +226,7 @@ func HandlerHelloForUnlink(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -233,7 +242,7 @@ func HandlerHelloForLock(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -248,7 +257,7 @@ func HandlerHelloForPropFind(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 
@@ -258,7 +267,33 @@ func HandlerHelloForView(ctx *webserver.Context) error {
 	return ctx.Response.Bytes(
 		webserver.StatusOK,
 		webserver.ContentApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParms["name"][0]+"\" }"),
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
+	)
+}
+
+func HandlerHelloForDownloadFiles(ctx *webserver.Context) error {
+	fmt.Println("HELLO I'M THE HELLO HANDER FOR DOWNLOAD FILES")
+
+	dir, _ := os.Getwd()
+	ctx.Response.Attachment(fmt.Sprintf("%s%s", dir, "/examples/data/a.text"), "text_a.text")
+	ctx.Response.Attachment(fmt.Sprintf("%s%s", dir, "/examples/data/b.text"), "text_b.text")
+	ctx.Response.Inline(fmt.Sprintf("%s%s", dir, "/examples/data/c.text"), "text_c.text")
+
+	return ctx.Response.Bytes(
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
+	)
+}
+
+func HandlerHelloForUploadFiles(ctx *webserver.Context) error {
+	fmt.Println("HELLO I'M THE HELLO HANDER FOR UPLOAD FILES")
+
+	fmt.Printf("\nAttachments: %+v\n", ctx.Request.Attachments)
+	return ctx.Response.Bytes(
+		webserver.StatusOK,
+		webserver.ContentApplicationJSON,
+		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
 ```
