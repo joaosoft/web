@@ -4,6 +4,7 @@ package webserver
 type HeaderType string
 
 const (
+	// Headers
 	HeaderAccept              HeaderType = "Accept"
 	HeaderAcceptEncoding      HeaderType = "Accept-Encoding"
 	HeaderAllow               HeaderType = "Allow"
@@ -31,6 +32,7 @@ const (
 	HeaderXRequestedWith      HeaderType = "X-Requested-With"
 	HeaderServer              HeaderType = "Server"
 	HeaderDate                HeaderType = "Date"
+	HeaderMimeVersion         HeaderType = "MIME-Version"
 
 	// Access control
 	HeaderAccessControlRequestMethod      HeaderType = "Access-Control-Request-Method"

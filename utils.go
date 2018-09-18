@@ -2,9 +2,12 @@ package webserver
 
 import (
 	"bufio"
+	"crypto/rand"
 	"encoding/json"
 	"io/ioutil"
+	"mime"
 	"os"
+	"path/filepath"
 	"reflect"
 	"runtime"
 
@@ -160,4 +163,22 @@ func CopyDir(src string, dst string) error {
 
 func GetFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
+func GetMimeType(fileName string) (mimeType string) {
+	mimeType = mime.TypeByExtension(filepath.Ext(fileName))
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+
+	return mimeType
+}
+
+func RandomBoundary() string {
+	var buf [30]byte
+	_, err := io.ReadFull(rand.Reader, buf[:])
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf("%x", buf[:])
 }

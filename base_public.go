@@ -12,7 +12,7 @@ func (r *Base) GetHeader(name HeaderType) string {
 }
 
 func (r *Base) SetContentType(contentType ContentType) {
-	r.Headers[HeaderContentType] = []string{string(contentType)}
+	r.ContentType = contentType
 }
 
 func (r *Base) GetContentType() *ContentType {

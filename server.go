@@ -159,7 +159,7 @@ func (w *WebServer) handleConnection(conn net.Conn) (err error) {
 	}()
 
 	// read response from connection
-	request, err := NewRequest(conn)
+	request, err := NewRequest(conn, w)
 	if err != nil {
 		w.logger.Errorf("error getting request: [%s]", err)
 		return err

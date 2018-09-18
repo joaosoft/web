@@ -38,29 +38,43 @@ type Context struct {
 }
 
 type Base struct {
-	IP        string
-	FullUrl   string
-	Url       string
-	Method    Method
-	Protocol  string
-	Headers   Headers
-	Cookies   Cookies
-	Params    Params
-	UrlParams UrlParams
-	conn      net.Conn
+	IP          string
+	FullUrl     string
+	Url         string
+	Method      Method
+	Protocol    string
+	Headers     Headers
+	Cookies     Cookies
+	ContentType ContentType
+	Params      Params
+	UrlParams   UrlParams
+	conn        net.Conn
+	server      *WebServer
 }
 
 type Request struct {
 	Base
-	Body   []byte
-	Reader io.Reader
+	Body        []byte
+	Attachments map[string]Attachment
+	Boundary    string
+	Reader      io.Reader
 }
 
 type Response struct {
 	Base
-	Body   []byte
-	Status Status
-	Writer io.Writer
+	Body        []byte
+	Status      Status
+	Attachments map[string]Attachment
+	Boundary    string
+	Writer      io.Writer
+}
+
+type Attachment struct {
+	ContentType        ContentType
+	ContentDisposition ContentDisposition
+	File               string
+	Name               string
+	Body               []byte
 }
 
 type RequestHandler struct {

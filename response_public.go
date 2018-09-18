@@ -3,15 +3,13 @@ package webserver
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strconv"
 )
 
 func (r *Response) Set(status Status, contentType ContentType, b []byte) error {
-	r.SetContentType(contentType)
+	r.ContentType = contentType
 	r.Status = status
 	r.Body = b
 	return nil
@@ -111,13 +109,7 @@ func (r *Response) Stream(status Status, contentType ContentType, reader io.Read
 }
 
 func (r *Response) File(fileName string) error {
-	file, err := os.Open(fileName)
-	if err != nil {
-		return err
-	}
-
-	defer file.Close()
-	data, err := ioutil.ReadAll(file)
+	data, err := ReadFile(fileName, nil)
 	if err != nil {
 		return err
 	}
@@ -129,13 +121,45 @@ func (r *Response) File(fileName string) error {
 }
 
 func (r *Response) Attachment(file, name string) error {
-	r.SetHeader(HeaderContentDisposition, []string{fmt.Sprintf("attachment; filename=%q", name)})
-	return r.File(file)
+	info, err := os.Stat(file)
+	if err != nil {
+		return err
+	}
+
+	data, err := ReadFile(file, nil)
+	if err != nil {
+		return err
+	}
+
+	r.Attachments[name] = Attachment{
+		ContentDisposition: ContentDispositionFormData,
+		ContentType:        ContentOctetStream,
+		File:               info.Name(),
+		Name:               name,
+		Body:               data,
+	}
+	return nil
 }
 
 func (r *Response) Inline(file, name string) error {
-	r.SetHeader(HeaderContentDisposition, []string{fmt.Sprintf("inline; filename=%q", name)})
-	return r.File(file)
+	info, err := os.Stat(file)
+	if err != nil {
+		return err
+	}
+
+	data, err := ReadFile(file, nil)
+	if err != nil {
+		return err
+	}
+
+	r.Attachments[name] = Attachment{
+		ContentDisposition: ContentDispositionFormData,
+		ContentType:        ContentOctetStream,
+		File:               info.Name(),
+		Name:               name,
+		Body:               data,
+	}
+	return nil
 }
 
 func (r *Response) NoContent(status Status) error {

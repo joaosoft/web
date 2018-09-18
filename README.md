@@ -5,6 +5,11 @@ A simple and fast web server.
 
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 
+## With support for 
+* Common http methods
+* Single/Multiple File Upload
+* Single/Multiple File Download
+
 ## With support for methods
 * HEAD
 * GET

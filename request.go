@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func NewRequest(conn net.Conn) (*Request, error) {
+func NewRequest(conn net.Conn, server *WebServer) (*Request, error) {
 
 	request := &Request{
 		Base: Base{
@@ -23,8 +23,10 @@ func NewRequest(conn net.Conn) (*Request, error) {
 			Params:    make(Params),
 			UrlParams: make(UrlParams),
 			conn:      conn,
+			server:    server,
 		},
-		Reader: conn.(io.Reader),
+		Attachments: make(map[string]Attachment),
+		Reader:      conn.(io.Reader),
 	}
 
 	return request, request.read()
@@ -55,6 +57,31 @@ func (r *Request) Bind(i interface{}) error {
 
 func (r *Request) read() error {
 	reader := bufio.NewReader(r.conn)
+
+	// header
+	if err := r.readHeader(reader); err != nil {
+		return err
+	}
+
+	// headers
+	if err := r.readHeaders(reader); err != nil {
+		return err
+	}
+
+	// boundary
+	if r.Boundary != "" {
+		r.handleBoundary(reader)
+	} else {
+		// body
+		if err := r.readBody(reader); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *Request) readHeader(reader *bufio.Reader) error {
 
 	// read one line (ended with \n or \r\n)
 	r.conn.SetReadDeadline(time.Now().Add(time.Second * 1))
@@ -90,10 +117,13 @@ func (r *Request) read() error {
 		}
 	}
 
-	// headers
+	return nil
+}
+
+func (r *Request) readHeaders(reader *bufio.Reader) error {
 	for {
 		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
-		line, _, err = reader.ReadLine()
+		line, _, err := reader.ReadLine()
 		if err != nil || len(line) == 0 {
 			break
 		}
@@ -105,25 +135,109 @@ func (r *Request) read() error {
 				value = string(split[1])
 			}
 
-			switch string(split[0]) {
-			case "cookie":
+			switch strings.Title(string(split[0])) {
+			case "Cookie":
 				var cookieValue string
 				splitCookie := strings.Split(value, "=")
 				if len(splitCookie) > 1 {
 					cookieValue = splitCookie[1]
 				}
 				r.Cookies[strings.Title(string(split[0]))] = Cookie{Name: splitCookie[0], Value: cookieValue}
+			case "Content-Type":
+				if bytes.Contains(split[1], []byte(`boundary=`)) {
+					r.Boundary = string(bytes.Split(split[1], []byte(`boundary=`))[1])
+				}
+				fallthrough
 			default:
 				r.Headers[HeaderType(strings.Title(string(split[0])))] = []string{value}
 			}
 		}
 	}
 
-	// body
+	return nil
+}
+
+func (r *Request) handleBoundary(reader *bufio.Reader) error {
+	var attachment Attachment
+	var attachmentBody bytes.Buffer
+
+	// read next line
+	r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
+	line, _, err := reader.ReadLine()
+	if err != nil {
+		return err
+	}
+
+	for {
+		for {
+			content := bytes.SplitN(line, []byte(`: `), 2)
+			switch string(bytes.Title(content[0])) {
+			case "Content-Type":
+				attachment.ContentType = ContentType(content[1])
+
+			case "Content-Disposition":
+				contentDisposition := bytes.Split(content[1], []byte(`;`))
+				attachment.ContentDisposition = ContentDisposition(string(contentDisposition[0]))
+				for i := 1; i < len(contentDisposition); i++ {
+					parms := bytes.Split(contentDisposition[i], []byte(`=`))
+					switch strings.TrimSpace(string(parms[0])) {
+					case "name":
+						attachment.Name = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+					case "filename":
+						attachment.File = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+					}
+				}
+			}
+
+			// read next line
+			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
+			line, _, err = reader.ReadLine()
+			if err != nil || len(line) == 0 {
+				break
+			}
+		}
+
+		for {
+			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
+			line, _, err = reader.ReadLine()
+			if err != nil {
+				return err
+			}
+
+			// is another boundary ?
+			if bytes.Compare(line, []byte(fmt.Sprintf("--%s", r.Boundary))) == 0 ||
+				bytes.Compare(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) == 0 {
+				// save attachment
+				attachment.Body = attachmentBody.Bytes()
+				key := attachment.Name
+				if key == "" {
+					key = attachment.File
+				}
+				r.Attachments[key] = attachment
+
+				// next attachment
+				attachment = Attachment{}
+				attachmentBody.Reset()
+
+				break
+			} else {
+				attachmentBody.Write(line)
+			}
+		}
+
+		if bytes.Compare(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) == 0 {
+			return nil
+		}
+	}
+
+	return nil
+}
+
+func (r *Request) readBody(reader *bufio.Reader) error {
 	var buf bytes.Buffer
 	for {
 		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
-		line, _, err = reader.ReadLine()
+		line, _, err := reader.ReadLine()
 		if err != nil {
 			break
 		}

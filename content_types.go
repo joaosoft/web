@@ -13,6 +13,7 @@ const (
 	ContentApplicationMsgpack    ContentType = "application/msgpack"
 	ContentTextHTML              ContentType = "text/html"
 	ContentTextPlain             ContentType = "text/plain"
-	ContentMultipartForm         ContentType = "multipart/form-data"
+	ContentMultipartFormData     ContentType = "multipart/form-data"
+	ContentMultipartMixed        ContentType = "multipart/mixed"
 	ContentOctetStream           ContentType = "application/octet-stream"
 )
