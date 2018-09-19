@@ -15,6 +15,10 @@ func (r *Base) SetContentType(contentType ContentType) {
 	r.ContentType = contentType
 }
 
+func (r *Base) SetCharset(charset Charset) {
+	r.Charset = charset
+}
+
 func (r *Base) GetContentType() *ContentType {
 	if value, ok := r.Headers[HeaderContentType]; ok {
 		contentType := ContentType(value[0])

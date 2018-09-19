@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -114,7 +115,9 @@ func (r *Response) File(fileName string) error {
 		return err
 	}
 
-	r.SetContentType(ContentTypeOctetStream)
+	contentType, charset := DetectContentType(filepath.Ext(fileName), data)
+	r.SetContentType(contentType)
+	r.SetCharset(charset)
 	r.Status = StatusOK
 	r.Body = data
 	return nil
@@ -131,9 +134,11 @@ func (r *Response) Attachment(file, name string) error {
 		return err
 	}
 
+	contentType, charset := DetectContentType(filepath.Ext(info.Name()), data)
 	r.Attachments[name] = Attachment{
-		ContentDisposition: ContentDispositionFormData,
-		ContentType:        ContentTypeOctetStream,
+		ContentDisposition: ContentDispositionAttachment,
+		ContentType:        contentType,
+		Charset:            charset,
 		File:               info.Name(),
 		Name:               name,
 		Body:               data,
@@ -152,9 +157,11 @@ func (r *Response) Inline(file, name string) error {
 		return err
 	}
 
+	contentType, charset := DetectContentType(filepath.Ext(info.Name()), data)
 	r.Attachments[name] = Attachment{
-		ContentDisposition: ContentDispositionFormData,
-		ContentType:        ContentTypeOctetStream,
+		ContentDisposition: ContentDispositionInline,
+		ContentType:        contentType,
+		Charset:            charset,
 		File:               info.Name(),
 		Name:               name,
 		Body:               data,

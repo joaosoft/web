@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func NewRequest(conn net.Conn, server *WebServer) (*Request, error) {
+func (w *WebServer) NewRequest(conn net.Conn, server *WebServer) (*Request, error) {
 
 	request := &Request{
 		Base: Base{
@@ -22,6 +22,7 @@ func NewRequest(conn net.Conn, server *WebServer) (*Request, error) {
 			Cookies:   make(Cookies),
 			Params:    make(Params),
 			UrlParams: make(UrlParams),
+			Charset:   CharsetUTF8,
 			conn:      conn,
 			server:    server,
 		},
@@ -128,28 +129,31 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 			break
 		}
 
-		if split := bytes.SplitN(line, []byte(`: `), 2); len(split) > 0 {
-			var value string
-
-			if len(split) == 2 {
-				value = string(split[1])
-			}
-
-			switch strings.Title(string(split[0])) {
+		if split := bytes.SplitN(line, []byte(`:`), 2); len(split) > 0 {
+			switch string(bytes.Title(split[0])) {
 			case "Cookie":
 				var cookieValue string
-				splitCookie := strings.Split(value, "=")
+				splitCookie := bytes.Split(split[1], []byte(`=`))
 				if len(splitCookie) > 1 {
-					cookieValue = splitCookie[1]
+					cookieValue = string(splitCookie[1])
 				}
-				r.Cookies[strings.Title(string(split[0]))] = Cookie{Name: splitCookie[0], Value: cookieValue}
+				r.Cookies[strings.Title(string(split[0]))] = Cookie{Name: string(splitCookie[0]), Value: cookieValue}
 			case "Content-Type":
-				if bytes.Contains(split[1], []byte(`boundary=`)) {
-					r.Boundary = string(bytes.Split(split[1], []byte(`boundary=`))[1])
+				if args := bytes.Split(split[1], []byte(`;`)); len(args) > 0 {
+					for _, arg := range args {
+						parm := bytes.Split(arg, []byte(`=`))
+						switch string(bytes.TrimSpace(parm[0])) {
+						case "boundary":
+							r.Boundary = string(bytes.Replace(parm[1], []byte(`"`), []byte(``), -1))
+						case "charset":
+							r.Charset = Charset(bytes.Replace(parm[1], []byte(`"`), []byte(``), -1))
+						}
+					}
+					continue
 				}
 				fallthrough
 			default:
-				r.Headers[HeaderType(strings.Title(string(split[0])))] = []string{value}
+				r.Headers[HeaderType(strings.Title(string(split[0])))] = []string{string(split[1])}
 			}
 		}
 	}
@@ -170,9 +174,10 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 
 	for {
 		for {
-			content := bytes.SplitN(line, []byte(`: `), 2)
-			switch string(bytes.Title(content[0])) {
+			content := bytes.SplitN(line, []byte(`:`), 2)
+			switch string(bytes.Title(bytes.TrimSpace(content[0]))) {
 			case "Content-Type":
+				bytes.Split(content[1], []byte(`;`))
 				attachment.ContentType = ContentType(content[1])
 
 			case "Content-Disposition":
@@ -180,7 +185,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 				attachment.ContentDisposition = ContentDisposition(string(contentDisposition[0]))
 				for i := 1; i < len(contentDisposition); i++ {
 					parms := bytes.Split(contentDisposition[i], []byte(`=`))
-					switch strings.TrimSpace(string(parms[0])) {
+					switch string(bytes.TrimSpace(parms[0])) {
 					case "name":
 						attachment.Name = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
 					case "filename":

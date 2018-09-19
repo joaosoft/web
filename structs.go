@@ -48,6 +48,7 @@ type Base struct {
 	ContentType ContentType
 	Params      Params
 	UrlParams   UrlParams
+	Charset     Charset
 	conn        net.Conn
 	server      *WebServer
 }
@@ -65,7 +66,6 @@ type Response struct {
 	Body                []byte
 	Status              Status
 	Attachments         map[string]Attachment
-	Charset             Charset
 	MultiAttachmentMode MultiAttachmentMode
 	Boundary            string
 	Writer              io.Writer
@@ -74,6 +74,7 @@ type Response struct {
 type Attachment struct {
 	ContentType        ContentType
 	ContentDisposition ContentDisposition
+	Charset            Charset
 	File               string
 	Name               string
 	Body               []byte

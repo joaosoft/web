@@ -16,29 +16,36 @@ func (w *WebServer) Reconfigure(options ...WebServerOption) {
 
 // WithConfiguration ...
 func WithConfiguration(config *WebServerConfig) WebServerOption {
-	return func(builder *WebServer) {
-		builder.config = config
+	return func(webserver *WebServer) {
+		webserver.config = config
 	}
 }
 
 // WithLogger ...
 func WithLogger(logger logger.ILogger) WebServerOption {
-	return func(builder *WebServer) {
-		builder.logger = logger
-		builder.isLogExternal = true
+	return func(webserver *WebServer) {
+		webserver.logger = logger
+		webserver.isLogExternal = true
 	}
 }
 
 // WithLogLevel ...
 func WithLogLevel(level logger.Level) WebServerOption {
-	return func(builder *WebServer) {
-		builder.logger.SetLevel(level)
+	return func(webserver *WebServer) {
+		webserver.logger.SetLevel(level)
 	}
 }
 
 // WithAddress ...
 func WithAddress(address string) WebServerOption {
-	return func(builder *WebServer) {
-		builder.address = address
+	return func(webserver *WebServer) {
+		webserver.address = address
+	}
+}
+
+// WithMultiAttachmentMode ...
+func WithMultiAttachmentMode(mode MultiAttachmentMode) WebServerOption {
+	return func(webserver *WebServer) {
+		webserver.multiAttachmentMode = mode
 	}
 }

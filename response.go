@@ -10,12 +10,11 @@ import (
 	"time"
 )
 
-func NewResponse(request *Request) *Response {
+func (w *WebServer) NewResponse(request *Request) *Response {
 	return &Response{
 		Base:                request.Base,
 		Attachments:         make(map[string]Attachment),
-		Charset:             CharsetUTF8,
-		MultiAttachmentMode: MultiAttachmentModeZip,
+		MultiAttachmentMode: w.multiAttachmentMode,
 		Boundary:            RandomBoundary(),
 		Writer:              request.conn.(io.Writer),
 	}
@@ -67,7 +66,6 @@ func (r *Response) write() error {
 		}
 	}
 
-	fmt.Println(buf.String())
 	r.conn.Write(buf.Bytes())
 
 	return nil
@@ -92,17 +90,21 @@ func (r *Response) handleHeaders() ([]byte, error) {
 		case MultiAttachmentModeZip:
 			var name = "attachments"
 			var fileName = "attachments.zip"
-			var contentType = ContentTypeZip
+			var contentType = ContentTypeApplicationZip
+			var charset = r.Charset
 
 			if lenAttachments == 1 {
 				for _, attachment := range r.Attachments {
 					name = attachment.Name
 					fileName = attachment.File
-					contentType = ContentTypeOctetStream
+					contentType = attachment.ContentType
+					if attachment.Charset != "" {
+						charset = attachment.Charset
+					}
 					break
 				}
 			}
-			r.Headers[HeaderContentType] = []string{fmt.Sprintf("%s; attachment; name=%q; filename=%q; charset=%s", contentType, name, fileName, r.Charset)}
+			r.Headers[HeaderContentType] = []string{fmt.Sprintf("%s; attachment; name=%q; filename=%q; charset=%s", contentType, name, fileName, charset)}
 		}
 	} else {
 		r.Headers[HeaderContentType] = []string{string(r.ContentType)}
@@ -114,6 +116,7 @@ func (r *Response) handleHeaders() ([]byte, error) {
 	}
 
 	buf.WriteString("\r\n")
+
 	return buf.Bytes(), nil
 }
 

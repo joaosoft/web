@@ -14,24 +14,26 @@ import (
 )
 
 type WebServer struct {
-	config        *WebServerConfig
-	isLogExternal bool
-	logger        logger.ILogger
-	routes        Routes
-	middlewares   []MiddlewareFunc
-	listener      net.Listener
-	address       string
-	errorhandler  ErrorHandler
+	config              *WebServerConfig
+	isLogExternal       bool
+	logger              logger.ILogger
+	routes              Routes
+	middlewares         []MiddlewareFunc
+	listener            net.Listener
+	address             string
+	errorhandler        ErrorHandler
+	multiAttachmentMode MultiAttachmentMode
 }
 
 func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 	log := logger.NewLogDefault("webserver", logger.WarnLevel)
 
 	service := &WebServer{
-		logger:      log,
-		routes:      make(Routes),
-		middlewares: make([]MiddlewareFunc, 0),
-		address:     ":80",
+		logger:              log,
+		routes:              make(Routes),
+		middlewares:         make([]MiddlewareFunc, 0),
+		address:             ":80",
+		multiAttachmentMode: MultiAttachmentModeZip,
 	}
 
 	if service.isLogExternal {
@@ -159,14 +161,14 @@ func (w *WebServer) handleConnection(conn net.Conn) (err error) {
 	}()
 
 	// read response from connection
-	request, err := NewRequest(conn, w)
+	request, err := w.NewRequest(conn, w)
 	if err != nil {
 		w.logger.Errorf("error getting request: [%s]", err)
 		return err
 	}
 
 	// create response for request
-	response := NewResponse(request)
+	response := w.NewResponse(request)
 
 	// create context with request and response
 	ctx = NewContext(startTime, request, response)
