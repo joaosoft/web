@@ -11,7 +11,7 @@ A simple and fast web server.
 * Single/Multiple File Download
 
 ## With attachment modes
-* zip files when returns more then one file (WithAttachmentMode(webserver.MultiAttachmentModeZip))
+* [default] zip files when returns more then one file (WithAttachmentMode(webserver.MultiAttachmentModeZip))
 * [experimental] returns attachmentes splited by a boundary defined on header Content-Type (WithAttachmentMode(webserver.MultiAttachmentModeBoundary))
 
 ## With support for methods
