@@ -62,11 +62,13 @@ type Request struct {
 
 type Response struct {
 	Base
-	Body        []byte
-	Status      Status
-	Attachments map[string]Attachment
-	Boundary    string
-	Writer      io.Writer
+	Body                []byte
+	Status              Status
+	Attachments         map[string]Attachment
+	Charset             Charset
+	MultiAttachmentMode MultiAttachmentMode
+	Boundary            string
+	Writer              io.Writer
 }
 
 type Attachment struct {

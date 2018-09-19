@@ -16,7 +16,7 @@ func (r *Response) Set(status Status, contentType ContentType, b []byte) error {
 }
 
 func (r *Response) HTML(status Status, body string) error {
-	r.SetContentType(ContentTextHTML)
+	r.SetContentType(ContentTypeTextHTML)
 	r.Status = status
 	r.Body = []byte(body)
 	return nil
@@ -30,7 +30,7 @@ func (r *Response) Bytes(status Status, contentType ContentType, b []byte) error
 }
 
 func (r *Response) String(status Status, s string) error {
-	r.SetContentType(ContentTextPlain)
+	r.SetContentType(ContentTypeTextPlain)
 	r.Status = status
 	r.Body = []byte(s)
 	return nil
@@ -49,7 +49,7 @@ func (r *Response) JSON(status Status, i interface{}) error {
 	if b, err := json.Marshal(i); err != nil {
 		return err
 	} else {
-		r.SetContentType(ContentApplicationJSON)
+		r.SetContentType(ContentTypeApplicationJSON)
 		r.Status = status
 		r.Body = b
 	}
@@ -61,7 +61,7 @@ func (r *Response) JSONPretty(status Status, i interface{}, indent string) error
 	if b, err := json.MarshalIndent(i, "", indent); err != nil {
 		return err
 	} else {
-		r.SetContentType(ContentApplicationJSON)
+		r.SetContentType(ContentTypeApplicationJSON)
 		r.Status = status
 		r.Body = b
 	}
@@ -81,7 +81,7 @@ func (r *Response) XML(status Status, i interface{}) error {
 	if b, err := xml.Marshal(i); err != nil {
 		return err
 	} else {
-		r.SetContentType(ContentApplicationXML)
+		r.SetContentType(ContentTypeApplicationXML)
 		r.Status = status
 		r.Body = b
 	}
@@ -92,7 +92,7 @@ func (r *Response) XMLPretty(status Status, i interface{}, indent string) error 
 	if b, err := xml.MarshalIndent(i, "", indent); err != nil {
 		return err
 	} else {
-		r.SetContentType(ContentApplicationXML)
+		r.SetContentType(ContentTypeApplicationXML)
 		r.Status = status
 		r.Body = b
 	}
@@ -114,7 +114,7 @@ func (r *Response) File(fileName string) error {
 		return err
 	}
 
-	r.SetContentType(ContentOctetStream)
+	r.SetContentType(ContentTypeOctetStream)
 	r.Status = StatusOK
 	r.Body = data
 	return nil
@@ -133,7 +133,7 @@ func (r *Response) Attachment(file, name string) error {
 
 	r.Attachments[name] = Attachment{
 		ContentDisposition: ContentDispositionFormData,
-		ContentType:        ContentOctetStream,
+		ContentType:        ContentTypeOctetStream,
 		File:               info.Name(),
 		Name:               name,
 		Body:               data,
@@ -154,7 +154,7 @@ func (r *Response) Inline(file, name string) error {
 
 	r.Attachments[name] = Attachment{
 		ContentDisposition: ContentDispositionFormData,
-		ContentType:        ContentOctetStream,
+		ContentType:        ContentTypeOctetStream,
 		File:               info.Name(),
 		Name:               name,
 		Body:               data,

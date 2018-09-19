@@ -40,11 +40,11 @@ func (r *Request) Bind(i interface{}) error {
 	}
 
 	switch *contentType {
-	case ContentApplicationJSON:
+	case ContentTypeApplicationJSON:
 		if err := json.Unmarshal(r.Body, i); err != nil {
 			return err
 		}
-	case ContentApplicationXML:
+	case ContentTypeApplicationXML:
 		if err := xml.Unmarshal(r.Body, i); err != nil {
 			return err
 		}
