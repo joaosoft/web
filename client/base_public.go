@@ -1,4 +1,4 @@
-package server
+package client
 
 import "web"
 
@@ -29,7 +29,7 @@ func (r *Base) SetCharset(charset web.Charset) {
 	r.Charset = charset
 }
 
-func (r *Base) GetCharset() web.Charset {
+func (r *Base) GetCharset() web.Charset{
 	return r.Charset
 }
 

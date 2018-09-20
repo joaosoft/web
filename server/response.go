@@ -11,7 +11,7 @@ import (
 	"web"
 )
 
-func (w *WebServer) NewResponse(request *Request) *Response {
+func (w *Server) NewResponse(request *Request) *Response {
 	return &Response{
 		Base:                request.Base,
 		Attachments:         make(map[string]Attachment),
@@ -80,7 +80,7 @@ func (r *Response) handleHeaders() ([]byte, error) {
 	buf.WriteString(fmt.Sprintf("%s %d %s\r\n", r.Protocol, r.Status, web.StatusText(r.Status)))
 
 	// headers
-	r.Headers[web.HeaderServer] = []string{"webserver"}
+	r.Headers[web.HeaderServer] = []string{"server"}
 	r.Headers[web.HeaderDate] = []string{time.Now().Format(web.TimeFormat)}
 
 	if lenAttachments > 0 {
@@ -162,17 +162,17 @@ func (r *Response) handleBoundaryAttachments() ([]byte, error) {
 }
 
 func (r *Response) handleZippedAttachments() ([]byte, error) {
-	// Create a buffer to write our archive to.
+	// create a buffer to write our archive
 	buf := new(bytes.Buffer)
 
 	if len(r.Attachments) == 0 {
 		return buf.Bytes(), nil
 	}
 
-	// Create a new zip archive.
+	// create a new zip archive
 	w := zip.NewWriter(buf)
 
-	// Register a custom Deflate compressor to override the default Deflate compressor with a higher compression level.
+	// register a custom deflate compressor to override the default Deflate compressor with a higher compression level
 	w.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
 		return flate.NewWriter(out, flate.BestCompression)
 	})
@@ -188,7 +188,6 @@ func (r *Response) handleZippedAttachments() ([]byte, error) {
 		}
 	}
 
-	// Make sure to check the error on Close.
 	err := w.Close()
 	if err != nil {
 		return buf.Bytes(), err

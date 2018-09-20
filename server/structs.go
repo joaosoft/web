@@ -22,7 +22,7 @@ type Base struct {
 	FullUrl     string
 	Url         string
 	Method      web.Method
-	Protocol    string
+	Protocol    web.Protocol
 	Headers     web.Headers
 	Cookies     web.Cookies
 	ContentType web.ContentType
@@ -30,7 +30,7 @@ type Base struct {
 	UrlParams   web.UrlParams
 	Charset     web.Charset
 	conn        net.Conn
-	server      *WebServer
+	server      *Server
 }
 
 type Request struct {
@@ -68,5 +68,5 @@ type RequestHandler struct {
 type Namespace struct {
 	Path        string
 	Middlewares []MiddlewareFunc
-	WebServer   *WebServer
+	WebServer   *Server
 }

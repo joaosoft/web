@@ -39,13 +39,16 @@ go get github.com/joaosoft/webserver
 ```
 
 ## Usage 
+This examples are available in the project at [web/examples](https://github.com/joaosoft/web/tree/master/examples)
+
+### Server
 ```
 func main() {
 	// create a new server
-	w, err := server.NewWebServer()
-	if err != nil {
-		panic(err)
-	}
+    w, err := server.NewServer(server.WithMultiAttachmentMode(web.MultiAttachmentModeBoundary))
+    if err != nil {
+        panic(err)
+    }
 
 	// add middleware's
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
@@ -313,6 +316,50 @@ func HandlerHelloForUploadFiles(ctx *server.Context) error {
 		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
+}
+```
+
+### Client
+```
+func main() {
+	// create a new client
+	c, err := client.NewClient(client.WithMultiAttachmentMode(web.MultiAttachmentModeBoundary))
+	if err != nil {
+		panic(err)
+	}
+
+	requestGet(c)
+
+	requestGetBoundary(c)
+
+}
+
+func requestGet(c *client.Client) {
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/hello/joao?a=1&b=2&c=1,2,3")
+	if err != nil {
+		panic(err)
+	}
+
+	response, err := c.Send(request)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%+v", response)
+}
+
+func requestGetBoundary(c *client.Client) {
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/hello/joao/download")
+	if err != nil {
+		panic(err)
+	}
+
+	response, err := c.Send(request)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%+v", response)
 }
 ```
 

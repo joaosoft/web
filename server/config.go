@@ -6,23 +6,23 @@ import (
 )
 
 type AppConfig struct {
-	WebServer WebServerConfig `json:"webserver"`
+	Server ServerConfig `json:"server"`
 }
 
-type WebServerConfig struct {
+type ServerConfig struct {
 	Address string `json:"port"`
 	Log     struct {
 		Level string `json:"level"`
 	} `json:"log"`
 }
 
-func NewWebServerConfig(address string) (*WebServerConfig, error) {
+func NewServerConfig(address string) (*ServerConfig, error) {
 	appConfig := &AppConfig{}
 	if err := web.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", web.GetEnv()), appConfig); err != nil {
 		return nil, err
 	}
 
-	appConfig.WebServer.Address = address
+	appConfig.Server.Address = address
 
-	return &appConfig.WebServer, nil
+	return &appConfig.Server, nil
 }

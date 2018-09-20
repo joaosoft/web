@@ -6,23 +6,20 @@ import (
 )
 
 type AppConfig struct {
-	WebClient WebClientConfig `json:"webclient"`
+	Client ClientConfig `json:"client"`
 }
 
-type WebClientConfig struct {
-	Address string `json:"port"`
+type ClientConfig struct {
 	Log     struct {
 		Level string `json:"level"`
 	} `json:"log"`
 }
 
-func NewWebClientConfig(address string) (*WebClientConfig, error) {
+func NewClientConfig(address string) (*ClientConfig, error) {
 	appConfig := &AppConfig{}
 	if err := web.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", web.GetEnv()), appConfig); err != nil {
 		return nil, err
 	}
 
-	appConfig.WebClient.Address = address
-
-	return &appConfig.WebClient, nil
+	return &appConfig.Client, nil
 }

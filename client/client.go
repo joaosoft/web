@@ -1,30 +1,28 @@
 package client
 
 import (
-	"bufio"
 	"fmt"
 	"net"
+	"regexp"
 	"time"
 	"web"
 
 	"github.com/joaosoft/logger"
 )
 
-type WebClient struct {
-	config              *WebClientConfig
+type Client struct {
+	config              *ClientConfig
 	isLogExternal       bool
 	logger              logger.ILogger
 	dialer              net.Dialer
-	address             string
 	multiAttachmentMode web.MultiAttachmentMode
 }
 
-func NewWebClient(options ...WebClientOption) (*WebClient, error) {
-	log := logger.NewLogDefault("webclient", logger.WarnLevel)
+func NewClient(options ...ClientOption) (*Client, error) {
+	log := logger.NewLogDefault("client", logger.WarnLevel)
 
-	service := &WebClient{
+	service := &Client{
 		logger:              log,
-		address:             ":80",
 		multiAttachmentMode: web.MultiAttachmentModeZip,
 	}
 
@@ -37,16 +35,12 @@ func NewWebClient(options ...WebClientOption) (*WebClient, error) {
 	if err := web.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", web.GetEnv()), appConfig); err != nil {
 		service.logger.Warn(err)
 	} else {
-		level, _ := logger.ParseLevel(appConfig.WebClient.Log.Level)
+		level, _ := logger.ParseLevel(appConfig.Client.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
 	}
 
-	service.config = &appConfig.WebClient
-	if appConfig.WebClient.Address != "" {
-		service.address = appConfig.WebClient.Address
-	}
-
+	service.config = &appConfig.Client
 	service.Reconfigure(options...)
 
 	// create a new dialer to create connections
@@ -60,34 +54,27 @@ func NewWebClient(options ...WebClientOption) (*WebClient, error) {
 	return service, nil
 }
 
-func (c *WebClient) GET(request *Request) (*Response, error) {
-	c.logger.Debug("executing GET")
+func (c *Client) Send(request *Request) (*Response, error) {
+	regx := regexp.MustCompile(web.RegexForHost)
+	split := regx.FindStringSubmatch(request.Url)
+	if len(split) == 0 {
+		return nil, fmt.Errorf("invalid url [%s]", split[0])
+	}
 
-	conn, err := c.dialer.Dial("tcp", c.address)
+	c.logger.Debugf("executing [%s] request to [%s]", request.Method, split[0])
+
+	conn, err := c.dialer.Dial("tcp", split[0])
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := request.build()
 	if err != nil {
 		return nil, err
 	}
 
 	defer conn.Close()
-	conn.Write([]byte(`GET /hello/joao?a=1&b=2&c=1,2,3 HTTP/1.1
-Content-Type: application/json
-aaaa: teste do joao
-User-Agent: PostmanRuntime/7.3.0
-Accept: */*
-Host: localhost:9001
-accept-encoding: gzip, deflate
-Connection: keep-alive`))
+	conn.Write(body)
 
-	reader := bufio.NewReader(conn)
-
-	for {
-		conn.SetReadDeadline(time.Now().Add(time.Second * 1))
-		line, _, err := reader.ReadLine()
-		if err != nil {
-			break
-		}
-		fmt.Println(string(line))
-	}
-
-	return nil, err
+	return c.NewResponse(request.Method, conn)
 }

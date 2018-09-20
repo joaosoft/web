@@ -1,4 +1,4 @@
-package server
+package client
 
 import (
 	"bufio"
@@ -9,32 +9,32 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"strings"
 	"time"
 	"web"
 )
 
-func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
+func (c *Client) NewResponse(method web.Method, conn net.Conn) (*Response, error) {
 
-	request := &Request{
+	response := &Response{
 		Base: Base{
-			IP:        conn.RemoteAddr().String(),
+			Method:    method,
 			Headers:   make(web.Headers),
 			Cookies:   make(web.Cookies),
 			Params:    make(web.Params),
 			UrlParams: make(web.UrlParams),
 			Charset:   web.CharsetUTF8,
 			conn:      conn,
-			server:    server,
 		},
 		Attachments: make(map[string]Attachment),
 		Reader:      conn.(io.Reader),
 	}
 
-	return request, request.read()
+	return response, response.read()
 }
 
-func (r *Request) Bind(i interface{}) error {
+func (r *Response) Bind(i interface{}) error {
 	contentType := r.GetContentType()
 
 	if len(r.Body) == 0 || contentType == nil {
@@ -57,8 +57,8 @@ func (r *Request) Bind(i interface{}) error {
 	return nil
 }
 
-func (r *Request) read() error {
-	reader := bufio.NewReader(r.conn)
+func (r *Response) read() error {
+	reader := bufio.NewReader(r.Reader)
 
 	// header
 	if err := r.readHeader(reader); err != nil {
@@ -70,59 +70,50 @@ func (r *Request) read() error {
 		return err
 	}
 
-	// boundary
-	if r.Boundary != "" {
-		r.handleBoundary(reader)
-	} else {
-		// body
-		if err := r.readBody(reader); err != nil {
-			return err
+	// body
+	if _, ok := web.MethodHasBody[r.Method]; ok {
+
+		// boundary
+		if r.Boundary != "" {
+			r.handleBoundary(reader)
+		} else {
+
+			// body
+			if err := r.readBody(reader); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func (r *Request) readHeader(reader *bufio.Reader) error {
+func (r *Response) readHeader(reader *bufio.Reader) error {
 
 	// read one line (ended with \n or \r\n)
 	r.conn.SetReadDeadline(time.Now().Add(time.Second * 1))
 	line, _, err := reader.ReadLine()
 	if err != nil {
-		return fmt.Errorf("invalid http request: %s", err)
+		return fmt.Errorf("invalid http send: %s", err)
 	}
 
 	if firstLine := bytes.SplitN(line, []byte(` `), 3); len(firstLine) < 3 {
-		return errors.New("invalid http request")
+		return errors.New("invalid http send")
 	} else {
-		r.Method = web.Method(firstLine[0])
-		r.FullUrl = string(firstLine[1])
-		r.Protocol = web.Protocol(firstLine[2])
-
-		// load query parameters
-		if split := strings.SplitN(r.FullUrl, "?", 2); len(split) > 1 {
-			r.Url = string(split[0])
-			if parms := strings.Split(split[1], "&"); len(parms) > 0 {
-				for _, parm := range parms {
-					if p := strings.Split(parm, "="); len(p) > 1 {
-						if split := strings.SplitN(p[1], ",", -1); len(split) > 0 {
-							for _, s := range split {
-								r.Params[p[0]] = append(r.Params[p[0]], s)
-							}
-						}
-						r.Params[p[0]] = append(r.Params[p[0]], p[1])
-					}
-				}
-			}
-		} else {
-			r.Url = string(firstLine[1])
+		status, err := strconv.Atoi(string(firstLine[1]))
+		if err != nil {
+			return err
 		}
+
+		r.Protocol = web.Protocol(firstLine[0])
+		r.Status = web.Status(status)
+		r.StatusText = string(firstLine[2])
 	}
 
 	return nil
 }
 
-func (r *Request) readHeaders(reader *bufio.Reader) error {
+func (r *Response) readHeaders(reader *bufio.Reader) error {
 	for {
 		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
 		line, _, err := reader.ReadLine()
@@ -142,6 +133,7 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 			case "Content-Type":
 				if args := bytes.Split(split[1], []byte(`;`)); len(args) > 0 {
 					split[1] = bytes.TrimSpace(args[0])
+					r.ContentType = web.ContentType(split[1])
 					for _, arg := range args {
 						parm := bytes.Split(arg, []byte(`=`))
 						switch string(bytes.TrimSpace(parm[0])) {
@@ -162,7 +154,7 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 	return nil
 }
 
-func (r *Request) handleBoundary(reader *bufio.Reader) error {
+func (r *Response) handleBoundary(reader *bufio.Reader) error {
 	var attachment Attachment
 	var attachmentBody bytes.Buffer
 
@@ -239,7 +231,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 	return nil
 }
 
-func (r *Request) readBody(reader *bufio.Reader) error {
+func (r *Response) readBody(reader *bufio.Reader) error {
 	var buf bytes.Buffer
 	for {
 		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))

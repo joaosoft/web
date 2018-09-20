@@ -18,7 +18,7 @@ type Base struct {
 	FullUrl     string
 	Url         string
 	Method      web.Method
-	Protocol    string
+	Protocol    web.Protocol
 	Headers     web.Headers
 	Cookies     web.Cookies
 	ContentType web.ContentType
@@ -26,25 +26,26 @@ type Base struct {
 	UrlParams   web.UrlParams
 	Charset     web.Charset
 	conn        net.Conn
-	client      *WebClient
+	client      *Client
 }
 
 type Request struct {
 	Base
-	Body        []byte
-	Attachments map[string]Attachment
-	Boundary    string
-	Reader      io.Reader
-}
-
-type Response struct {
-	Base
 	Body                []byte
-	Status              web.Status
 	Attachments         map[string]Attachment
 	MultiAttachmentMode web.MultiAttachmentMode
 	Boundary            string
 	Writer              io.Writer
+}
+
+type Response struct {
+	Base
+	Body        []byte
+	Status      web.Status
+	StatusText  string
+	Attachments map[string]Attachment
+	Boundary    string
+	Reader      io.Reader
 }
 
 type Attachment struct {

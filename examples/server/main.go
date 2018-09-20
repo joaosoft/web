@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// create a new server
-	w, err := server.NewWebServer()
+	w, err := server.NewServer(server.WithMultiAttachmentMode(web.MultiAttachmentModeBoundary))
 	if err != nil {
 		panic(err)
 	}

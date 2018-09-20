@@ -12,8 +12,8 @@ import (
 	"github.com/joaosoft/logger"
 )
 
-type WebServer struct {
-	config              *WebServerConfig
+type Server struct {
+	config              *ServerConfig
 	isLogExternal       bool
 	logger              logger.ILogger
 	routes              Routes
@@ -24,10 +24,10 @@ type WebServer struct {
 	multiAttachmentMode web.MultiAttachmentMode
 }
 
-func NewWebServer(options ...WebServerOption) (*WebServer, error) {
+func NewServer(options ...ServerOption) (*Server, error) {
 	log := logger.NewLogDefault("webserver", logger.WarnLevel)
 
-	service := &WebServer{
+	service := &Server{
 		logger:              log,
 		routes:              make(Routes),
 		middlewares:         make([]MiddlewareFunc, 0),
@@ -44,14 +44,14 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 	if err := web.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", web.GetEnv()), appConfig); err != nil {
 		service.logger.Warn(err)
 	} else {
-		level, _ := logger.ParseLevel(appConfig.WebServer.Log.Level)
+		level, _ := logger.ParseLevel(appConfig.Server.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
 	}
 
-	service.config = &appConfig.WebServer
-	if appConfig.WebServer.Address != "" {
-		service.address = appConfig.WebServer.Address
+	service.config = &appConfig.Server
+	if appConfig.Server.Address != "" {
+		service.address = appConfig.Server.Address
 	}
 
 	service.Reconfigure(options...)
@@ -62,11 +62,11 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 	return service, nil
 }
 
-func (w *WebServer) AddMiddlewares(middlewares ...MiddlewareFunc) {
+func (w *Server) AddMiddlewares(middlewares ...MiddlewareFunc) {
 	w.middlewares = append(w.middlewares, middlewares...)
 }
 
-func (w *WebServer) AddRoute(method web.Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
+func (w *Server) AddRoute(method web.Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
 	w.routes[method] = append(w.routes[method], Route{
 		Method:      method,
 		Path:        path,
@@ -79,7 +79,7 @@ func (w *WebServer) AddRoute(method web.Method, path string, handler HandlerFunc
 	return nil
 }
 
-func (w *WebServer) AddRoutes(route ...Route) error {
+func (w *Server) AddRoutes(route ...Route) error {
 	for _, r := range route {
 		if err := w.AddRoute(r.Method, r.Path, r.Handler, r.Middlewares...); err != nil {
 			return err
@@ -88,7 +88,7 @@ func (w *WebServer) AddRoutes(route ...Route) error {
 	return nil
 }
 
-func (w *WebServer) AddNamespace(path string, middlewares ...MiddlewareFunc) *Namespace {
+func (w *Server) AddNamespace(path string, middlewares ...MiddlewareFunc) *Namespace {
 	return &Namespace{
 		Path:        path,
 		Middlewares: middlewares,
@@ -105,12 +105,12 @@ func (n *Namespace) AddRoutes(route ...Route) error {
 	return nil
 }
 
-func (w *WebServer) SetErrorHandler(handler ErrorHandler) error {
+func (w *Server) SetErrorHandler(handler ErrorHandler) error {
 	w.errorhandler = handler
 	return nil
 }
 
-func (w *WebServer) Start() error {
+func (w *Server) Start() error {
 	w.logger.Debug("executing Start")
 	var err error
 
@@ -140,7 +140,7 @@ func (w *WebServer) Start() error {
 	return err
 }
 
-func (w *WebServer) handleConnection(conn net.Conn) (err error) {
+func (w *Server) handleConnection(conn net.Conn) (err error) {
 	var ctx *Context
 	var handler HandlerFunc
 	var length int
@@ -217,7 +217,7 @@ on_error:
 	return nil
 }
 
-func (w *WebServer) Stop() error {
+func (w *Server) Stop() error {
 	w.logger.Debug("executing Stop")
 
 	if w.listener != nil {
@@ -235,7 +235,7 @@ func ConvertPathToRegex(path string) string {
 	return fmt.Sprintf("^%s$", regx)
 }
 
-func (w *WebServer) GetRoute(method web.Method, url string) (*Route, error) {
+func (w *Server) GetRoute(method web.Method, url string) (*Route, error) {
 
 	for _, route := range w.routes[method] {
 		if regx, err := regexp.Compile(route.Regex); err != nil {
@@ -250,7 +250,7 @@ func (w *WebServer) GetRoute(method web.Method, url string) (*Route, error) {
 	return nil, ErrorNotFound
 }
 
-func (w *WebServer) LoadUrlParms(request *Request, route *Route) error {
+func (w *Server) LoadUrlParms(request *Request, route *Route) error {
 
 	routeUrl := strings.Split(route.Path, "/")
 	url := strings.Split(request.Url, "/")

@@ -1,12 +1,11 @@
 {
-  "webserver": {
+  "server": {
     "port": ":9001",
     "log": {
       "level": "debug"
     }
   },
-  "webclient": {
-    "port": ":9001",
+  "client": {
     "log": {
       "level": "debug"
     }

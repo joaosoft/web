@@ -6,48 +6,41 @@ import (
 	"github.com/joaosoft/logger"
 )
 
-// WebClientOption ...
-type WebClientOption func(builder *WebClient)
+// ClientOption ...
+type ClientOption func(builder *Client)
 
 // Reconfigure ...
-func (c *WebClient) Reconfigure(options ...WebClientOption) {
+func (c *Client) Reconfigure(options ...ClientOption) {
 	for _, option := range options {
 		option(c)
 	}
 }
 
 // WithConfiguration ...
-func WithConfiguration(config *WebClientConfig) WebClientOption {
-	return func(webserver *WebClient) {
-		webserver.config = config
+func WithConfiguration(config *ClientConfig) ClientOption {
+	return func(WebClient *Client) {
+		WebClient.config = config
 	}
 }
 
 // WithLogger ...
-func WithLogger(logger logger.ILogger) WebClientOption {
-	return func(webserver *WebClient) {
-		webserver.logger = logger
-		webserver.isLogExternal = true
+func WithLogger(logger logger.ILogger) ClientOption {
+	return func(WebClient *Client) {
+		WebClient.logger = logger
+		WebClient.isLogExternal = true
 	}
 }
 
 // WithLogLevel ...
-func WithLogLevel(level logger.Level) WebClientOption {
-	return func(webserver *WebClient) {
-		webserver.logger.SetLevel(level)
-	}
-}
-
-// WithAddress ...
-func WithAddress(address string) WebClientOption {
-	return func(webserver *WebClient) {
-		webserver.address = address
+func WithLogLevel(level logger.Level) ClientOption {
+	return func(WebClient *Client) {
+		WebClient.logger.SetLevel(level)
 	}
 }
 
 // WithMultiAttachmentMode ...
-func WithMultiAttachmentMode(mode web.MultiAttachmentMode) WebClientOption {
-	return func(webserver *WebClient) {
-		webserver.multiAttachmentMode = mode
+func WithMultiAttachmentMode(mode web.MultiAttachmentMode) ClientOption {
+	return func(WebClient *Client) {
+		WebClient.multiAttachmentMode = mode
 	}
 }

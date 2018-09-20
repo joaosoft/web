@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-func (w *WebServer) handlerFile(ctx *Context) error {
+func (w *Server) handlerFile(ctx *Context) error {
 	log.Infof("handling file %s", ctx.Request.FullUrl)
 
 	dir, _ := os.Getwd()

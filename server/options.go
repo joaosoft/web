@@ -6,48 +6,48 @@ import (
 	"github.com/joaosoft/logger"
 )
 
-// WebServerOption ...
-type WebServerOption func(builder *WebServer)
+// ServerOption ...
+type ServerOption func(builder *Server)
 
 // Reconfigure ...
-func (w *WebServer) Reconfigure(options ...WebServerOption) {
+func (w *Server) Reconfigure(options ...ServerOption) {
 	for _, option := range options {
 		option(w)
 	}
 }
 
 // WithConfiguration ...
-func WithConfiguration(config *WebServerConfig) WebServerOption {
-	return func(webserver *WebServer) {
+func WithConfiguration(config *ServerConfig) ServerOption {
+	return func(webserver *Server) {
 		webserver.config = config
 	}
 }
 
 // WithLogger ...
-func WithLogger(logger logger.ILogger) WebServerOption {
-	return func(webserver *WebServer) {
+func WithLogger(logger logger.ILogger) ServerOption {
+	return func(webserver *Server) {
 		webserver.logger = logger
 		webserver.isLogExternal = true
 	}
 }
 
 // WithLogLevel ...
-func WithLogLevel(level logger.Level) WebServerOption {
-	return func(webserver *WebServer) {
+func WithLogLevel(level logger.Level) ServerOption {
+	return func(webserver *Server) {
 		webserver.logger.SetLevel(level)
 	}
 }
 
 // WithAddress ...
-func WithAddress(address string) WebServerOption {
-	return func(webserver *WebServer) {
+func WithAddress(address string) ServerOption {
+	return func(webserver *Server) {
 		webserver.address = address
 	}
 }
 
 // WithMultiAttachmentMode ...
-func WithMultiAttachmentMode(mode web.MultiAttachmentMode) WebServerOption {
-	return func(webserver *WebServer) {
+func WithMultiAttachmentMode(mode web.MultiAttachmentMode) ServerOption {
+	return func(webserver *Server) {
 		webserver.multiAttachmentMode = mode
 	}
 }
