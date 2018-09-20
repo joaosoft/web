@@ -1,5 +1,7 @@
 package common
 
+type Method string
+
 const (
 	MethodConnect  Method = "CONNECT"
 	MethodGet      Method = "GET"

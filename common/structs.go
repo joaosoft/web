@@ -2,7 +2,6 @@ package common
 
 import "time"
 
-type Method string
 
 type Headers map[HeaderType][]string
 
