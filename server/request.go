@@ -11,7 +11,7 @@ import (
 	"net"
 	"strings"
 	"time"
-	"webserver"
+	"web"
 )
 
 func (w *WebServer) NewRequest(conn net.Conn, server *WebServer) (*Request, error) {
@@ -19,11 +19,11 @@ func (w *WebServer) NewRequest(conn net.Conn, server *WebServer) (*Request, erro
 	request := &Request{
 		Base: Base{
 			IP:        conn.RemoteAddr().String(),
-			Headers:   make(webserver.Headers),
-			Cookies:   make(webserver.Cookies),
-			Params:    make(webserver.Params),
-			UrlParams: make(webserver.UrlParams),
-			Charset:   webserver.CharsetUTF8,
+			Headers:   make(web.Headers),
+			Cookies:   make(web.Cookies),
+			Params:    make(web.Params),
+			UrlParams: make(web.UrlParams),
+			Charset:   web.CharsetUTF8,
 			conn:      conn,
 			server:    server,
 		},
@@ -42,11 +42,11 @@ func (r *Request) Bind(i interface{}) error {
 	}
 
 	switch *contentType {
-	case webserver.ContentTypeApplicationJSON:
+	case web.ContentTypeApplicationJSON:
 		if err := json.Unmarshal(r.Body, i); err != nil {
 			return err
 		}
-	case webserver.ContentTypeApplicationXML:
+	case web.ContentTypeApplicationXML:
 		if err := xml.Unmarshal(r.Body, i); err != nil {
 			return err
 		}
@@ -95,7 +95,7 @@ func (r *Request) readHeader(reader *bufio.Reader) error {
 	if firstLine := bytes.SplitN(line, []byte(` `), 3); len(firstLine) < 3 {
 		return errors.New("invalid http request")
 	} else {
-		r.Method = webserver.Method(firstLine[0])
+		r.Method = web.Method(firstLine[0])
 		r.FullUrl = string(firstLine[1])
 		r.Protocol = string(firstLine[2])
 
@@ -138,7 +138,7 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 				if len(splitCookie) > 1 {
 					cookieValue = string(splitCookie[1])
 				}
-				r.Cookies[strings.Title(string(split[0]))] = webserver.Cookie{Name: string(splitCookie[0]), Value: cookieValue}
+				r.Cookies[strings.Title(string(split[0]))] = web.Cookie{Name: string(splitCookie[0]), Value: cookieValue}
 			case "Content-Type":
 				if args := bytes.Split(split[1], []byte(`;`)); len(args) > 0 {
 					for _, arg := range args {
@@ -147,14 +147,14 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 						case "boundary":
 							r.Boundary = string(bytes.Replace(parm[1], []byte(`"`), []byte(``), -1))
 						case "charset":
-							r.Charset = webserver.Charset(bytes.Replace(parm[1], []byte(`"`), []byte(``), -1))
+							r.Charset = web.Charset(bytes.Replace(parm[1], []byte(`"`), []byte(``), -1))
 						}
 					}
 					continue
 				}
 				fallthrough
 			default:
-				r.Headers[webserver.HeaderType(strings.Title(string(split[0])))] = []string{string(split[1])}
+				r.Headers[web.HeaderType(strings.Title(string(split[0])))] = []string{string(split[1])}
 			}
 		}
 	}
@@ -179,11 +179,11 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			switch string(bytes.Title(bytes.TrimSpace(content[0]))) {
 			case "Content-Type":
 				bytes.Split(content[1], []byte(`;`))
-				attachment.ContentType = webserver.ContentType(content[1])
+				attachment.ContentType = web.ContentType(content[1])
 
 			case "Content-Disposition":
 				contentDisposition := bytes.Split(content[1], []byte(`;`))
-				attachment.ContentDisposition = webserver.ContentDisposition(string(contentDisposition[0]))
+				attachment.ContentDisposition = web.ContentDisposition(string(contentDisposition[0]))
 				for i := 1; i < len(contentDisposition); i++ {
 					parms := bytes.Split(contentDisposition[i], []byte(`=`))
 					switch string(bytes.TrimSpace(parms[0])) {

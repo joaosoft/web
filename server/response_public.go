@@ -7,38 +7,38 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"webserver"
+	"web"
 )
 
-func (r *Response) Set(status webserver.Status, contentType webserver.ContentType, b []byte) error {
+func (r *Response) Set(status web.Status, contentType web.ContentType, b []byte) error {
 	r.ContentType = contentType
 	r.Status = status
 	r.Body = b
 	return nil
 }
 
-func (r *Response) HTML(status webserver.Status, body string) error {
-	r.SetContentType(webserver.ContentTypeTextHTML)
+func (r *Response) HTML(status web.Status, body string) error {
+	r.SetContentType(web.ContentTypeTextHTML)
 	r.Status = status
 	r.Body = []byte(body)
 	return nil
 }
 
-func (r *Response) Bytes(status webserver.Status, contentType webserver.ContentType, b []byte) error {
+func (r *Response) Bytes(status web.Status, contentType web.ContentType, b []byte) error {
 	r.SetContentType(contentType)
 	r.Status = status
 	r.Body = b
 	return nil
 }
 
-func (r *Response) String(status webserver.Status, s string) error {
-	r.SetContentType(webserver.ContentTypeTextPlain)
+func (r *Response) String(status web.Status, s string) error {
+	r.SetContentType(web.ContentTypeTextPlain)
 	r.Status = status
 	r.Body = []byte(s)
 	return nil
 }
 
-func (r *Response) JSON(status webserver.Status, i interface{}) error {
+func (r *Response) JSON(status web.Status, i interface{}) error {
 	var pretty bool
 	if value, ok := r.UrlParams["pretty"]; ok {
 		pretty, _ = strconv.ParseBool(value[0])
@@ -51,7 +51,7 @@ func (r *Response) JSON(status webserver.Status, i interface{}) error {
 	if b, err := json.Marshal(i); err != nil {
 		return err
 	} else {
-		r.SetContentType(webserver.ContentTypeApplicationJSON)
+		r.SetContentType(web.ContentTypeApplicationJSON)
 		r.Status = status
 		r.Body = b
 	}
@@ -59,18 +59,18 @@ func (r *Response) JSON(status webserver.Status, i interface{}) error {
 	return nil
 }
 
-func (r *Response) JSONPretty(status webserver.Status, i interface{}, indent string) error {
+func (r *Response) JSONPretty(status web.Status, i interface{}, indent string) error {
 	if b, err := json.MarshalIndent(i, "", indent); err != nil {
 		return err
 	} else {
-		r.SetContentType(webserver.ContentTypeApplicationJSON)
+		r.SetContentType(web.ContentTypeApplicationJSON)
 		r.Status = status
 		r.Body = b
 	}
 	return nil
 }
 
-func (r *Response) XML(status webserver.Status, i interface{}) error {
+func (r *Response) XML(status web.Status, i interface{}) error {
 	var pretty bool
 	if value, ok := r.UrlParams["pretty"]; ok {
 		pretty, _ = strconv.ParseBool(value[0])
@@ -83,25 +83,25 @@ func (r *Response) XML(status webserver.Status, i interface{}) error {
 	if b, err := xml.Marshal(i); err != nil {
 		return err
 	} else {
-		r.SetContentType(webserver.ContentTypeApplicationXML)
+		r.SetContentType(web.ContentTypeApplicationXML)
 		r.Status = status
 		r.Body = b
 	}
 	return nil
 }
 
-func (r *Response) XMLPretty(status webserver.Status, i interface{}, indent string) error {
+func (r *Response) XMLPretty(status web.Status, i interface{}, indent string) error {
 	if b, err := xml.MarshalIndent(i, "", indent); err != nil {
 		return err
 	} else {
-		r.SetContentType(webserver.ContentTypeApplicationXML)
+		r.SetContentType(web.ContentTypeApplicationXML)
 		r.Status = status
 		r.Body = b
 	}
 	return nil
 }
 
-func (r *Response) Stream(status webserver.Status, contentType webserver.ContentType, reader io.Reader) error {
+func (r *Response) Stream(status web.Status, contentType web.ContentType, reader io.Reader) error {
 	r.SetContentType(contentType)
 	r.Status = status
 	if _, err := io.Copy(r.Writer, reader); err != nil {
@@ -111,15 +111,15 @@ func (r *Response) Stream(status webserver.Status, contentType webserver.Content
 }
 
 func (r *Response) File(fileName string) error {
-	data, err := webserver.ReadFile(fileName, nil)
+	data, err := web.ReadFile(fileName, nil)
 	if err != nil {
 		return err
 	}
 
-	contentType, charset := webserver.DetectContentType(filepath.Ext(fileName), data)
+	contentType, charset := web.DetectContentType(filepath.Ext(fileName), data)
 	r.SetContentType(contentType)
 	r.SetCharset(charset)
-	r.Status = webserver.StatusOK
+	r.Status = web.StatusOK
 	r.Body = data
 	return nil
 }
@@ -130,14 +130,14 @@ func (r *Response) Attachment(file, name string) error {
 		return err
 	}
 
-	data, err := webserver.ReadFile(file, nil)
+	data, err := web.ReadFile(file, nil)
 	if err != nil {
 		return err
 	}
 
-	contentType, charset := webserver.DetectContentType(filepath.Ext(info.Name()), data)
+	contentType, charset := web.DetectContentType(filepath.Ext(info.Name()), data)
 	r.Attachments[name] = Attachment{
-		ContentDisposition: webserver.ContentDispositionAttachment,
+		ContentDisposition: web.ContentDispositionAttachment,
 		ContentType:        contentType,
 		Charset:            charset,
 		File:               info.Name(),
@@ -153,14 +153,14 @@ func (r *Response) Inline(file, name string) error {
 		return err
 	}
 
-	data, err := webserver.ReadFile(file, nil)
+	data, err := web.ReadFile(file, nil)
 	if err != nil {
 		return err
 	}
 
-	contentType, charset := webserver.DetectContentType(filepath.Ext(info.Name()), data)
+	contentType, charset := web.DetectContentType(filepath.Ext(info.Name()), data)
 	r.Attachments[name] = Attachment{
-		ContentDisposition: webserver.ContentDispositionInline,
+		ContentDisposition: web.ContentDispositionInline,
 		ContentType:        contentType,
 		Charset:            charset,
 		File:               info.Name(),
@@ -170,7 +170,7 @@ func (r *Response) Inline(file, name string) error {
 	return nil
 }
 
-func (r *Response) NoContent(status webserver.Status) error {
+func (r *Response) NoContent(status web.Status) error {
 	r.Status = status
 	return nil
 }

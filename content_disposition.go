@@ -1,4 +1,4 @@
-package webserver
+package web
 
 // Mime type
 type ContentDisposition string

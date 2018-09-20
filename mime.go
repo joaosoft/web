@@ -1,4 +1,4 @@
-package webserver
+package web
 
 type MimeVersion string
 

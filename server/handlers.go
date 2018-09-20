@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"webserver"
+	"web"
 
 	"github.com/labstack/gommon/log"
 )
@@ -17,13 +17,13 @@ func (w *WebServer) handlerFile(ctx *Context) error {
 
 	if _, err := os.Stat(path); err == nil {
 		if bytes, err := ioutil.ReadFile(path); err != nil {
-			ctx.Response.Status = webserver.StatusNotFound
+			ctx.Response.Status = web.StatusNotFound
 		} else {
-			ctx.Response.Status = webserver.StatusOK
+			ctx.Response.Status = web.StatusOK
 			ctx.Response.Body = bytes
 		}
 	} else {
-		ctx.Response.Status = webserver.StatusNotFound
+		ctx.Response.Status = web.StatusNotFound
 	}
 
 	return nil

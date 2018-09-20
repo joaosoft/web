@@ -1,16 +1,16 @@
 package client
 
-import "webserver"
+import "web"
 
 func (client *WebClient) NewRequest() (*Request, error) {
 
 	request := &Request{
 		Base: Base{
-			Headers:   make(webserver.Headers),
-			Cookies:   make(webserver.Cookies),
-			Params:    make(webserver.Params),
-			UrlParams: make(webserver.UrlParams),
-			Charset:   webserver.CharsetUTF8,
+			Headers:   make(web.Headers),
+			Cookies:   make(web.Cookies),
+			Params:    make(web.Params),
+			UrlParams: make(web.UrlParams),
+			Charset:   web.CharsetUTF8,
 			client:    client,
 		},
 		Attachments: make(map[string]Attachment),

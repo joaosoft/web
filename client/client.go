@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 	"time"
-	"webserver"
+	"web"
 
 	"github.com/joaosoft/color"
 	"github.com/joaosoft/logger"
@@ -16,7 +16,7 @@ type WebClient struct {
 	logger              logger.ILogger
 	dialer              net.Conn
 	address             string
-	multiAttachmentMode webserver.MultiAttachmentMode
+	multiAttachmentMode web.MultiAttachmentMode
 }
 
 func NewWebClient(options ...WebClientOption) (*WebClient, error) {
@@ -25,7 +25,7 @@ func NewWebClient(options ...WebClientOption) (*WebClient, error) {
 	service := &WebClient{
 		logger:              log,
 		address:             ":80",
-		multiAttachmentMode: webserver.MultiAttachmentModeZip,
+		multiAttachmentMode: web.MultiAttachmentModeZip,
 	}
 
 	if service.isLogExternal {
@@ -34,7 +34,7 @@ func NewWebClient(options ...WebClientOption) (*WebClient, error) {
 
 	// load configuration File
 	appConfig := &AppConfig{}
-	if err := webserver.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", webserver.GetEnv()), appConfig); err != nil {
+	if err := web.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", web.GetEnv()), appConfig); err != nil {
 		service.logger.Warn(err)
 	} else {
 		level, _ := logger.ParseLevel(appConfig.WebClient.Log.Level)

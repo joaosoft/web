@@ -2,7 +2,7 @@ package client
 
 import (
 	"fmt"
-	"webserver"
+	"web"
 )
 
 type AppConfig struct {
@@ -18,7 +18,7 @@ type WebClientConfig struct {
 
 func NewWebClientConfig(address string) (*WebClientConfig, error) {
 	appConfig := &AppConfig{}
-	if err := webserver.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", webserver.GetEnv()), appConfig); err != nil {
+	if err := web.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", web.GetEnv()), appConfig); err != nil {
 		return nil, err
 	}
 

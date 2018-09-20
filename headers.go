@@ -1,4 +1,4 @@
-package webserver
+package web
 
 // HeaderType
 type HeaderType string

@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"webserver"
-	"webserver/server"
+	"web"
+	"web/server"
 )
 
 func main() {
@@ -17,30 +17,30 @@ func main() {
 	// add middleware's
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
 	w.AddRoutes(
-		server.NewRoute(webserver.MethodHead, "/hello/:name", HandlerHelloForHead),
-		server.NewRoute(webserver.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareThree()),
-		server.NewRoute(webserver.MethodPost, "/hello/:name", HandlerHelloForPost),
-		server.NewRoute(webserver.MethodPut, "/hello/:name", HandlerHelloForPut),
-		server.NewRoute(webserver.MethodDelete, "/hello/:name", HandlerHelloForDelete),
-		server.NewRoute(webserver.MethodPatch, "/hello/:name", HandlerHelloForPatch),
-		server.NewRoute(webserver.MethodCopy, "/hello/:name", HandlerHelloForCopy),
-		server.NewRoute(webserver.MethodConnect, "/hello/:name", HandlerHelloForConnect),
-		server.NewRoute(webserver.MethodOptions, "/hello/:name", HandlerHelloForOptions),
-		server.NewRoute(webserver.MethodTrace, "/hello/:name", HandlerHelloForTrace),
-		server.NewRoute(webserver.MethodLink, "/hello/:name", HandlerHelloForLink),
-		server.NewRoute(webserver.MethodUnlink, "/hello/:name", HandlerHelloForUnlink),
-		server.NewRoute(webserver.MethodPurge, "/hello/:name", HandlerHelloForPurge),
-		server.NewRoute(webserver.MethodLock, "/hello/:name", HandlerHelloForLock),
-		server.NewRoute(webserver.MethodUnlock, "/hello/:name", HandlerHelloForUnlock),
-		server.NewRoute(webserver.MethodPropFind, "/hello/:name", HandlerHelloForPropFind),
-		server.NewRoute(webserver.MethodView, "/hello/:name", HandlerHelloForView),
-		server.NewRoute(webserver.MethodGet, "/hello/:name/download", HandlerHelloForDownloadFiles),
-		server.NewRoute(webserver.MethodGet, "/hello/:name/download/one", HandlerHelloForDownloadOneFile),
-		server.NewRoute(webserver.MethodPost, "/hello/:name/upload", HandlerHelloForUploadFiles),
+		server.NewRoute(web.MethodHead, "/hello/:name", HandlerHelloForHead),
+		server.NewRoute(web.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareThree()),
+		server.NewRoute(web.MethodPost, "/hello/:name", HandlerHelloForPost),
+		server.NewRoute(web.MethodPut, "/hello/:name", HandlerHelloForPut),
+		server.NewRoute(web.MethodDelete, "/hello/:name", HandlerHelloForDelete),
+		server.NewRoute(web.MethodPatch, "/hello/:name", HandlerHelloForPatch),
+		server.NewRoute(web.MethodCopy, "/hello/:name", HandlerHelloForCopy),
+		server.NewRoute(web.MethodConnect, "/hello/:name", HandlerHelloForConnect),
+		server.NewRoute(web.MethodOptions, "/hello/:name", HandlerHelloForOptions),
+		server.NewRoute(web.MethodTrace, "/hello/:name", HandlerHelloForTrace),
+		server.NewRoute(web.MethodLink, "/hello/:name", HandlerHelloForLink),
+		server.NewRoute(web.MethodUnlink, "/hello/:name", HandlerHelloForUnlink),
+		server.NewRoute(web.MethodPurge, "/hello/:name", HandlerHelloForPurge),
+		server.NewRoute(web.MethodLock, "/hello/:name", HandlerHelloForLock),
+		server.NewRoute(web.MethodUnlock, "/hello/:name", HandlerHelloForUnlock),
+		server.NewRoute(web.MethodPropFind, "/hello/:name", HandlerHelloForPropFind),
+		server.NewRoute(web.MethodView, "/hello/:name", HandlerHelloForView),
+		server.NewRoute(web.MethodGet, "/hello/:name/download", HandlerHelloForDownloadFiles),
+		server.NewRoute(web.MethodGet, "/hello/:name/download/one", HandlerHelloForDownloadOneFile),
+		server.NewRoute(web.MethodPost, "/hello/:name/upload", HandlerHelloForUploadFiles),
 	)
 
 	w.AddNamespace("/p").AddRoutes(
-		server.NewRoute(webserver.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareFour()),
+		server.NewRoute(web.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareFour()),
 	)
 
 	// start the server
@@ -86,15 +86,15 @@ func MyMiddlewareFour() server.MiddlewareFunc {
 func HandlerHelloForHead(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR HEAD")
 
-	return ctx.Response.NoContent(webserver.StatusOK)
+	return ctx.Response.NoContent(web.StatusOK)
 }
 
 func HandlerHelloForGet(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR GET")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -110,8 +110,8 @@ func HandlerHelloForPost(ctx *server.Context) error {
 	fmt.Printf("%+v", data)
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -120,8 +120,8 @@ func HandlerHelloForPut(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR PUT")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -130,8 +130,8 @@ func HandlerHelloForDelete(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR DELETE")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -140,8 +140,8 @@ func HandlerHelloForPatch(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR PATCH")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -149,15 +149,15 @@ func HandlerHelloForPatch(ctx *server.Context) error {
 func HandlerHelloForCopy(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR COPY")
 
-	return ctx.Response.NoContent(webserver.StatusOK)
+	return ctx.Response.NoContent(web.StatusOK)
 }
 
 func HandlerHelloForConnect(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR CONNECT")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -166,8 +166,8 @@ func HandlerHelloForOptions(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR OPTIONS")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -176,8 +176,8 @@ func HandlerHelloForTrace(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR TRACE")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -186,8 +186,8 @@ func HandlerHelloForLink(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR LINK")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -196,8 +196,8 @@ func HandlerHelloForUnlink(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR UNLINK")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -205,15 +205,15 @@ func HandlerHelloForUnlink(ctx *server.Context) error {
 func HandlerHelloForPurge(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR PURGE")
 
-	return ctx.Response.NoContent(webserver.StatusOK)
+	return ctx.Response.NoContent(web.StatusOK)
 }
 
 func HandlerHelloForLock(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR LOCK")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -221,14 +221,14 @@ func HandlerHelloForLock(ctx *server.Context) error {
 func HandlerHelloForUnlock(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR UNLOCK")
 
-	return ctx.Response.NoContent(webserver.StatusOK)
+	return ctx.Response.NoContent(web.StatusOK)
 }
 func HandlerHelloForPropFind(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR PROPFIND")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -237,8 +237,8 @@ func HandlerHelloForView(ctx *server.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR VIEW")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -250,8 +250,8 @@ func HandlerHelloForDownloadOneFile(ctx *server.Context) error {
 	ctx.Response.Attachment(fmt.Sprintf("%s%s", dir, "/examples/data/a.text"), "text_a.text")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -265,8 +265,8 @@ func HandlerHelloForDownloadFiles(ctx *server.Context) error {
 	ctx.Response.Inline(fmt.Sprintf("%s%s", dir, "/examples/data/c.text"), "text_c.text")
 
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }
@@ -276,8 +276,8 @@ func HandlerHelloForUploadFiles(ctx *server.Context) error {
 
 	fmt.Printf("\nAttachments: %+v\n", ctx.Request.Attachments)
 	return ctx.Response.Bytes(
-		webserver.StatusOK,
-		webserver.ContentTypeApplicationJSON,
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
 		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
 	)
 }

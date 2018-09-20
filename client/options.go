@@ -1,8 +1,9 @@
 package client
 
 import (
+	"web"
+
 	"github.com/joaosoft/logger"
-	"webserver"
 )
 
 // WebClientOption ...
@@ -45,7 +46,7 @@ func WithAddress(address string) WebClientOption {
 }
 
 // WithMultiAttachmentMode ...
-func WithMultiAttachmentMode(mode webserver.MultiAttachmentMode) WebClientOption {
+func WithMultiAttachmentMode(mode web.MultiAttachmentMode) WebClientOption {
 	return func(webserver *WebClient) {
 		webserver.multiAttachmentMode = mode
 	}

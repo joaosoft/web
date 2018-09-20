@@ -4,7 +4,7 @@ import (
 	"io"
 	"net"
 	"time"
-	"webserver"
+	"web"
 )
 
 type Context struct {
@@ -17,14 +17,14 @@ type Base struct {
 	IP          string
 	FullUrl     string
 	Url         string
-	Method      webserver.Method
+	Method      web.Method
 	Protocol    string
-	Headers     webserver.Headers
-	Cookies     webserver.Cookies
-	ContentType webserver.ContentType
-	Params      webserver.Params
-	UrlParams   webserver.UrlParams
-	Charset     webserver.Charset
+	Headers     web.Headers
+	Cookies     web.Cookies
+	ContentType web.ContentType
+	Params      web.Params
+	UrlParams   web.UrlParams
+	Charset     web.Charset
 	conn        net.Conn
 	client      *WebClient
 }
@@ -40,17 +40,17 @@ type Request struct {
 type Response struct {
 	Base
 	Body                []byte
-	Status              webserver.Status
+	Status              web.Status
 	Attachments         map[string]Attachment
-	MultiAttachmentMode webserver.MultiAttachmentMode
+	MultiAttachmentMode web.MultiAttachmentMode
 	Boundary            string
 	Writer              io.Writer
 }
 
 type Attachment struct {
-	ContentType        webserver.ContentType
-	ContentDisposition webserver.ContentDisposition
-	Charset            webserver.Charset
+	ContentType        web.ContentType
+	ContentDisposition web.ContentDisposition
+	Charset            web.Charset
 	File               string
 	Name               string
 	Body               []byte

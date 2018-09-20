@@ -1,11 +1,11 @@
 package server
 
-import "webserver"
+import "web"
 
-type Routes map[webserver.Method][]Route
+type Routes map[web.Method][]Route
 
 type Route struct {
-	Method      webserver.Method
+	Method      web.Method
 	Path        string
 	Regex       string
 	Name        string
@@ -13,13 +13,13 @@ type Route struct {
 	Middlewares []MiddlewareFunc
 }
 
-func NewRoute(method webserver.Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) Route {
+func NewRoute(method web.Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) Route {
 	return Route{
 		Method:      method,
 		Path:        path,
 		Regex:       ConvertPathToRegex(path),
 		Handler:     handler,
 		Middlewares: middleware,
-		Name:        webserver.GetFunctionName(handler),
+		Name:        web.GetFunctionName(handler),
 	}
 }
