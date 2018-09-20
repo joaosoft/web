@@ -7,29 +7,29 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"web"
+	"web/common"
 )
 
-func (r *Request) Set(contentType web.ContentType, b []byte) error {
+func (r *Request) Set(contentType common.ContentType, b []byte) error {
 	r.ContentType = contentType
 	r.Body = b
 	return nil
 }
 
 func (r *Request) HTML(body string) error {
-	r.SetContentType(web.ContentTypeTextHTML)
+	r.SetContentType(common.ContentTypeTextHTML)
 	r.Body = []byte(body)
 	return nil
 }
 
-func (r *Request) Bytes(contentType web.ContentType, b []byte) error {
+func (r *Request) Bytes(contentType common.ContentType, b []byte) error {
 	r.SetContentType(contentType)
 	r.Body = b
 	return nil
 }
 
 func (r *Request) String(s string) error {
-	r.SetContentType(web.ContentTypeTextPlain)
+	r.SetContentType(common.ContentTypeTextPlain)
 	r.Body = []byte(s)
 	return nil
 }
@@ -47,7 +47,7 @@ func (r *Request) JSON(i interface{}) error {
 	if b, err := json.Marshal(i); err != nil {
 		return err
 	} else {
-		r.SetContentType(web.ContentTypeApplicationJSON)
+		r.SetContentType(common.ContentTypeApplicationJSON)
 		r.Body = b
 	}
 
@@ -58,7 +58,7 @@ func (r *Request) JSONPretty(i interface{}, indent string) error {
 	if b, err := json.MarshalIndent(i, "", indent); err != nil {
 		return err
 	} else {
-		r.SetContentType(web.ContentTypeApplicationJSON)
+		r.SetContentType(common.ContentTypeApplicationJSON)
 		r.Body = b
 	}
 	return nil
@@ -77,7 +77,7 @@ func (r *Request) XML(i interface{}) error {
 	if b, err := xml.Marshal(i); err != nil {
 		return err
 	} else {
-		r.SetContentType(web.ContentTypeApplicationXML)
+		r.SetContentType(common.ContentTypeApplicationXML)
 		r.Body = b
 	}
 	return nil
@@ -87,13 +87,13 @@ func (r *Request) XMLPretty(i interface{}, indent string) error {
 	if b, err := xml.MarshalIndent(i, "", indent); err != nil {
 		return err
 	} else {
-		r.SetContentType(web.ContentTypeApplicationXML)
+		r.SetContentType(common.ContentTypeApplicationXML)
 		r.Body = b
 	}
 	return nil
 }
 
-func (r *Request) Stream(contentType web.ContentType, reader io.Reader) error {
+func (r *Request) Stream(contentType common.ContentType, reader io.Reader) error {
 	r.SetContentType(contentType)
 	if _, err := io.Copy(r.Writer, reader); err != nil {
 		return err
@@ -102,12 +102,12 @@ func (r *Request) Stream(contentType web.ContentType, reader io.Reader) error {
 }
 
 func (r *Request) File(fileName string) error {
-	data, err := web.ReadFile(fileName, nil)
+	data, err := common.ReadFile(fileName, nil)
 	if err != nil {
 		return err
 	}
 
-	contentType, charset := web.DetectContentType(filepath.Ext(fileName), data)
+	contentType, charset := common.DetectContentType(filepath.Ext(fileName), data)
 	r.SetContentType(contentType)
 	r.SetCharset(charset)
 	r.Body = data
@@ -120,14 +120,14 @@ func (r *Request) Attachment(file, name string) error {
 		return err
 	}
 
-	data, err := web.ReadFile(file, nil)
+	data, err := common.ReadFile(file, nil)
 	if err != nil {
 		return err
 	}
 
-	contentType, charset := web.DetectContentType(filepath.Ext(info.Name()), data)
+	contentType, charset := common.DetectContentType(filepath.Ext(info.Name()), data)
 	r.Attachments[name] = Attachment{
-		ContentDisposition: web.ContentDispositionAttachment,
+		ContentDisposition: common.ContentDispositionAttachment,
 		ContentType:        contentType,
 		Charset:            charset,
 		File:               info.Name(),
@@ -143,14 +143,14 @@ func (r *Request) Inline(file, name string) error {
 		return err
 	}
 
-	data, err := web.ReadFile(file, nil)
+	data, err := common.ReadFile(file, nil)
 	if err != nil {
 		return err
 	}
 
-	contentType, charset := web.DetectContentType(filepath.Ext(info.Name()), data)
+	contentType, charset := common.DetectContentType(filepath.Ext(info.Name()), data)
 	r.Attachments[name] = Attachment{
-		ContentDisposition: web.ContentDispositionInline,
+		ContentDisposition: common.ContentDispositionInline,
 		ContentType:        contentType,
 		Charset:            charset,
 		File:               info.Name(),

@@ -4,7 +4,7 @@ import (
 	"io"
 	"net"
 	"time"
-	"web"
+	"web/common"
 )
 
 type ErrorHandler func(ctx *Context, err error) error
@@ -21,14 +21,14 @@ type Base struct {
 	IP          string
 	FullUrl     string
 	Url         string
-	Method      web.Method
-	Protocol    web.Protocol
-	Headers     web.Headers
-	Cookies     web.Cookies
-	ContentType web.ContentType
-	Params      web.Params
-	UrlParams   web.UrlParams
-	Charset     web.Charset
+	Method      common.Method
+	Protocol    common.Protocol
+	Headers     common.Headers
+	Cookies     common.Cookies
+	ContentType common.ContentType
+	Params      common.Params
+	UrlParams   common.UrlParams
+	Charset     common.Charset
 	conn        net.Conn
 	server      *Server
 }
@@ -44,17 +44,17 @@ type Request struct {
 type Response struct {
 	Base
 	Body                []byte
-	Status              web.Status
+	Status              common.Status
 	Attachments         map[string]Attachment
-	MultiAttachmentMode web.MultiAttachmentMode
+	MultiAttachmentMode common.MultiAttachmentMode
 	Boundary            string
 	Writer              io.Writer
 }
 
 type Attachment struct {
-	ContentType        web.ContentType
-	ContentDisposition web.ContentDisposition
-	Charset            web.Charset
+	ContentType        common.ContentType
+	ContentDisposition common.ContentDisposition
+	Charset            common.Charset
 	File               string
 	Name               string
 	Body               []byte

@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"web"
+	"web/common"
 )
 
 type AppConfig struct {
@@ -18,7 +18,7 @@ type ServerConfig struct {
 
 func NewServerConfig(address string) (*ServerConfig, error) {
 	appConfig := &AppConfig{}
-	if err := web.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", web.GetEnv()), appConfig); err != nil {
+	if err := common.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", common.GetEnv()), appConfig); err != nil {
 		return nil, err
 	}
 

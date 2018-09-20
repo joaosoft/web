@@ -2,19 +2,19 @@ package server
 
 import (
 	"fmt"
-	"web"
+	"web/common"
 )
 
 var (
-	ErrorNotFound = NewError(web.StatusNotFound, "route not found")
+	ErrorNotFound = NewError(common.StatusNotFound, "route not found")
 )
 
 type Error struct {
-	Status   web.Status
+	Status   common.Status
 	Messages interface{}
 }
 
-func NewError(status web.Status, errors ...interface{}) *Error {
+func NewError(status common.Status, errors ...interface{}) *Error {
 	err := &Error{
 		Status: status,
 	}
@@ -22,7 +22,7 @@ func NewError(status web.Status, errors ...interface{}) *Error {
 	if len(errors) > 0 {
 		err.Messages = errors
 	} else {
-		err.Messages = []string{web.StatusText(status)}
+		err.Messages = []string{common.StatusText(status)}
 	}
 
 	return err
@@ -39,5 +39,5 @@ func (w *Server) DefaultErrorHandler(ctx *Context, err error) error {
 		return ctx.Response.JSON(e.Status, e)
 	}
 
-	return ctx.Response.JSON(web.StatusInternalServerError, NewError(web.StatusInternalServerError, err))
+	return ctx.Response.JSON(common.StatusInternalServerError, NewError(common.StatusInternalServerError, err))
 }

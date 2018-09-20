@@ -5,8 +5,9 @@ import (
 	"net"
 	"regexp"
 	"time"
-	"web"
+	"web/common"
 
+	"github.com/joaosoft/color"
 	"github.com/joaosoft/logger"
 )
 
@@ -15,7 +16,7 @@ type Client struct {
 	isLogExternal       bool
 	logger              logger.ILogger
 	dialer              net.Dialer
-	multiAttachmentMode web.MultiAttachmentMode
+	multiAttachmentMode common.MultiAttachmentMode
 }
 
 func NewClient(options ...ClientOption) (*Client, error) {
@@ -23,7 +24,7 @@ func NewClient(options ...ClientOption) (*Client, error) {
 
 	service := &Client{
 		logger:              log,
-		multiAttachmentMode: web.MultiAttachmentModeZip,
+		multiAttachmentMode: common.MultiAttachmentModeZip,
 	}
 
 	if service.isLogExternal {
@@ -32,7 +33,7 @@ func NewClient(options ...ClientOption) (*Client, error) {
 
 	// load configuration File
 	appConfig := &AppConfig{}
-	if err := web.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", web.GetEnv()), appConfig); err != nil {
+	if err := common.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", common.GetEnv()), appConfig); err != nil {
 		service.logger.Warn(err)
 	} else {
 		level, _ := logger.ParseLevel(appConfig.Client.Log.Level)
@@ -55,11 +56,14 @@ func NewClient(options ...ClientOption) (*Client, error) {
 }
 
 func (c *Client) Send(request *Request) (*Response, error) {
-	regx := regexp.MustCompile(web.RegexForHost)
+	startTime := time.Now()
+	regx := regexp.MustCompile(common.RegexForHost)
 	split := regx.FindStringSubmatch(request.Url)
 	if len(split) == 0 {
 		return nil, fmt.Errorf("invalid url [%s]", split[0])
 	}
+
+	fmt.Println(color.WithColor("[IN] http client send Method[%s] Url[%s] on Start[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, request.Method, request.Url, startTime))
 
 	c.logger.Debugf("executing [%s] request to [%s]", request.Method, split[0])
 
@@ -76,5 +80,9 @@ func (c *Client) Send(request *Request) (*Response, error) {
 	defer conn.Close()
 	conn.Write(body)
 
-	return c.NewResponse(request.Method, conn)
+	response, err := c.NewResponse(request.Method, conn)
+
+	fmt.Println(color.WithColor("[OUT] http client send Method[%s] Url[%s] on Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundCyan, color.BackgroundBlack, request.Method, request.Url, startTime, time.Since(startTime)))
+
+	return response, err
 }

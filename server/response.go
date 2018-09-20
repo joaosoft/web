@@ -8,7 +8,7 @@ import (
 	"io"
 	"strconv"
 	"time"
-	"web"
+	"web/common"
 )
 
 func (w *Server) NewResponse(request *Request) *Response {
@@ -16,7 +16,7 @@ func (w *Server) NewResponse(request *Request) *Response {
 		Base:                request.Base,
 		Attachments:         make(map[string]Attachment),
 		MultiAttachmentMode: w.multiAttachmentMode,
-		Boundary:            web.RandomBoundary(),
+		Boundary:            common.RandomBoundary(),
 		Writer:              request.conn.(io.Writer),
 	}
 }
@@ -33,7 +33,7 @@ func (r *Response) write() error {
 
 	if lenAttachments > 0 {
 		switch r.MultiAttachmentMode {
-		case web.MultiAttachmentModeBoundary:
+		case common.MultiAttachmentModeBoundary:
 			if body, err := r.handleBody(); err != nil {
 				return err
 			} else {
@@ -44,7 +44,7 @@ func (r *Response) write() error {
 			} else {
 				buf.Write(body)
 			}
-		case web.MultiAttachmentModeZip:
+		case common.MultiAttachmentModeZip:
 			if lenAttachments > 1 {
 				if body, err := r.handleZippedAttachments(); err != nil {
 					return err
@@ -77,21 +77,21 @@ func (r *Response) handleHeaders() ([]byte, error) {
 	lenAttachments := len(r.Attachments)
 
 	// header
-	buf.WriteString(fmt.Sprintf("%s %d %s\r\n", r.Protocol, r.Status, web.StatusText(r.Status)))
+	buf.WriteString(fmt.Sprintf("%s %d %s\r\n", r.Protocol, r.Status, common.StatusText(r.Status)))
 
 	// headers
-	r.Headers[web.HeaderServer] = []string{"server"}
-	r.Headers[web.HeaderDate] = []string{time.Now().Format(web.TimeFormat)}
+	r.Headers[common.HeaderServer] = []string{"server"}
+	r.Headers[common.HeaderDate] = []string{time.Now().Format(common.TimeFormat)}
 
 	if lenAttachments > 0 {
 
 		switch r.MultiAttachmentMode {
-		case web.MultiAttachmentModeBoundary:
-			r.Headers[web.HeaderContentType] = []string{fmt.Sprintf("%s; boundary=%s; charset=%s", web.ContentTypeMultipartFormData, r.Boundary, r.Charset)}
-		case web.MultiAttachmentModeZip:
+		case common.MultiAttachmentModeBoundary:
+			r.Headers[common.HeaderContentType] = []string{fmt.Sprintf("%s; boundary=%s; charset=%s", common.ContentTypeMultipartFormData, r.Boundary, r.Charset)}
+		case common.MultiAttachmentModeZip:
 			var name = "attachments"
 			var fileName = "attachments.zip"
-			var contentType = web.ContentTypeApplicationZip
+			var contentType = common.ContentTypeApplicationZip
 			var charset = r.Charset
 
 			if lenAttachments == 1 {
@@ -105,11 +105,11 @@ func (r *Response) handleHeaders() ([]byte, error) {
 					break
 				}
 			}
-			r.Headers[web.HeaderContentType] = []string{fmt.Sprintf("%s; attachment; name=%q; filename=%q; charset=%s", contentType, name, fileName, charset)}
+			r.Headers[common.HeaderContentType] = []string{fmt.Sprintf("%s; attachment; name=%q; filename=%q; charset=%s", contentType, name, fileName, charset)}
 		}
 	} else {
-		r.Headers[web.HeaderContentType] = []string{string(r.ContentType)}
-		r.Headers[web.HeaderContentLength] = []string{strconv.Itoa(len(r.Body))}
+		r.Headers[common.HeaderContentType] = []string{string(r.ContentType)}
+		r.Headers[common.HeaderContentLength] = []string{strconv.Itoa(len(r.Body))}
 	}
 
 	for key, value := range r.Headers {
@@ -124,9 +124,9 @@ func (r *Response) handleHeaders() ([]byte, error) {
 func (r *Response) handleBody() ([]byte, error) {
 	var buf bytes.Buffer
 
-	if web.MethodHasBody[r.Method] {
+	if common.MethodHasBody[r.Method] {
 		buf.Write(r.Body)
-		if r.MultiAttachmentMode == web.MultiAttachmentModeBoundary && len(r.Attachments) > 0 {
+		if r.MultiAttachmentMode == common.MultiAttachmentModeBoundary && len(r.Attachments) > 0 {
 			buf.WriteString("\r\n\r\n")
 		}
 	}
@@ -150,8 +150,8 @@ func (r *Response) handleBoundaryAttachments() ([]byte, error) {
 
 	for _, attachment := range r.Attachments {
 		buf.WriteString(fmt.Sprintf("--%s\r\n", r.Boundary))
-		buf.WriteString(fmt.Sprintf("%s: %s; name=%q; filename=%q\r\n", web.HeaderContentDisposition, attachment.ContentDisposition, attachment.Name, attachment.File))
-		buf.WriteString(fmt.Sprintf("%s: %s\r\n\r\n", web.HeaderContentType, attachment.ContentType))
+		buf.WriteString(fmt.Sprintf("%s: %s; name=%q; filename=%q\r\n", common.HeaderContentDisposition, attachment.ContentDisposition, attachment.Name, attachment.File))
+		buf.WriteString(fmt.Sprintf("%s: %s\r\n\r\n", common.HeaderContentType, attachment.ContentType))
 		buf.Write(attachment.Body)
 		buf.WriteString("\r\n")
 	}

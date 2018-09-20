@@ -1,4 +1,4 @@
-package web
+package common
 
 // Mime type
 type ContentDisposition string

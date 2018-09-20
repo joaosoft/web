@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/joaosoft/color"
   packages = ["."]
-  revision = "07e4266c4252ee4e6f602930d170877ba009d142"
+  revision = "17caec6046388cea5751f441ef6b06a7a572abf2"
 
 [[projects]]
   branch = "master"
@@ -31,8 +31,8 @@
     "color",
     "log"
   ]
-  revision = "d6898124de917583f5ff5592ef931d1dfe0ddc05"
-  version = "0.2.6"
+  revision = "2a618302b929cc20862dda3aa6f02f64dbe740dd"
+  version = "v0.2.7"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -68,11 +68,11 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "d0be0721c37eeb5299f245a996a483160fc36940"
+  revision = "d641721ec2dead6fe5ca284096fe4b1fcd49e427"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c9884d662d8afae54f82f8c64ef2877d34a2d9c7efb5e59d51489d8b46a515da"
+  inputs-digest = "bfbaaf4e3f01ce45ee6beb8f4ab5f07fbd232f65b28bd76b2d54d5f9679f05be"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
-	"web"
+	"web/common"
 
 	"github.com/joaosoft/color"
 	"github.com/joaosoft/logger"
@@ -21,7 +21,7 @@ type Server struct {
 	listener            net.Listener
 	address             string
 	errorhandler        ErrorHandler
-	multiAttachmentMode web.MultiAttachmentMode
+	multiAttachmentMode common.MultiAttachmentMode
 }
 
 func NewServer(options ...ServerOption) (*Server, error) {
@@ -32,7 +32,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 		routes:              make(Routes),
 		middlewares:         make([]MiddlewareFunc, 0),
 		address:             ":80",
-		multiAttachmentMode: web.MultiAttachmentModeZip,
+		multiAttachmentMode: common.MultiAttachmentModeZip,
 	}
 
 	if service.isLogExternal {
@@ -41,7 +41,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 
 	// load configuration File
 	appConfig := &AppConfig{}
-	if err := web.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", web.GetEnv()), appConfig); err != nil {
+	if err := common.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", common.GetEnv()), appConfig); err != nil {
 		service.logger.Warn(err)
 	} else {
 		level, _ := logger.ParseLevel(appConfig.Server.Log.Level)
@@ -56,7 +56,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 
 	service.Reconfigure(options...)
 
-	service.AddRoute(web.MethodGet, "/favicon.ico", service.handlerFile)
+	service.AddRoute(common.MethodGet, "/favicon.ico", service.handlerFile)
 	service.errorhandler = service.DefaultErrorHandler
 
 	return service, nil
@@ -66,14 +66,14 @@ func (w *Server) AddMiddlewares(middlewares ...MiddlewareFunc) {
 	w.middlewares = append(w.middlewares, middlewares...)
 }
 
-func (w *Server) AddRoute(method web.Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
+func (w *Server) AddRoute(method common.Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
 	w.routes[method] = append(w.routes[method], Route{
 		Method:      method,
 		Path:        path,
 		Regex:       ConvertPathToRegex(path),
 		Handler:     handler,
 		Middlewares: middleware,
-		Name:        web.GetFunctionName(handler),
+		Name:        common.GetFunctionName(handler),
 	})
 
 	return nil
@@ -157,6 +157,8 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 		return err
 	}
 
+	fmt.Println(color.WithColor("[IN] Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, request.IP, request.Method, request.Url, request.Protocol, startTime))
+
 	// create response for request
 	response := w.NewResponse(request)
 
@@ -212,7 +214,7 @@ on_error:
 		w.logger.Errorf("error writing response: [%s]", err)
 	}
 
-	fmt.Println(color.WithColor("Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, ctx.Request.IP, ctx.Request.Method, ctx.Request.Url, ctx.Request.Protocol, startTime, time.Since(startTime)))
+	fmt.Println(color.WithColor("[OUT] Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundCyan, color.BackgroundBlack, ctx.Request.IP, ctx.Request.Method, ctx.Request.Url, ctx.Request.Protocol, startTime, time.Since(startTime)))
 
 	return nil
 }
@@ -235,7 +237,7 @@ func ConvertPathToRegex(path string) string {
 	return fmt.Sprintf("^%s$", regx)
 }
 
-func (w *Server) GetRoute(method web.Method, url string) (*Route, error) {
+func (w *Server) GetRoute(method common.Method, url string) (*Route, error) {
 
 	for _, route := range w.routes[method] {
 		if regx, err := regexp.Compile(route.Regex); err != nil {

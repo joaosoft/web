@@ -11,7 +11,7 @@ import (
 	"net"
 	"strings"
 	"time"
-	"web"
+	"web/common"
 )
 
 func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
@@ -19,11 +19,11 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 	request := &Request{
 		Base: Base{
 			IP:        conn.RemoteAddr().String(),
-			Headers:   make(web.Headers),
-			Cookies:   make(web.Cookies),
-			Params:    make(web.Params),
-			UrlParams: make(web.UrlParams),
-			Charset:   web.CharsetUTF8,
+			Headers:   make(common.Headers),
+			Cookies:   make(common.Cookies),
+			Params:    make(common.Params),
+			UrlParams: make(common.UrlParams),
+			Charset:   common.CharsetUTF8,
 			conn:      conn,
 			server:    server,
 		},
@@ -42,11 +42,11 @@ func (r *Request) Bind(i interface{}) error {
 	}
 
 	switch *contentType {
-	case web.ContentTypeApplicationJSON:
+	case common.ContentTypeApplicationJSON:
 		if err := json.Unmarshal(r.Body, i); err != nil {
 			return err
 		}
-	case web.ContentTypeApplicationXML:
+	case common.ContentTypeApplicationXML:
 		if err := xml.Unmarshal(r.Body, i); err != nil {
 			return err
 		}
@@ -95,9 +95,9 @@ func (r *Request) readHeader(reader *bufio.Reader) error {
 	if firstLine := bytes.SplitN(line, []byte(` `), 3); len(firstLine) < 3 {
 		return errors.New("invalid http request")
 	} else {
-		r.Method = web.Method(firstLine[0])
+		r.Method = common.Method(firstLine[0])
 		r.FullUrl = string(firstLine[1])
-		r.Protocol = web.Protocol(firstLine[2])
+		r.Protocol = common.Protocol(firstLine[2])
 
 		// load query parameters
 		if split := strings.SplitN(r.FullUrl, "?", 2); len(split) > 1 {
@@ -138,7 +138,7 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 				if len(splitCookie) > 1 {
 					cookieValue = string(splitCookie[1])
 				}
-				r.Cookies[strings.Title(string(split[0]))] = web.Cookie{Name: string(splitCookie[0]), Value: cookieValue}
+				r.Cookies[strings.Title(string(split[0]))] = common.Cookie{Name: string(splitCookie[0]), Value: cookieValue}
 			case "Content-Type":
 				if args := bytes.Split(split[1], []byte(`;`)); len(args) > 0 {
 					split[1] = bytes.TrimSpace(args[0])
@@ -148,13 +148,13 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 						case "boundary":
 							r.Boundary = string(bytes.Replace(parm[1], []byte(`"`), []byte(``), -1))
 						case "charset":
-							r.Charset = web.Charset(bytes.Replace(parm[1], []byte(`"`), []byte(``), -1))
+							r.Charset = common.Charset(bytes.Replace(parm[1], []byte(`"`), []byte(``), -1))
 						}
 					}
 				}
 				fallthrough
 			default:
-				r.Headers[web.HeaderType(strings.Title(string(split[0])))] = []string{string(split[1])}
+				r.Headers[common.HeaderType(strings.Title(string(split[0])))] = []string{string(split[1])}
 			}
 		}
 	}
@@ -179,11 +179,11 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			switch string(bytes.Title(bytes.TrimSpace(content[0]))) {
 			case "Content-Type":
 				bytes.Split(content[1], []byte(`;`))
-				attachment.ContentType = web.ContentType(content[1])
+				attachment.ContentType = common.ContentType(content[1])
 
 			case "Content-Disposition":
 				contentDisposition := bytes.Split(content[1], []byte(`;`))
-				attachment.ContentDisposition = web.ContentDisposition(string(contentDisposition[0]))
+				attachment.ContentDisposition = common.ContentDisposition(string(contentDisposition[0]))
 				for i := 1; i < len(contentDisposition); i++ {
 					parms := bytes.Split(contentDisposition[i], []byte(`=`))
 					switch string(bytes.TrimSpace(parms[0])) {

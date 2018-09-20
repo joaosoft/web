@@ -1,7 +1,7 @@
 package client
 
 import (
-	"web"
+	"web/common"
 
 	"github.com/joaosoft/logger"
 )
@@ -39,7 +39,7 @@ func WithLogLevel(level logger.Level) ClientOption {
 }
 
 // WithMultiAttachmentMode ...
-func WithMultiAttachmentMode(mode web.MultiAttachmentMode) ClientOption {
+func WithMultiAttachmentMode(mode common.MultiAttachmentMode) ClientOption {
 	return func(WebClient *Client) {
 		WebClient.multiAttachmentMode = mode
 	}

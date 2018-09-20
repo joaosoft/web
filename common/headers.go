@@ -1,4 +1,4 @@
-package web
+package common
 
 // HeaderType
 type HeaderType string
