@@ -44,7 +44,7 @@ This examples are available in the project at [web/examples](https://github.com/
 ### Server
 ```
 func main() {
-	// create a new server
+    // create a new server
     w, err := server.NewServer(server.WithMultiAttachmentMode(web.MultiAttachmentModeBoundary))
     if err != nil {
         panic(err)
