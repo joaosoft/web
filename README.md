@@ -1,5 +1,5 @@
-# webserver
-[![Build Status](https://travis-ci.org/joaosoft/webserver.svg?branch=master)](https://travis-ci.org/joaosoft/webserver) | [![codecov](https://codecov.io/gh/joaosoft/webserver/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/webserver) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/webserver)](https://goreportcard.com/report/github.com/joaosoft/webserver) | [![GoDoc](https://godoc.org/github.com/joaosoft/webserver?status.svg)](https://godoc.org/github.com/joaosoft/webserver)
+# web
+[![Build Status](https://travis-ci.org/joaosoft/web.svg?branch=master)](https://travis-ci.org/joaosoft/web) | [![codecov](https://codecov.io/gh/joaosoft/web/branch/master/graph/badge.svg)](https://codecov.io/gh/joaosoft/web) | [![Go Report Card](https://goreportcard.com/badge/github.com/joaosoft/web)](https://goreportcard.com/report/github.com/joaosoft/web) | [![GoDoc](https://godoc.org/github.com/joaosoft/web?status.svg)](https://godoc.org/github.com/joaosoft/web)
 
 A simple and fast web server and client.
 
@@ -11,8 +11,8 @@ A simple and fast web server and client.
 * Single/Multiple File Download
 
 ## With attachment modes
-* [default] zip files when returns more then one file (WithServerAttachmentMode(webserver.MultiAttachmentModeZip))
-* [experimental] returns attachmentes splited by a boundary defined on header Content-Type (WithServerAttachmentMode(webserver.MultiAttachmentModeBoundary))
+* [default] zip files when returns more then one file (WithServerAttachmentMode(web.MultiAttachmentModeZip))
+* [experimental] returns attachmentes splited by a boundary defined on header Content-Type (WithServerAttachmentMode(web.MultiAttachmentModeBoundary))
 
 ## With support for methods
 * HEAD
@@ -35,7 +35,7 @@ A simple and fast web server and client.
 
 >### Go
 ```
-go get github.com/joaosoft/webserver
+go get github.com/joaosoft/web
 ```
 
 ## Usage 
