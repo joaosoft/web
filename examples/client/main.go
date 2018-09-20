@@ -12,6 +12,6 @@ func main() {
 	}
 
 	request, _ := c.NewRequest()
-	c.Call(request)
+	c.GET(request)
 
 }

@@ -1,12 +1,12 @@
 package client
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"time"
 	"web"
 
-	"github.com/joaosoft/color"
 	"github.com/joaosoft/logger"
 )
 
@@ -14,7 +14,7 @@ type WebClient struct {
 	config              *WebClientConfig
 	isLogExternal       bool
 	logger              logger.ILogger
-	dialer              net.Conn
+	dialer              net.Dialer
 	address             string
 	multiAttachmentMode web.MultiAttachmentMode
 }
@@ -49,31 +49,26 @@ func NewWebClient(options ...WebClientOption) (*WebClient, error) {
 
 	service.Reconfigure(options...)
 
-	return service, nil
-}
-
-func (c *WebClient) Call(request *Request) (*Response, error) {
-	c.logger.Debug("executing call")
-	var err error
-
-	c.dialer, err = net.Dial("tcp", c.address)
-	if err != nil {
-		c.logger.Errorf("error connecting to %s: %s", c.address, err)
-		return nil, err
-	}
-	fmt.Println(color.WithColor("http client calling url [%s]", color.FormatBold, color.ForegroundRed, color.BackgroundBlack, ""))
-
-	a := &net.Dialer{
+	// create a new dialer to create connections
+	dialer := net.Dialer{
 		Timeout:   30 * time.Second,
 		KeepAlive: 30 * time.Second,
 		DualStack: true,
 	}
-	conn, err := a.Dial("tcp", c.address)
+	service.dialer = dialer
+
+	return service, nil
+}
+
+func (c *WebClient) GET(request *Request) (*Response, error) {
+	c.logger.Debug("executing GET")
+
+	conn, err := c.dialer.Dial("tcp", c.address)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
 
+	defer conn.Close()
 	conn.Write([]byte(`GET /hello/joao?a=1&b=2&c=1,2,3 HTTP/1.1
 Content-Type: application/json
 aaaa: teste do joao
@@ -82,6 +77,17 @@ Accept: */*
 Host: localhost:9001
 accept-encoding: gzip, deflate
 Connection: keep-alive`))
+
+	reader := bufio.NewReader(conn)
+
+	for {
+		conn.SetReadDeadline(time.Now().Add(time.Second * 1))
+		line, _, err := reader.ReadLine()
+		if err != nil {
+			break
+		}
+		fmt.Println(string(line))
+	}
 
 	return nil, err
 }
