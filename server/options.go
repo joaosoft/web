@@ -1,7 +1,8 @@
-package webserver
+package server
 
 import (
 	"github.com/joaosoft/logger"
+	"webserver"
 )
 
 // WebServerOption ...
@@ -44,7 +45,7 @@ func WithAddress(address string) WebServerOption {
 }
 
 // WithMultiAttachmentMode ...
-func WithMultiAttachmentMode(mode MultiAttachmentMode) WebServerOption {
+func WithMultiAttachmentMode(mode webserver.MultiAttachmentMode) WebServerOption {
 	return func(webserver *WebServer) {
 		webserver.multiAttachmentMode = mode
 	}

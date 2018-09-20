@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	methods = []Method{
+	Methods = []Method{
 		MethodGet,
 		MethodHead,
 		MethodConnect,
@@ -41,7 +41,7 @@ var (
 		MethodPropFind,
 	}
 
-	methodHasBody = map[Method]bool{
+	MethodHasBody = map[Method]bool{
 		MethodGet:      true,
 		MethodHead:     false,
 		MethodConnect:  true,

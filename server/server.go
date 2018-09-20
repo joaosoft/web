@@ -1,4 +1,4 @@
-package webserver
+package server
 
 import (
 	"fmt"
@@ -6,8 +6,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
-	"os"
+	"webserver"
 
 	"github.com/joaosoft/color"
 	"github.com/joaosoft/logger"
@@ -22,7 +21,7 @@ type WebServer struct {
 	listener            net.Listener
 	address             string
 	errorhandler        ErrorHandler
-	multiAttachmentMode MultiAttachmentMode
+	multiAttachmentMode webserver.MultiAttachmentMode
 }
 
 func NewWebServer(options ...WebServerOption) (*WebServer, error) {
@@ -33,7 +32,7 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 		routes:              make(Routes),
 		middlewares:         make([]MiddlewareFunc, 0),
 		address:             ":80",
-		multiAttachmentMode: MultiAttachmentModeZip,
+		multiAttachmentMode: webserver.MultiAttachmentModeZip,
 	}
 
 	if service.isLogExternal {
@@ -42,7 +41,7 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 
 	// load configuration File
 	appConfig := &AppConfig{}
-	if err := NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
+	if err := webserver.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", webserver.GetEnv()), appConfig); err != nil {
 		service.logger.Warn(err)
 	} else {
 		level, _ := logger.ParseLevel(appConfig.WebServer.Log.Level)
@@ -57,33 +56,24 @@ func NewWebServer(options ...WebServerOption) (*WebServer, error) {
 
 	service.Reconfigure(options...)
 
-	service.AddRoute(MethodGet, "/favicon.ico", service.handlerFile)
+	service.AddRoute(webserver.MethodGet, "/favicon.ico", service.handlerFile)
 	service.errorhandler = service.DefaultErrorHandler
 
 	return service, nil
-}
-
-// NewSimpleConfig...
-func NewSimpleConfig(file string, obj interface{}) error {
-	dir, _ := os.Getwd()
-	if _, err := ReadFile(fmt.Sprintf("%s%s", dir, file), obj); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (w *WebServer) AddMiddlewares(middlewares ...MiddlewareFunc) {
 	w.middlewares = append(w.middlewares, middlewares...)
 }
 
-func (w *WebServer) AddRoute(method Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
+func (w *WebServer) AddRoute(method webserver.Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
 	w.routes[method] = append(w.routes[method], Route{
 		Method:      method,
 		Path:        path,
 		Regex:       ConvertPathToRegex(path),
 		Handler:     handler,
 		Middlewares: middleware,
-		Name:        GetFunctionName(handler),
+		Name:        webserver.GetFunctionName(handler),
 	})
 
 	return nil
@@ -245,7 +235,7 @@ func ConvertPathToRegex(path string) string {
 	return fmt.Sprintf("^%s$", regx)
 }
 
-func (w *WebServer) GetRoute(method Method, url string) (*Route, error) {
+func (w *WebServer) GetRoute(method webserver.Method, url string) (*Route, error) {
 
 	for _, route := range w.routes[method] {
 		if regx, err := regexp.Compile(route.Regex); err != nil {

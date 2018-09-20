@@ -182,3 +182,11 @@ func RandomBoundary() string {
 	}
 	return fmt.Sprintf("%x", buf[:])
 }
+
+func NewSimpleConfig(file string, obj interface{}) error {
+	dir, _ := os.Getwd()
+	if _, err := ReadFile(fmt.Sprintf("%s%s", dir, file), obj); err != nil {
+		return err
+	}
+	return nil
+}

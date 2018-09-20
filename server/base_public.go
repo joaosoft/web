@@ -1,37 +1,39 @@
-package webserver
+package server
 
-func (r *Base) SetHeader(name HeaderType, header []string) {
+import "webserver"
+
+func (r *Base) SetHeader(name webserver.HeaderType, header []string) {
 	r.Headers[name] = header
 }
 
-func (r *Base) GetHeader(name HeaderType) string {
+func (r *Base) GetHeader(name webserver.HeaderType) string {
 	if header, ok := r.Headers[name]; ok {
 		return header[0]
 	}
 	return ""
 }
 
-func (r *Base) SetContentType(contentType ContentType) {
+func (r *Base) SetContentType(contentType webserver.ContentType) {
 	r.ContentType = contentType
 }
 
-func (r *Base) SetCharset(charset Charset) {
+func (r *Base) SetCharset(charset webserver.Charset) {
 	r.Charset = charset
 }
 
-func (r *Base) GetContentType() *ContentType {
-	if value, ok := r.Headers[HeaderContentType]; ok {
-		contentType := ContentType(value[0])
+func (r *Base) GetContentType() *webserver.ContentType {
+	if value, ok := r.Headers[webserver.HeaderContentType]; ok {
+		contentType := webserver.ContentType(value[0])
 		return &contentType
 	}
 	return nil
 }
 
-func (r *Base) SetCookie(name string, cookie Cookie) {
+func (r *Base) SetCookie(name string, cookie webserver.Cookie) {
 	r.Cookies[name] = cookie
 }
 
-func (r *Base) GetCookie(name string) *Cookie {
+func (r *Base) GetCookie(name string) *webserver.Cookie {
 	if cookie, ok := r.Cookies[name]; ok {
 		return &cookie
 	}

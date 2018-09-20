@@ -1,4 +1,4 @@
-package webserver
+package server
 
 import (
 	"time"
