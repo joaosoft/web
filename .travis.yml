@@ -13,8 +13,6 @@ jobs:
       go: master
       script:
         - go build ./
-        - go build ./examples/server
-        - go build ./examples/client
         - go test ./
         - go test -coverprofile=coverage.txt -covermode=atomic ./
         - go test ./ -bench=. -cpu=1,2,4,8
