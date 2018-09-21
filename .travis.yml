@@ -12,6 +12,7 @@ jobs:
       os: linux
       go: master
       script:
+        - go build ./
         - go build ./examples/server
         - go build ./examples/client
         - go test ./
