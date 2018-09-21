@@ -24,7 +24,7 @@ type Server struct {
 }
 
 func NewServer(options ...ServerOption) (*Server, error) {
-	log := logger.NewLogDefault("webserver", logger.WarnLevel)
+	log := logger.NewLogDefault("server", logger.WarnLevel)
 
 	service := &Server{
 		logger:              log,
