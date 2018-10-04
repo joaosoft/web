@@ -17,6 +17,8 @@ func (w *Server) NewResponse(request *Request) *Response {
 		MultiAttachmentMode: w.multiAttachmentMode,
 		Boundary:            RandomBoundary(),
 		Writer:              request.conn.(io.Writer),
+		Status:              StatusNoContent,
+		StatusText:          StatusText(StatusNoContent),
 	}
 }
 
@@ -75,12 +77,11 @@ func (r *Response) handleHeaders() ([]byte, error) {
 	var buf bytes.Buffer
 	lenAttachments := len(r.Attachments)
 
-	// header
-	buf.WriteString(fmt.Sprintf("%s %d %s\r\n", r.Protocol, r.Status, StatusText(r.Status)))
-
-	// headers
 	r.Headers[HeaderServer] = []string{"server"}
 	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
+
+	// header
+	buf.WriteString(fmt.Sprintf("%s %d %s\r\n", r.Protocol, r.Status, StatusText(r.Status)))
 
 	if lenAttachments > 0 {
 

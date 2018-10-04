@@ -17,14 +17,15 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 
 	request := &Request{
 		Base: Base{
-			IP:        conn.RemoteAddr().String(),
-			Headers:   make(Headers),
-			Cookies:   make(Cookies),
-			Params:    make(Params),
-			UrlParams: make(UrlParams),
-			Charset:   CharsetUTF8,
-			conn:      conn,
-			server:    server,
+			IP:          conn.RemoteAddr().String(),
+			Headers:     make(Headers),
+			Cookies:     make(Cookies),
+			Params:      make(Params),
+			UrlParams:   make(UrlParams),
+			ContentType: ContentTypeApplicationJSON,
+			Charset:     CharsetUTF8,
+			conn:        conn,
+			server:      server,
 		},
 		Attachments: make(map[string]Attachment),
 		Reader:      conn.(io.Reader),
@@ -153,7 +154,7 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 				}
 				fallthrough
 			default:
-				r.Headers[HeaderType(strings.Title(string(split[0])))] = []string{string(split[1])}
+				r.Headers[HeaderType(strings.Title(string(split[0])))] = []string{string(bytes.TrimSpace(split[1]))}
 			}
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"web"
+	"web/middlewares"
 )
 
 func main() {
@@ -16,6 +17,7 @@ func main() {
 	// add middleware's
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
 	w.AddRoutes(
+		web.NewRoute(web.MethodOptions, "*", HandlerHelloForOptions, middlewares.Options()),
 		web.NewRoute(web.MethodHead, "/hello/:name", HandlerHelloForHead),
 		web.NewRoute(web.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareThree()),
 		web.NewRoute(web.MethodPost, "/hello/:name", HandlerHelloForPost),
@@ -24,7 +26,7 @@ func main() {
 		web.NewRoute(web.MethodPatch, "/hello/:name", HandlerHelloForPatch),
 		web.NewRoute(web.MethodCopy, "/hello/:name", HandlerHelloForCopy),
 		web.NewRoute(web.MethodConnect, "/hello/:name", HandlerHelloForConnect),
-		web.NewRoute(web.MethodOptions, "/hello/:name", HandlerHelloForOptions),
+		web.NewRoute(web.MethodOptions, "/hello/:name", HandlerHelloForOptions, middlewares.Options()),
 		web.NewRoute(web.MethodTrace, "/hello/:name", HandlerHelloForTrace),
 		web.NewRoute(web.MethodLink, "/hello/:name", HandlerHelloForLink),
 		web.NewRoute(web.MethodUnlink, "/hello/:name", HandlerHelloForUnlink),
@@ -164,11 +166,7 @@ func HandlerHelloForConnect(ctx *web.Context) error {
 func HandlerHelloForOptions(ctx *web.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR OPTIONS")
 
-	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentTypeApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
-	)
+	return ctx.Response.NoContent(web.StatusNoContent)
 }
 
 func HandlerHelloForTrace(ctx *web.Context) error {

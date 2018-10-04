@@ -43,6 +43,26 @@ var (
 		MethodPropFind,
 	}
 
+	MethodsStr = []string{
+		string(MethodGet),
+		string(MethodHead),
+		string(MethodConnect),
+		string(MethodDelete),
+		string(MethodOptions),
+		string(MethodPatch),
+		string(MethodPost),
+		string(MethodTrace),
+		string(MethodPut),
+		string(MethodCopy),
+		string(MethodView),
+		string(MethodLink),
+		string(MethodUnlink),
+		string(MethodPurge),
+		string(MethodLock),
+		string(MethodUnlock),
+		string(MethodPropFind),
+	}
+
 	MethodHasBody = map[Method]bool{
 		MethodGet:      true,
 		MethodHead:     false,

@@ -8,6 +8,7 @@ const (
 	HeaderAccept              HeaderType = "Accept"
 	HeaderAcceptEncoding      HeaderType = "Accept-Encoding"
 	HeaderAllow               HeaderType = "Allow"
+	HeaderOrigin              HeaderType = "Origin"
 	HeaderAuthorization       HeaderType = "Authorization"
 	HeaderContentDisposition  HeaderType = "Content-Disposition"
 	HeaderContentEncoding     HeaderType = "Content-Encoding"

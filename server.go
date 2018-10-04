@@ -163,9 +163,22 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 
 	// create context with request and response
 	ctx = NewContext(startTime, request, response)
+	var route *Route
+
+	// when options method, validate request route
+	if request.Method == MethodOptions {
+		var method Method
+		if val, ok := request.Headers[HeaderAccessControlRequestMethod]; ok {
+			method = Method(val[0])
+		}
+		route, err = w.GetRoute(method, request.Url)
+		if err != nil {
+			w.logger.Errorf("error getting route: [%s]", err)
+			goto on_error
+		}
+	}
 
 	// middleware's of the server
-	var route *Route
 	route, err = w.GetRoute(request.Method, request.Url)
 	if err != nil {
 		w.logger.Errorf("error getting route: [%s]", err)
