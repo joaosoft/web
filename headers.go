@@ -42,6 +42,7 @@ const (
 	HeaderAccessControlAllowMethods       HeaderType = "Access-Control-Allow-Methods"
 	HeaderAccessControlAllowHeaderTypes   HeaderType = "Access-Control-Allow-HeaderTypes"
 	HeaderAccessControlAllowCredentials   HeaderType = "Access-Control-Allow-Credentials"
+	HeaderAccessControlAllowHeaders       HeaderType = "Access-Control-Allow-Headers"
 	HeaderAccessControlExposeHeaderTypes  HeaderType = "Access-Control-Expose-HeaderTypes"
 	HeaderAccessControlMaxAge             HeaderType = "Access-Control-Max-Age"
 
