@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-func Options() MiddlewareFunc {
+func MiddlewareOptions() MiddlewareFunc {
 	return func(next HandlerFunc) HandlerFunc {
 		return func(ctx *Context) error {
 
