@@ -79,6 +79,10 @@ func (r *Response) handleHeaders() ([]byte, error) {
 
 	r.Headers[HeaderServer] = []string{"server"}
 	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
+	r.Headers[HeaderAccessControlAllowCredentials] = []string{"true"}
+	if val, ok := r.Headers[HeaderOrigin]; ok {
+		r.Headers[HeaderAccessControlAllowOrigin] = val
+	}
 
 	// header
 	buf.WriteString(fmt.Sprintf("%s %d %s\r\n", r.Protocol, r.Status, StatusText(r.Status)))
