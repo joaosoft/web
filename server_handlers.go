@@ -5,11 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/labstack/gommon/log"
+	"github.com/joaosoft/logger"
 )
 
 func (w *Server) handlerFile(ctx *Context) error {
-	log.Infof("handling file %s", ctx.Request.FullUrl)
+	logger.Infof("handling file %s", ctx.Request.FullUrl)
 
 	dir, _ := os.Getwd()
 	path := fmt.Sprintf("%s%s", dir, ctx.Request.FullUrl)
