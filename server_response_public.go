@@ -109,7 +109,7 @@ func (r *Response) Stream(status Status, contentType ContentType, reader io.Read
 	return nil
 }
 
-func (r *Response) File(name string, body []byte) error {
+func (r *Response) File(status Status, name string, body []byte) error {
 	contentType, charset := DetectContentType(filepath.Ext(name), body)
 	r.SetContentType(contentType)
 	r.SetCharset(charset)
@@ -117,13 +117,13 @@ func (r *Response) File(name string, body []byte) error {
 	return nil
 }
 
-func (r *Response) ReadFile(fileName string) error {
+func (r *Response) ReadFile(status Status, fileName string) error {
 	data, err := ReadFile(fileName, nil)
 	if err != nil {
 		return err
 	}
 
-	return r.File(fileName, data)
+	return r.File(status, fileName, data)
 }
 
 func (r *Response) Attachment(file, name string) error {
