@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"shop-backend/utils"
 	"web"
 )
 
@@ -243,7 +244,8 @@ func HandlerHelloForDownloadOneFile(ctx *web.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR DOWNLOAD ONE FILE")
 
 	dir, _ := os.Getwd()
-	ctx.Response.Attachment(fmt.Sprintf("%s%s", dir, "/examples/data/a.text"), "text_a.text")
+	body, _ := utils.ReadFile(fmt.Sprintf("%s%s", dir, "/examples/data/a.text"), nil)
+	ctx.Response.Attachment("text_a.text", body)
 
 	return ctx.Response.Bytes(
 		web.StatusOK,
@@ -256,9 +258,14 @@ func HandlerHelloForDownloadFiles(ctx *web.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR DOWNLOAD FILES")
 
 	dir, _ := os.Getwd()
-	ctx.Response.Attachment(fmt.Sprintf("%s%s", dir, "/examples/data/a.text"), "text_a.text")
-	ctx.Response.Attachment(fmt.Sprintf("%s%s", dir, "/examples/data/b.text"), "text_b.text")
-	ctx.Response.Inline(fmt.Sprintf("%s%s", dir, "/examples/data/c.text"), "text_c.text")
+	body, _ := utils.ReadFile(fmt.Sprintf("%s%s", dir, "/examples/data/a.text"), nil)
+	ctx.Response.Attachment("text_a.text", body)
+
+	body, _ = utils.ReadFile(fmt.Sprintf("%s%s", dir, "/examples/data/b.text"), nil)
+	ctx.Response.Attachment("text_b.text", body)
+
+	body, _ = utils.ReadFile(fmt.Sprintf("%s%s", dir, "/examples/data/c.text"), nil)
+	ctx.Response.Inline("text_c.text", body)
 
 	return ctx.Response.Bytes(
 		web.StatusOK,

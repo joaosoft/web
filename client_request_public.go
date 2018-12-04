@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"io"
-	"os"
 	"path/filepath"
 	"strconv"
 )
@@ -108,57 +107,28 @@ func (r *Request) File(name string, body []byte) error {
 	return nil
 }
 
-func (r *Request) ReadFile(fileName string) error {
-	data, err := ReadFile(fileName, nil)
-	if err != nil {
-		return err
-	}
-
-	return r.File(fileName, data)
-}
-
-func (r *Request) Attachment(file, name string) error {
-	info, err := os.Stat(file)
-	if err != nil {
-		return err
-	}
-
-	data, err := ReadFile(file, nil)
-	if err != nil {
-		return err
-	}
-
-	contentType, charset := DetectContentType(filepath.Ext(info.Name()), data)
+func (r *Request) Attachment(name string, body []byte) error {
+	contentType, charset := DetectContentType(filepath.Ext(name), body)
 	r.Attachments[name] = Attachment{
 		ContentDisposition: ContentDispositionAttachment,
 		ContentType:        contentType,
 		Charset:            charset,
-		File:               info.Name(),
+		File:               name,
 		Name:               name,
-		Body:               data,
+		Body:               body,
 	}
 	return nil
 }
 
-func (r *Request) Inline(file, name string) error {
-	info, err := os.Stat(file)
-	if err != nil {
-		return err
-	}
-
-	data, err := ReadFile(file, nil)
-	if err != nil {
-		return err
-	}
-
-	contentType, charset := DetectContentType(filepath.Ext(info.Name()), data)
+func (r *Request) Inline(name string, body []byte) error {
+	contentType, charset := DetectContentType(filepath.Ext(name), body)
 	r.Attachments[name] = Attachment{
 		ContentDisposition: ContentDispositionInline,
 		ContentType:        contentType,
 		Charset:            charset,
-		File:               info.Name(),
+		File:               name,
 		Name:               name,
-		Body:               data,
+		Body:               body,
 	}
 	return nil
 }
