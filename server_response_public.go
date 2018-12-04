@@ -9,29 +9,29 @@ import (
 )
 
 func (r *Response) Set(status Status, contentType ContentType, b []byte) error {
-	r.ContentType = contentType
 	r.Status = status
+	r.ContentType = contentType
 	r.Body = b
 	return nil
 }
 
 func (r *Response) HTML(status Status, body string) error {
-	r.SetContentType(ContentTypeTextHTML)
 	r.Status = status
+	r.SetContentType(ContentTypeTextHTML)
 	r.Body = []byte(body)
 	return nil
 }
 
 func (r *Response) Bytes(status Status, contentType ContentType, b []byte) error {
-	r.SetContentType(contentType)
 	r.Status = status
+	r.SetContentType(contentType)
 	r.Body = b
 	return nil
 }
 
 func (r *Response) String(status Status, s string) error {
-	r.SetContentType(ContentTypeTextPlain)
 	r.Status = status
+	r.SetContentType(ContentTypeTextPlain)
 	r.Body = []byte(s)
 	return nil
 }
@@ -49,8 +49,8 @@ func (r *Response) JSON(status Status, i interface{}) error {
 	if b, err := json.Marshal(i); err != nil {
 		return err
 	} else {
-		r.SetContentType(ContentTypeApplicationJSON)
 		r.Status = status
+		r.SetContentType(ContentTypeApplicationJSON)
 		r.Body = b
 	}
 
@@ -61,8 +61,8 @@ func (r *Response) JSONPretty(status Status, i interface{}, indent string) error
 	if b, err := json.MarshalIndent(i, "", indent); err != nil {
 		return err
 	} else {
-		r.SetContentType(ContentTypeApplicationJSON)
 		r.Status = status
+		r.SetContentType(ContentTypeApplicationJSON)
 		r.Body = b
 	}
 	return nil
@@ -81,8 +81,8 @@ func (r *Response) XML(status Status, i interface{}) error {
 	if b, err := xml.Marshal(i); err != nil {
 		return err
 	} else {
-		r.SetContentType(ContentTypeApplicationXML)
 		r.Status = status
+		r.SetContentType(ContentTypeApplicationXML)
 		r.Body = b
 	}
 	return nil
@@ -92,16 +92,16 @@ func (r *Response) XMLPretty(status Status, i interface{}, indent string) error 
 	if b, err := xml.MarshalIndent(i, "", indent); err != nil {
 		return err
 	} else {
-		r.SetContentType(ContentTypeApplicationXML)
 		r.Status = status
+		r.SetContentType(ContentTypeApplicationXML)
 		r.Body = b
 	}
 	return nil
 }
 
 func (r *Response) Stream(status Status, contentType ContentType, reader io.Reader) error {
-	r.SetContentType(contentType)
 	r.Status = status
+	r.SetContentType(contentType)
 	if _, err := io.Copy(r.Writer, reader); err != nil {
 		return err
 	}
@@ -109,6 +109,7 @@ func (r *Response) Stream(status Status, contentType ContentType, reader io.Read
 }
 
 func (r *Response) File(status Status, name string, body []byte) error {
+	r.Status = status
 	contentType, charset := DetectContentType(filepath.Ext(name), body)
 	r.SetContentType(contentType)
 	r.SetCharset(charset)
