@@ -16,5 +16,5 @@ func NewClientConfig(address string) (*ClientConfig, error) {
 		return nil, err
 	}
 
-	return &appConfig.Client, nil
+	return appConfig.Client, nil
 }

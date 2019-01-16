@@ -19,5 +19,5 @@ func NewServerConfig(address string) (*ServerConfig, error) {
 
 	appConfig.Server.Address = address
 
-	return &appConfig.Server, nil
+	return appConfig.Server, nil
 }
