@@ -42,13 +42,13 @@ func NewServer(options ...ServerOption) (*Server, error) {
 	appConfig := &AppConfig{}
 	if err := NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
 		service.logger.Warn(err)
-	} else {
+	} else if appConfig.Server != nil {
 		level, _ := logger.ParseLevel(appConfig.Server.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
 	}
 
-	service.config = &appConfig.Server
+	service.config = appConfig.Server
 	if appConfig.Server.Address != "" {
 		service.address = appConfig.Server.Address
 	}

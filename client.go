@@ -34,13 +34,13 @@ func NewClient(options ...ClientOption) (*Client, error) {
 	appConfig := &AppConfig{}
 	if err := NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
 		service.logger.Warn(err)
-	} else {
+	} else if appConfig.Client != nil {
 		level, _ := logger.ParseLevel(appConfig.Client.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
 	}
 
-	service.config = &appConfig.Client
+	service.config = appConfig.Client
 	service.Reconfigure(options...)
 
 	// create a new dialer to create connections
