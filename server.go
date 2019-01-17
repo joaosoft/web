@@ -32,6 +32,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 		middlewares:         make([]MiddlewareFunc, 0),
 		address:             ":80",
 		multiAttachmentMode: MultiAttachmentModeZip,
+		config:              &ServerConfig{},
 	}
 
 	if service.isLogExternal {
@@ -46,14 +47,14 @@ func NewServer(options ...ServerOption) (*Server, error) {
 		level, _ := logger.ParseLevel(appConfig.Server.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
-	}
-
-	service.config = appConfig.Server
-	if appConfig.Server.Address != "" {
-		service.address = appConfig.Server.Address
+		service.config = appConfig.Server
 	}
 
 	service.Reconfigure(options...)
+
+	if appConfig.Server.Address != "" {
+		service.address = appConfig.Server.Address
+	}
 
 	service.AddRoute(MethodGet, "/favicon.ico", service.handlerFile)
 	service.errorhandler = service.DefaultErrorHandler

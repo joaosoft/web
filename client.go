@@ -24,6 +24,7 @@ func NewClient(options ...ClientOption) (*Client, error) {
 	service := &Client{
 		logger:              log,
 		multiAttachmentMode: MultiAttachmentModeZip,
+		config:              &ClientConfig{},
 	}
 
 	if service.isLogExternal {
@@ -38,9 +39,9 @@ func NewClient(options ...ClientOption) (*Client, error) {
 		level, _ := logger.ParseLevel(appConfig.Client.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
+		service.config = appConfig.Client
 	}
 
-	service.config = appConfig.Client
 	service.Reconfigure(options...)
 
 	// create a new dialer to create connections
