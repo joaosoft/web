@@ -1,6 +1,6 @@
 package web
 
 type AppConfig struct {
-	Server *ServerConfig `json:"server"`
-	Client *ClientConfig `json:"client"`
+	Server ServerConfig `json:"server"`
+	Client ClientConfig `json:"client"`
 }

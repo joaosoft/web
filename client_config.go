@@ -2,8 +2,7 @@ package web
 
 import (
 	"fmt"
-
-	"github.com/labstack/gommon/log"
+	"manager"
 )
 
 type ClientConfig struct {
@@ -12,13 +11,9 @@ type ClientConfig struct {
 	} `json:"log"`
 }
 
-func NewClientConfig() (*ClientConfig, error) {
+func NewClientConfig() (*AppConfig, manager.IConfig, error) {
 	appConfig := &AppConfig{}
-	if err := NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
-		log.Error(err.Error())
+	simpleConfig, err := manager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig)
 
-		return &ClientConfig{}, err
-	}
-
-	return appConfig.Client, nil
+	return appConfig, simpleConfig, err
 }

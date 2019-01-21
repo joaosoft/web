@@ -19,27 +19,24 @@ type Client struct {
 }
 
 func NewClient(options ...ClientOption) (*Client, error) {
-	log := logger.NewLogDefault("client", logger.WarnLevel)
+	config, _, err := NewClientConfig()
 
 	service := &Client{
-		logger:              log,
+		logger:              logger.NewLogDefault("client", logger.WarnLevel),
 		multiAttachmentMode: MultiAttachmentModeZip,
-		config:              &ClientConfig{},
+		config:              &config.Client,
 	}
 
 	if service.isLogExternal {
 		// set logger of internal processes
 	}
 
-	// load configuration File
-	appConfig := &AppConfig{}
-	if err := NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
-		service.logger.Warn(err)
-	} else if appConfig.Client != nil {
-		level, _ := logger.ParseLevel(appConfig.Client.Log.Level)
+	if err != nil {
+		service.logger.Error(err.Error())
+	} else {
+		level, _ := logger.ParseLevel(config.Client.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
-		service.config = appConfig.Client
 	}
 
 	service.Reconfigure(options...)

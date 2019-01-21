@@ -24,10 +24,10 @@ type Server struct {
 }
 
 func NewServer(options ...ServerOption) (*Server, error) {
-	log := logger.NewLogDefault("server", logger.WarnLevel)
+	config, _, err := NewServerConfig()
 
 	service := &Server{
-		logger:              log,
+		logger:              logger.NewLogDefault("server", logger.WarnLevel),
 		routes:              make(Routes),
 		middlewares:         make([]MiddlewareFunc, 0),
 		address:             ":80",
@@ -39,21 +39,18 @@ func NewServer(options ...ServerOption) (*Server, error) {
 		// set logger of internal processes
 	}
 
-	// load configuration File
-	appConfig := &AppConfig{}
-	if err := NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig); err != nil {
-		service.logger.Warn(err)
-	} else if appConfig.Server != nil {
-		level, _ := logger.ParseLevel(appConfig.Server.Log.Level)
+	if err != nil {
+		service.logger.Error(err.Error())
+	} else {
+		level, _ := logger.ParseLevel(config.Client.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
-		service.config = appConfig.Server
 	}
 
 	service.Reconfigure(options...)
 
-	if appConfig.Server.Address != "" {
-		service.address = appConfig.Server.Address
+	if config.Server.Address != "" {
+		service.address = config.Server.Address
 	}
 
 	service.AddRoute(MethodGet, "/favicon.ico", service.handlerFile)
