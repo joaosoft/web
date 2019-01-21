@@ -2,7 +2,8 @@ package web
 
 import (
 	"fmt"
-	"manager"
+
+	"github.com/joaosoft/manager"
 )
 
 type ServerConfig struct {
@@ -13,8 +14,8 @@ type ServerConfig struct {
 }
 
 func NewServerConfig() (*AppConfig, manager.IConfig, error) {
-		appConfig := &AppConfig{}
-		simpleConfig, err := manager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig)
+	appConfig := &AppConfig{}
+	simpleConfig, err := manager.NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig)
 
-		return appConfig, simpleConfig, err
-	}
+	return appConfig, simpleConfig, err
+}

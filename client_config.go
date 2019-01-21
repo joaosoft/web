@@ -2,7 +2,7 @@ package web
 
 import (
 	"fmt"
-	"manager"
+	"github.com/joaosoft/manager"
 )
 
 type ClientConfig struct {
