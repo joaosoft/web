@@ -24,7 +24,7 @@ type Server struct {
 }
 
 func NewServer(options ...ServerOption) (*Server, error) {
-	config, _, err := NewServerConfig()
+	config, err := NewServerConfig()
 
 	service := &Server{
 		logger:              logger.NewLogDefault("server", logger.WarnLevel),

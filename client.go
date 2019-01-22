@@ -19,7 +19,7 @@ type Client struct {
 }
 
 func NewClient(options ...ClientOption) (*Client, error) {
-	config, _, err := NewClientConfig()
+	config, err := NewClientConfig()
 
 	service := &Client{
 		logger:              logger.NewLogDefault("client", logger.WarnLevel),
