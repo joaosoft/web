@@ -22,7 +22,7 @@ func (c *Client) NewRequest(method Method, url string) (*Request, error) {
 
 	return &Request{
 		Base: Base{
-			client: c,
+			client:    c,
 			Protocol:  ProtocolHttp1p1,
 			Method:    method,
 			Url:       url,
@@ -36,6 +36,11 @@ func (c *Client) NewRequest(method Method, url string) (*Request, error) {
 		MultiAttachmentMode: c.multiAttachmentMode,
 		Boundary:            RandomBoundary(),
 	}, nil
+}
+
+func (r *Request) WithBody(body []byte, contentType ContentType) {
+	r.Body = body
+	r.ContentType = contentType
 }
 
 func (r *Request) build() ([]byte, error) {
