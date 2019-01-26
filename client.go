@@ -51,6 +51,9 @@ func NewClient(options ...ClientOption) (*Client, error) {
 
 	return service, nil
 }
+func (r *Request) Send() (*Response, error) {
+	return r.client.Send(r)
+}
 
 func (c *Client) Send(request *Request) (*Response, error) {
 	startTime := time.Now()
