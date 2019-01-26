@@ -88,6 +88,12 @@ func (c *Client) Send(request *Request) (*Response, error) {
 
 	response, err := c.NewResponse(request.Method, conn)
 
+	if c.logger.IsDebugEnabled() {
+		if response.Body != nil {
+			c.logger.Infof("[RESPONSE BODY] [%s]", string(response.Body))
+		}
+	}
+
 	fmt.Println(color.WithColor("[OUT] http client send Method[%s] Url[%s] on Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundCyan, color.BackgroundBlack, request.Method, request.Url, startTime, time.Since(startTime)))
 
 	return response, err
