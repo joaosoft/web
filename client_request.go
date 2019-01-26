@@ -38,9 +38,11 @@ func (c *Client) NewRequest(method Method, url string) (*Request, error) {
 	}, nil
 }
 
-func (r *Request) WithBody(body []byte, contentType ContentType) {
+func (r *Request) WithBody(body []byte, contentType ContentType) *Request {
 	r.Body = body
 	r.ContentType = contentType
+
+	return r
 }
 
 func (r *Request) build() ([]byte, error) {
