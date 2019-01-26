@@ -156,6 +156,12 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 
 	fmt.Println(color.WithColor("[IN] Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, request.IP, request.Method, request.Url, request.Protocol, startTime))
 
+	if w.logger.IsDebugEnabled() {
+		if request.Body != nil {
+			w.logger.Infof("[REQUEST BODY] [%s]", string(request.Body))
+		}
+	}
+
 	// create response for request
 	response := w.NewResponse(request)
 

@@ -65,6 +65,10 @@ func (r *Response) write() error {
 			return err
 		} else {
 			buf.Write(body)
+
+			if r.server.logger.IsDebugEnabled() {
+				r.server.logger.Infof("[RESPONSE BODY] [%s]", string(body))
+			}
 		}
 	}
 

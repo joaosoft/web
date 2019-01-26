@@ -65,6 +65,12 @@ func (c *Client) Send(request *Request) (*Response, error) {
 
 	fmt.Println(color.WithColor("[IN] http client send Method[%s] Url[%s] on Start[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, request.Method, request.Url, startTime))
 
+	if c.logger.IsDebugEnabled() {
+		if request.Body != nil {
+			c.logger.Infof("[REQUEST BODY] [%s]", string(request.Body))
+		}
+	}
+
 	c.logger.Debugf("executing [%s] request to [%s]", request.Method, split[0])
 
 	conn, err := c.dialer.Dial("tcp", split[0])
