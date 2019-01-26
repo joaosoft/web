@@ -17,6 +17,7 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 
 	request := &Request{
 		Base: Base{
+			server:      server,
 			IP:          conn.RemoteAddr().String(),
 			Headers:     make(Headers),
 			Cookies:     make(Cookies),
@@ -25,7 +26,6 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 			ContentType: ContentTypeApplicationJSON,
 			Charset:     CharsetUTF8,
 			conn:        conn,
-			server:      server,
 		},
 		Attachments: make(map[string]Attachment),
 		Reader:      conn.(io.Reader),

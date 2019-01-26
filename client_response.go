@@ -18,6 +18,7 @@ func (c *Client) NewResponse(method Method, conn net.Conn) (*Response, error) {
 
 	response := &Response{
 		Base: Base{
+			client: c,
 			Method:    method,
 			Headers:   make(Headers),
 			Cookies:   make(Cookies),

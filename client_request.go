@@ -22,6 +22,7 @@ func (c *Client) NewRequest(method Method, url string) (*Request, error) {
 
 	return &Request{
 		Base: Base{
+			client: c,
 			Protocol:  ProtocolHttp1p1,
 			Method:    method,
 			Url:       url,
