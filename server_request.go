@@ -86,7 +86,7 @@ func (r *Request) read() error {
 func (r *Request) readHeader(reader *bufio.Reader) error {
 
 	// read one line (ended with \n or \r\n)
-	r.conn.SetReadDeadline(time.Now().Add(time.Second * 1))
+	r.conn.SetReadDeadline(time.Now().Add(time.Second * 5))
 	line, _, err := reader.ReadLine()
 	if err != nil {
 		return fmt.Errorf("invalid http request: %s", err)
@@ -124,7 +124,7 @@ func (r *Request) readHeader(reader *bufio.Reader) error {
 
 func (r *Request) readHeaders(reader *bufio.Reader) error {
 	for {
-		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
+		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
 		line, _, err := reader.ReadLine()
 		if err != nil || len(line) == 0 {
 			break
@@ -167,7 +167,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 	var attachmentBody bytes.Buffer
 
 	// read next line
-	r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
+	r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
 	line, _, err := reader.ReadLine()
 	if err != nil {
 		return err
@@ -196,7 +196,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			}
 
 			// read next line
-			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
+			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
 			line, _, err = reader.ReadLine()
 			if err != nil || len(line) == 0 {
 				break
@@ -204,7 +204,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 		}
 
 		for {
-			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
+			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
 			line, _, err = reader.ReadLine()
 			if err != nil {
 				return err
@@ -242,7 +242,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 func (r *Request) readBody(reader *bufio.Reader) error {
 	var buf bytes.Buffer
 	for {
-		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 1))
+		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
 		line, _, err := reader.ReadLine()
 		if err != nil {
 			break
