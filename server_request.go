@@ -43,7 +43,7 @@ func (r *Request) GetFormDataBytes(name string) []byte {
 }
 
 func (r *Request) GetFormDataString(name string) string {
-	if value, ok := r.FormData[name]; ok && value.IsFile {
+	if value, ok := r.FormData[name]; ok {
 		return string(value.Body)
 	}
 
