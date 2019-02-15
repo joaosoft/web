@@ -27,11 +27,27 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 			Charset:     CharsetUTF8,
 			conn:        conn,
 		},
-		Attachments: make(map[string]Attachment),
-		Reader:      conn.(io.Reader),
+		FormData: make(map[string]FormData),
+		Reader:   conn.(io.Reader),
 	}
 
 	return request, request.read()
+}
+
+func (r *Request) GetFormDataBytes(name string) []byte {
+	if value, ok := r.FormData[name]; ok && value.IsFile {
+		return value.Body
+	}
+
+	return nil
+}
+
+func (r *Request) GetFormDataString(name string) string {
+	if value, ok := r.FormData[name]; ok && value.IsFile {
+		return string(value.Body)
+	}
+
+	return ""
 }
 
 func (r *Request) Bind(i interface{}) error {
@@ -163,8 +179,8 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 }
 
 func (r *Request) handleBoundary(reader *bufio.Reader) error {
-	var attachment Attachment
-	var attachmentBody bytes.Buffer
+	var formData FormData
+	var formDataBody bytes.Buffer
 
 	// read next line
 	r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
@@ -179,18 +195,19 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			switch string(bytes.Title(bytes.TrimSpace(content[0]))) {
 			case "Content-Type":
 				bytes.Split(content[1], []byte(`;`))
-				attachment.ContentType = ContentType(content[1])
+				formData.ContentType = ContentType(content[1])
 
 			case "Content-Disposition":
 				contentDisposition := bytes.Split(content[1], []byte(`;`))
-				attachment.ContentDisposition = ContentDisposition(string(contentDisposition[0]))
+				formData.ContentDisposition = ContentDisposition(string(contentDisposition[0]))
 				for i := 1; i < len(contentDisposition); i++ {
 					parms := bytes.Split(contentDisposition[i], []byte(`=`))
 					switch string(bytes.TrimSpace(parms[0])) {
 					case "name":
-						attachment.Name = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						formData.Name = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
 					case "filename":
-						attachment.File = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						formData.FileName = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						formData.IsFile = true
 					}
 				}
 			}
@@ -213,21 +230,21 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			// is another boundary ?
 			if bytes.Compare(line, []byte(fmt.Sprintf("--%s", r.Boundary))) == 0 ||
 				bytes.Compare(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) == 0 {
-				// save attachment
-				attachment.Body = attachmentBody.Bytes()
-				key := attachment.Name
+				// save formData
+				formData.Body = formDataBody.Bytes()
+				key := formData.Name
 				if key == "" {
-					key = attachment.File
+					key = formData.FileName
 				}
-				r.Attachments[key] = attachment
+				r.FormData[key] = formData
 
-				// next attachment
-				attachment = Attachment{}
-				attachmentBody.Reset()
+				// next formData
+				formData = FormData{}
+				formDataBody.Reset()
 
 				break
 			} else {
-				attachmentBody.Write(line)
+				formDataBody.Write(line)
 			}
 		}
 

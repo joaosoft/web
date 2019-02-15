@@ -107,28 +107,41 @@ func (r *Request) File(name string, body []byte) error {
 	return nil
 }
 
+func (r *Request) SetFormData(name string, value string) {
+	r.FormData[name] = FormData{
+		ContentDisposition: ContentDispositionFormData,
+		ContentType:        ContentTypeTextPlain,
+		Charset:            CharsetUTF8,
+		Name:               name,
+		Body:               []byte(value),
+		IsFile:             false,
+	}
+}
+
 func (r *Request) Attachment(name string, body []byte) error {
 	contentType, charset := DetectContentType(filepath.Ext(name), body)
-	r.Attachments[name] = Attachment{
+	r.FormData[name] = FormData{
 		ContentDisposition: ContentDispositionAttachment,
 		ContentType:        contentType,
 		Charset:            charset,
-		File:               name,
+		FileName:           name,
 		Name:               name,
 		Body:               body,
+		IsFile:             true,
 	}
 	return nil
 }
 
 func (r *Request) Inline(name string, body []byte) error {
 	contentType, charset := DetectContentType(filepath.Ext(name), body)
-	r.Attachments[name] = Attachment{
+	r.FormData[name] = FormData{
 		ContentDisposition: ContentDispositionInline,
 		ContentType:        contentType,
 		Charset:            charset,
-		File:               name,
+		FileName:           name,
 		Name:               name,
 		Body:               body,
+		IsFile:             true,
 	}
 	return nil
 }

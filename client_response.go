@@ -27,7 +27,7 @@ func (c *Client) NewResponse(method Method, conn net.Conn) (*Response, error) {
 			Charset:   CharsetUTF8,
 			conn:      conn,
 		},
-		Attachments: make(map[string]Attachment),
+		Attachments: make(map[string]FormData),
 		Reader:      conn.(io.Reader),
 	}
 
@@ -155,7 +155,7 @@ func (r *Response) readHeaders(reader *bufio.Reader) error {
 }
 
 func (r *Response) handleBoundary(reader *bufio.Reader) error {
-	var attachment Attachment
+	var attachment FormData
 	var attachmentBody bytes.Buffer
 
 	// read next line
@@ -182,7 +182,7 @@ func (r *Response) handleBoundary(reader *bufio.Reader) error {
 					case "name":
 						attachment.Name = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
 					case "filename":
-						attachment.File = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						attachment.FileName = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
 					}
 				}
 			}
@@ -209,12 +209,12 @@ func (r *Response) handleBoundary(reader *bufio.Reader) error {
 				attachment.Body = attachmentBody.Bytes()
 				key := attachment.Name
 				if key == "" {
-					key = attachment.File
+					key = attachment.FileName
 				}
 				r.Attachments[key] = attachment
 
 				// next attachment
-				attachment = Attachment{}
+				attachment = FormData{}
 				attachmentBody.Reset()
 
 				break

@@ -13,7 +13,7 @@ import (
 func (w *Server) NewResponse(request *Request) *Response {
 	return &Response{
 		Base:                request.Base,
-		Attachments:         make(map[string]Attachment),
+		Attachments:         make(map[string]FormData),
 		MultiAttachmentMode: w.multiAttachmentMode,
 		Boundary:            RandomBoundary(),
 		Writer:              request.conn.(io.Writer),
@@ -105,7 +105,7 @@ func (r *Response) handleHeaders() ([]byte, error) {
 			if lenAttachments == 1 {
 				for _, attachment := range r.Attachments {
 					name = attachment.Name
-					fileName = attachment.File
+					fileName = attachment.FileName
 					contentType = attachment.ContentType
 					if attachment.Charset != "" {
 						charset = attachment.Charset
@@ -158,7 +158,7 @@ func (r *Response) handleBoundaryAttachments() ([]byte, error) {
 
 	for _, attachment := range r.Attachments {
 		buf.WriteString(fmt.Sprintf("--%s\r\n", r.Boundary))
-		buf.WriteString(fmt.Sprintf("%s: %s; name=%q; filename=%q\r\n", HeaderContentDisposition, attachment.ContentDisposition, attachment.Name, attachment.File))
+		buf.WriteString(fmt.Sprintf("%s: %s; name=%q; filename=%q\r\n", HeaderContentDisposition, attachment.ContentDisposition, attachment.Name, attachment.FileName))
 		buf.WriteString(fmt.Sprintf("%s: %s\r\n\r\n", HeaderContentType, attachment.ContentType))
 		buf.Write(attachment.Body)
 		buf.WriteString("\r\n")
@@ -186,7 +186,7 @@ func (r *Response) handleZippedAttachments() ([]byte, error) {
 	})
 
 	for _, attachment := range r.Attachments {
-		f, err := w.Create(attachment.File)
+		f, err := w.Create(attachment.FileName)
 		if err != nil {
 			return buf.Bytes(), err
 		}
