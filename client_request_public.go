@@ -108,7 +108,7 @@ func (r *Request) File(name string, body []byte) error {
 }
 
 func (r *Request) SetFormData(name string, value string) {
-	r.FormData[name] = FormData{
+	r.FormData[name] = &FormData{
 		ContentDisposition: ContentDispositionFormData,
 		ContentType:        ContentTypeTextPlain,
 		Charset:            CharsetUTF8,
@@ -120,7 +120,7 @@ func (r *Request) SetFormData(name string, value string) {
 
 func (r *Request) Attachment(name string, body []byte) error {
 	contentType, charset := DetectContentType(filepath.Ext(name), body)
-	r.FormData[name] = FormData{
+	r.FormData[name] = &FormData{
 		ContentDisposition: ContentDispositionAttachment,
 		ContentType:        contentType,
 		Charset:            charset,
@@ -134,7 +134,7 @@ func (r *Request) Attachment(name string, body []byte) error {
 
 func (r *Request) Inline(name string, body []byte) error {
 	contentType, charset := DetectContentType(filepath.Ext(name), body)
-	r.FormData[name] = FormData{
+	r.FormData[name] = &FormData{
 		ContentDisposition: ContentDispositionInline,
 		ContentType:        contentType,
 		Charset:            charset,

@@ -57,7 +57,7 @@ type Base struct {
 type Request struct {
 	Base
 	Body                []byte
-	FormData            map[string]FormData
+	FormData            map[string]*FormData
 	MultiAttachmentMode MultiAttachmentMode
 	Boundary            string
 	Reader              io.Reader
@@ -69,7 +69,7 @@ type Response struct {
 	Body                []byte
 	Status              Status
 	StatusText          string
-	Attachments         map[string]FormData
+	Attachments         map[string]*FormData
 	MultiAttachmentMode MultiAttachmentMode
 	Boundary            string
 	Reader              io.Reader

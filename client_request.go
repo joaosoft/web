@@ -32,7 +32,7 @@ func (c *Client) NewRequest(method Method, url string) (*Request, error) {
 			UrlParams: make(UrlParams),
 			Charset:   CharsetUTF8,
 		},
-		FormData:            make(map[string]FormData),
+		FormData:            make(map[string]*FormData),
 		MultiAttachmentMode: c.multiAttachmentMode,
 		Boundary:            RandomBoundary(),
 	}, nil

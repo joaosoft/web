@@ -27,7 +27,7 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 			Charset:     CharsetUTF8,
 			conn:        conn,
 		},
-		FormData: make(map[string]FormData),
+		FormData: make(map[string]*FormData),
 		Reader:   conn.(io.Reader),
 	}
 
@@ -179,8 +179,8 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 }
 
 func (r *Request) handleBoundary(reader *bufio.Reader) error {
-	var formData FormData
-	var formDataBody bytes.Buffer
+	var formData *FormData
+	var formDataBody *bytes.Buffer
 
 	// read next line
 	r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
@@ -239,8 +239,8 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 				r.FormData[key] = formData
 
 				// next formData
-				formData = FormData{}
-				formDataBody.Reset()
+				formData = &FormData{}
+				formDataBody = bytes.NewBuffer(nil)
 
 				break
 			} else {

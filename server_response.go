@@ -13,7 +13,7 @@ import (
 func (w *Server) NewResponse(request *Request) *Response {
 	return &Response{
 		Base:                request.Base,
-		Attachments:         make(map[string]FormData),
+		Attachments:         make(map[string]*FormData),
 		MultiAttachmentMode: w.multiAttachmentMode,
 		Boundary:            RandomBoundary(),
 		Writer:              request.conn.(io.Writer),
