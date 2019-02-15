@@ -179,8 +179,8 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 }
 
 func (r *Request) handleBoundary(reader *bufio.Reader) error {
-	var formData *FormData
-	var formDataBody *bytes.Buffer
+	formData := &FormData{}
+	formDataBody := bytes.NewBuffer(nil)
 
 	// read next line
 	r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
