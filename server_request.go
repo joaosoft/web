@@ -35,7 +35,7 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 }
 
 func (r *Request) GetFormDataBytes(name string) []byte {
-	if value, ok := r.FormData[name]; ok && value.IsFile {
+	if value, ok := r.FormData[name]; ok {
 		return value.Body
 	}
 
