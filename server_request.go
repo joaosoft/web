@@ -179,8 +179,6 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 }
 
 func (r *Request) handleBoundary(reader *bufio.Reader) error {
-	formData := &FormData{}
-	formDataBody := bytes.NewBuffer(nil)
 
 	// read next line
 	r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
@@ -190,6 +188,9 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 	}
 
 	for {
+		formData := &FormData{}
+		formDataBody := bytes.NewBuffer(nil)
+
 		for {
 			content := bytes.SplitN(line, []byte(`:`), 2)
 			switch string(bytes.Title(bytes.TrimSpace(content[0]))) {
@@ -224,6 +225,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
 			line, _, err = reader.ReadLine()
 			if err != nil {
+				formData.Body = formDataBody.Bytes()
 				return err
 			}
 
@@ -241,6 +243,10 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 				// next formData
 				formData = &FormData{}
 				formDataBody = bytes.NewBuffer(nil)
+
+				// read next line
+				r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
+				line, _, err = reader.ReadLine()
 
 				break
 			} else {
