@@ -223,15 +223,26 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 
 		for {
 			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
-			line, _, err = reader.ReadLine()
+			line, err = reader.ReadSlice('\n')
+
+			if !formData.IsFile {
+				if line[len(line)-1] == '\n' {
+					drop := 1
+					if len(line) > 1 && line[len(line)-2] == '\r' {
+						drop = 2
+					}
+					line = line[:len(line)-drop]
+				}
+			}
+
 			if err != nil {
 				formData.Body = formDataBody.Bytes()
 				return err
 			}
 
 			// is another boundary ?
-			if bytes.Compare(line, []byte(fmt.Sprintf("--%s", r.Boundary))) == 0 ||
-				bytes.Compare(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) == 0 {
+			if bytes.HasPrefix(line, []byte(fmt.Sprintf("--%s", r.Boundary))) ||
+				bytes.HasPrefix(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) {
 				// save formData
 				formData.Body = formDataBody.Bytes()
 				key := formData.Name
@@ -244,17 +255,13 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 				formData = &FormData{}
 				formDataBody = bytes.NewBuffer(nil)
 
-				// read next line
-				r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
-				line, _, err = reader.ReadLine()
-
 				break
 			} else {
 				formDataBody.Write(line)
 			}
 		}
 
-		if bytes.Compare(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) == 0 {
+		if bytes.HasPrefix(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) {
 			return nil
 		}
 	}
