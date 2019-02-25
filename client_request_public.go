@@ -109,25 +109,29 @@ func (r *Request) File(name string, body []byte) error {
 
 func (r *Request) SetFormData(name string, value string) {
 	r.FormData[name] = &FormData{
-		ContentDisposition: ContentDispositionFormData,
-		ContentType:        ContentTypeTextPlain,
-		Charset:            CharsetUTF8,
-		Name:               name,
-		Body:               []byte(value),
-		IsFile:             false,
+		Data: &Data{
+			ContentDisposition: ContentDispositionFormData,
+			ContentType:        ContentTypeTextPlain,
+			Charset:            CharsetUTF8,
+			Name:               name,
+			Body:               []byte(value),
+			IsAttachment:       false,
+		},
 	}
 }
 
 func (r *Request) Attachment(name string, body []byte) error {
 	contentType, charset := DetectContentType(filepath.Ext(name), body)
 	r.FormData[name] = &FormData{
-		ContentDisposition: ContentDispositionAttachment,
-		ContentType:        contentType,
-		Charset:            charset,
-		FileName:           name,
-		Name:               name,
-		Body:               body,
-		IsFile:             true,
+		Data: &Data{
+			ContentDisposition: ContentDispositionAttachment,
+			ContentType:        contentType,
+			Charset:            charset,
+			FileName:           name,
+			Name:               name,
+			Body:               body,
+			IsAttachment:       true,
+		},
 	}
 	return nil
 }
@@ -135,13 +139,15 @@ func (r *Request) Attachment(name string, body []byte) error {
 func (r *Request) Inline(name string, body []byte) error {
 	contentType, charset := DetectContentType(filepath.Ext(name), body)
 	r.FormData[name] = &FormData{
-		ContentDisposition: ContentDispositionInline,
-		ContentType:        contentType,
-		Charset:            charset,
-		FileName:           name,
-		Name:               name,
-		Body:               body,
-		IsFile:             true,
+		Data: &Data{
+			ContentDisposition: ContentDispositionInline,
+			ContentType:        contentType,
+			Charset:            charset,
+			FileName:           name,
+			Name:               name,
+			Body:               body,
+			IsAttachment:       true,
+		},
 	}
 	return nil
 }

@@ -33,6 +33,7 @@ func (c *Client) NewRequest(method Method, url string) (*Request, error) {
 			Charset:   CharsetUTF8,
 		},
 		FormData:            make(map[string]*FormData),
+		Attachments:         make(map[string]*Attachment),
 		MultiAttachmentMode: c.multiAttachmentMode,
 		Boundary:            RandomBoundary(),
 	}, nil
@@ -47,7 +48,7 @@ func (r *Request) WithBody(body []byte, contentType ContentType) *Request {
 
 func (r *Request) build() ([]byte, error) {
 	var buf bytes.Buffer
-	var lenAttachments = len(r.FormData)
+	var lenAttachments = len(r.Attachments)
 
 	if headers, err := r.handleHeaders(); err != nil {
 		return nil, err
@@ -63,7 +64,7 @@ func (r *Request) build() ([]byte, error) {
 			} else {
 				buf.Write(body)
 			}
-			if body, err := r.handleBoundaryAttachments(); err != nil {
+			if body, err := r.handleBoundaries(); err != nil {
 				return nil, err
 			} else {
 				buf.Write(body)
@@ -82,6 +83,12 @@ func (r *Request) build() ([]byte, error) {
 					buf.Write(body)
 				}
 			}
+
+			if body, err := r.handleBoundaries(); err != nil {
+				return nil, err
+			} else {
+				buf.Write(body)
+			}
 		}
 	} else {
 		if body, err := r.handleBody(); err != nil {
@@ -96,7 +103,7 @@ func (r *Request) build() ([]byte, error) {
 
 func (r *Request) handleHeaders() ([]byte, error) {
 	var buf bytes.Buffer
-	lenAttachments := len(r.FormData)
+	lenFormData := len(r.FormData)
 
 	// header
 	split := strings.SplitN(r.Url, "/", 2)
@@ -110,29 +117,33 @@ func (r *Request) handleHeaders() ([]byte, error) {
 	r.Headers[HeaderServer] = []string{"client"}
 	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
 
-	if lenAttachments > 0 {
+	if lenFormData > 0 {
 
 		switch r.MultiAttachmentMode {
 		case MultiAttachmentModeBoundary:
 			r.Headers[HeaderContentType] = []string{fmt.Sprintf("%s; boundary=%s; charset=%s", ContentTypeMultipartFormData, r.Boundary, r.Charset)}
 		case MultiAttachmentModeZip:
-			var name = "attachments"
-			var fileName = "attachments.zip"
-			var contentType = ContentTypeApplicationZip
-			var charset = r.Charset
+			if len(r.FormData) == 0 {
+				var name= "attachments"
+				var fileName= "attachments.zip"
+				var contentType= ContentTypeApplicationZip
+				var charset= r.Charset
 
-			if lenAttachments == 1 {
-				for _, attachment := range r.FormData {
-					name = attachment.Name
-					fileName = attachment.FileName
-					contentType = attachment.ContentType
-					if attachment.Charset != "" {
-						charset = attachment.Charset
+				if lenFormData == 1 {
+					for _, formData := range r.Attachments {
+						name = formData.Name
+						fileName = formData.FileName
+						contentType = formData.ContentType
+						if formData.Charset != "" {
+							charset = formData.Charset
+						}
+						break
 					}
-					break
 				}
+				r.Headers[HeaderContentType] = []string{fmt.Sprintf("%s; attachment; name=%q; filename=%q; charset=%s", contentType, name, fileName, charset)}
+			} else {
+				r.Headers[HeaderContentType] = []string{fmt.Sprintf("%s; boundary=%s; charset=%s", ContentTypeMultipartFormData, r.Boundary, r.Charset)}
 			}
-			r.Headers[HeaderContentType] = []string{fmt.Sprintf("%s; attachment; name=%q; filename=%q; charset=%s", contentType, name, fileName, charset)}
 		}
 	} else {
 		r.Headers[HeaderContentType] = []string{string(r.ContentType)}
@@ -168,26 +179,52 @@ func (r *Request) handleSingleAttachment() ([]byte, error) {
 	return []byte{}, nil
 }
 
-func (r *Request) handleBoundaryAttachments() ([]byte, error) {
+func (r *Request) handleBoundaries() ([]byte, error) {
 	var buf bytes.Buffer
 
-	if len(r.FormData) == 0 {
-		return buf.Bytes(), nil
+	bufFormData, err := r.handleFormData()
+	if err != nil {
+		return buf.Bytes(), err
 	}
+	buf.Write(bufFormData)
+
+	if r.MultiAttachmentMode != MultiAttachmentModeZip {
+		bufAttachments, err := r.handleAttachments()
+		if err != nil {
+			return buf.Bytes(), err
+		}
+		buf.Write(bufAttachments)
+	}
+
+	buf.WriteString(fmt.Sprintf("\r\n--%s--", r.Boundary))
+
+	return buf.Bytes(), nil
+}
+
+func (r *Request) handleFormData() ([]byte, error) {
+	var buf bytes.Buffer
 
 	for _, formData := range r.FormData {
 		buf.WriteString(fmt.Sprintf("--%s\r\n", r.Boundary))
-		if formData.IsFile {
-			buf.WriteString(fmt.Sprintf("%s: %s; name=%q; filename=%q\r\n", HeaderContentDisposition, formData.ContentDisposition, formData.Name, formData.FileName))
-		} else {
-			buf.WriteString(fmt.Sprintf("%s: %s; name=%q\r\n", HeaderContentDisposition, formData.ContentDisposition, formData.Name))
-		}
+		buf.WriteString(fmt.Sprintf("%s: %s; name=%q\r\n", HeaderContentDisposition, formData.ContentDisposition, formData.Name))
 		buf.WriteString(fmt.Sprintf("%s: %s\r\n\r\n", HeaderContentType, formData.ContentType))
 		buf.Write(formData.Body)
 		buf.WriteString("\r\n")
 	}
 
-	buf.WriteString(fmt.Sprintf("\r\n--%s--", r.Boundary))
+	return buf.Bytes(), nil
+}
+
+func (r *Request) handleAttachments() ([]byte, error) {
+	var buf bytes.Buffer
+
+	for _, attachment := range r.Attachments {
+		buf.WriteString(fmt.Sprintf("--%s\r\n", r.Boundary))
+		buf.WriteString(fmt.Sprintf("%s: %s; name=%q; filename=%q\r\n", HeaderContentDisposition, attachment.ContentDisposition, attachment.Name, attachment.FileName))
+		buf.WriteString(fmt.Sprintf("%s: %s\r\n\r\n", HeaderContentType, attachment.ContentType))
+		buf.Write(attachment.Body)
+		buf.WriteString("\r\n")
+	}
 
 	return buf.Bytes(), nil
 }
@@ -208,7 +245,7 @@ func (r *Request) handleZippedAttachments() ([]byte, error) {
 		return flate.NewWriter(out, flate.BestCompression)
 	})
 
-	for _, attachment := range r.FormData {
+	for _, attachment := range r.Attachments {
 		f, err := w.Create(attachment.FileName)
 		if err != nil {
 			return buf.Bytes(), err

@@ -13,7 +13,7 @@ import (
 func (w *Server) NewResponse(request *Request) *Response {
 	return &Response{
 		Base:                request.Base,
-		Attachments:         make(map[string]*FormData),
+		FormData:            make(map[string]*FormData),
 		MultiAttachmentMode: w.multiAttachmentMode,
 		Boundary:            RandomBoundary(),
 		Writer:              request.conn.(io.Writer),
@@ -24,7 +24,7 @@ func (w *Server) NewResponse(request *Request) *Response {
 
 func (r *Response) write() error {
 	var buf bytes.Buffer
-	var lenAttachments = len(r.Attachments)
+	var lenFormData = len(r.FormData)
 
 	if headers, err := r.handleHeaders(); err != nil {
 		return err
@@ -32,7 +32,7 @@ func (r *Response) write() error {
 		buf.Write(headers)
 	}
 
-	if lenAttachments > 0 {
+	if lenFormData > 0 {
 		switch r.MultiAttachmentMode {
 		case MultiAttachmentModeBoundary:
 			if body, err := r.handleBody(); err != nil {
@@ -46,7 +46,7 @@ func (r *Response) write() error {
 				buf.Write(body)
 			}
 		case MultiAttachmentModeZip:
-			if lenAttachments > 1 {
+			if lenFormData > 1 {
 				if body, err := r.handleZippedAttachments(); err != nil {
 					return err
 				} else {
@@ -79,7 +79,7 @@ func (r *Response) write() error {
 
 func (r *Response) handleHeaders() ([]byte, error) {
 	var buf bytes.Buffer
-	lenAttachments := len(r.Attachments)
+	lenFormData := len(r.FormData)
 
 	r.Headers[HeaderServer] = []string{"server"}
 	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
@@ -91,7 +91,7 @@ func (r *Response) handleHeaders() ([]byte, error) {
 	// header
 	buf.WriteString(fmt.Sprintf("%s %d %s\r\n", r.Protocol, r.Status, StatusText(r.Status)))
 
-	if lenAttachments > 0 {
+	if lenFormData > 0 {
 
 		switch r.MultiAttachmentMode {
 		case MultiAttachmentModeBoundary:
@@ -102,8 +102,8 @@ func (r *Response) handleHeaders() ([]byte, error) {
 			var contentType = ContentTypeApplicationZip
 			var charset = r.Charset
 
-			if lenAttachments == 1 {
-				for _, attachment := range r.Attachments {
+			if lenFormData == 1 {
+				for _, attachment := range r.FormData {
 					name = attachment.Name
 					fileName = attachment.FileName
 					contentType = attachment.ContentType
@@ -134,7 +134,7 @@ func (r *Response) handleBody() ([]byte, error) {
 
 	if MethodHasBody[r.Method] {
 		buf.Write(r.Body)
-		if r.MultiAttachmentMode == MultiAttachmentModeBoundary && len(r.Attachments) > 0 {
+		if r.MultiAttachmentMode == MultiAttachmentModeBoundary && len(r.FormData) > 0 {
 			buf.WriteString("\r\n\r\n")
 		}
 	}
@@ -143,8 +143,8 @@ func (r *Response) handleBody() ([]byte, error) {
 }
 
 func (r *Response) handleSingleAttachment() ([]byte, error) {
-	for _, attachment := range r.Attachments {
-		return attachment.Body, nil
+	for _, formData := range r.FormData {
+		return formData.Body, nil
 	}
 	return []byte{}, nil
 }
@@ -152,11 +152,11 @@ func (r *Response) handleSingleAttachment() ([]byte, error) {
 func (r *Response) handleBoundaryAttachments() ([]byte, error) {
 	var buf bytes.Buffer
 
-	if len(r.Attachments) == 0 {
+	if len(r.FormData) == 0 {
 		return buf.Bytes(), nil
 	}
 
-	for _, attachment := range r.Attachments {
+	for _, attachment := range r.FormData {
 		buf.WriteString(fmt.Sprintf("--%s\r\n", r.Boundary))
 		buf.WriteString(fmt.Sprintf("%s: %s; name=%q; filename=%q\r\n", HeaderContentDisposition, attachment.ContentDisposition, attachment.Name, attachment.FileName))
 		buf.WriteString(fmt.Sprintf("%s: %s\r\n\r\n", HeaderContentType, attachment.ContentType))
@@ -173,7 +173,7 @@ func (r *Response) handleZippedAttachments() ([]byte, error) {
 	// create a buffer to write our archive
 	buf := new(bytes.Buffer)
 
-	if len(r.Attachments) == 0 {
+	if len(r.FormData) == 0 {
 		return buf.Bytes(), nil
 	}
 
@@ -185,7 +185,7 @@ func (r *Response) handleZippedAttachments() ([]byte, error) {
 		return flate.NewWriter(out, flate.BestCompression)
 	})
 
-	for _, attachment := range r.Attachments {
+	for _, attachment := range r.FormData {
 		f, err := w.Create(attachment.FileName)
 		if err != nil {
 			return buf.Bytes(), err

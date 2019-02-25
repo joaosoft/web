@@ -27,7 +27,8 @@ func (c *Client) NewResponse(method Method, conn net.Conn) (*Response, error) {
 			Charset:   CharsetUTF8,
 			conn:      conn,
 		},
-		Attachments: make(map[string]*FormData),
+		FormData:    make(map[string]*FormData),
+		Attachments: make(map[string]*Attachment),
 		Reader:      conn.(io.Reader),
 	}
 
@@ -155,8 +156,6 @@ func (r *Response) readHeaders(reader *bufio.Reader) error {
 }
 
 func (r *Response) handleBoundary(reader *bufio.Reader) error {
-	var formData *FormData
-	var formDataBody *bytes.Buffer
 
 	// read next line
 	r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
@@ -166,23 +165,27 @@ func (r *Response) handleBoundary(reader *bufio.Reader) error {
 	}
 
 	for {
+		data := &Data{}
+		formDataBody := bytes.NewBuffer(nil)
+
 		for {
 			content := bytes.SplitN(line, []byte(`:`), 2)
 			switch string(bytes.Title(bytes.TrimSpace(content[0]))) {
 			case "Content-Type":
 				bytes.Split(content[1], []byte(`;`))
-				formData.ContentType = ContentType(content[1])
+				data.ContentType = ContentType(content[1])
 
 			case "Content-Disposition":
 				contentDisposition := bytes.Split(content[1], []byte(`;`))
-				formData.ContentDisposition = ContentDisposition(string(contentDisposition[0]))
+				data.ContentDisposition = ContentDisposition(string(contentDisposition[0]))
 				for i := 1; i < len(contentDisposition); i++ {
 					parms := bytes.Split(contentDisposition[i], []byte(`=`))
 					switch string(bytes.TrimSpace(parms[0])) {
 					case "name":
-						formData.Name = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						data.Name = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
 					case "filename":
-						formData.FileName = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						data.FileName = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						data.IsAttachment = true
 					}
 				}
 			}
@@ -197,24 +200,45 @@ func (r *Response) handleBoundary(reader *bufio.Reader) error {
 
 		for {
 			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
-			line, _, err = reader.ReadLine()
+			line, err = reader.ReadSlice('\n')
+
+			if !data.IsAttachment {
+				if line[len(line)-1] == '\n' {
+					drop := 1
+					if len(line) > 1 && line[len(line)-2] == '\r' {
+						drop = 2
+					}
+					line = line[:len(line)-drop]
+				}
+			}
+
 			if err != nil {
+				data.Body = formDataBody.Bytes()
 				return err
 			}
 
 			// is another boundary ?
-			if bytes.Compare(line, []byte(fmt.Sprintf("--%s", r.Boundary))) == 0 ||
-				bytes.Compare(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) == 0 {
-				// save formData
-				formData.Body = formDataBody.Bytes()
-				key := formData.Name
+			if bytes.HasPrefix(line, []byte(fmt.Sprintf("--%s", r.Boundary))) ||
+				bytes.HasPrefix(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) {
+				// save data
+				data.Body = formDataBody.Bytes()
+				key := data.Name
 				if key == "" {
-					key = formData.FileName
+					key = data.FileName
 				}
-				r.Attachments[key] = formData
 
-				// next formData
-				formData = &FormData{}
+				if data.IsAttachment {
+					r.Attachments[key] = &Attachment{
+						Data: data,
+					}
+				} else {
+					r.FormData[key] = &FormData{
+						Data: data,
+					}
+				}
+
+				// next data
+				data = &Data{}
 				formDataBody = bytes.NewBuffer(nil)
 
 				break
@@ -223,7 +247,7 @@ func (r *Response) handleBoundary(reader *bufio.Reader) error {
 			}
 		}
 
-		if bytes.Compare(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) == 0 {
+		if bytes.HasPrefix(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) {
 			return nil
 		}
 	}

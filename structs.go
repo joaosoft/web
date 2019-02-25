@@ -58,6 +58,7 @@ type Request struct {
 	Base
 	Body                []byte
 	FormData            map[string]*FormData
+	Attachments         map[string]*Attachment
 	MultiAttachmentMode MultiAttachmentMode
 	Boundary            string
 	Reader              io.Reader
@@ -69,21 +70,30 @@ type Response struct {
 	Body                []byte
 	Status              Status
 	StatusText          string
-	Attachments         map[string]*FormData
+	FormData            map[string]*FormData
+	Attachments         map[string]*Attachment
 	MultiAttachmentMode MultiAttachmentMode
 	Boundary            string
 	Reader              io.Reader
 	Writer              io.Writer
 }
 
-type FormData struct {
+type Data struct {
 	ContentType        ContentType
 	ContentDisposition ContentDisposition
 	Charset            Charset
-	IsFile             bool
-	FileName           string
 	Name               string
+	FileName           string
 	Body               []byte
+	IsAttachment       bool
+}
+
+type FormData struct {
+	*Data
+}
+
+type Attachment struct {
+	*Data
 }
 
 type RequestHandler struct {

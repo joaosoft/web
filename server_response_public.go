@@ -119,26 +119,30 @@ func (r *Response) File(status Status, name string, body []byte) error {
 
 func (r *Response) Attachment(name string, body []byte) error {
 	contentType, charset := DetectContentType(filepath.Ext(name), body)
-	r.Attachments[name] = &FormData{
-		ContentDisposition: ContentDispositionAttachment,
-		ContentType:        contentType,
-		Charset:            charset,
-		FileName:           name,
-		Name:               name,
-		Body:               body,
+	r.FormData[name] = &FormData{
+		Data: &Data{
+			ContentDisposition: ContentDispositionAttachment,
+			ContentType:        contentType,
+			Charset:            charset,
+			FileName:           name,
+			Name:               name,
+			Body:               body,
+		},
 	}
 	return nil
 }
 
 func (r *Response) Inline(name string, body []byte) error {
 	contentType, charset := DetectContentType(filepath.Ext(name), body)
-	r.Attachments[name] = &FormData{
-		ContentDisposition: ContentDispositionInline,
-		ContentType:        contentType,
-		Charset:            charset,
-		FileName:           name,
-		Name:               name,
-		Body:               body,
+	r.FormData[name] = &FormData{
+		Data: &Data{
+			ContentDisposition: ContentDispositionInline,
+			ContentType:        contentType,
+			Charset:            charset,
+			FileName:           name,
+			Name:               name,
+			Body:               body,
+		},
 	}
 	return nil
 }

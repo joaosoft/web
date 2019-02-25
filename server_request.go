@@ -28,6 +28,7 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 			conn:        conn,
 		},
 		FormData: make(map[string]*FormData),
+		Attachments: make(map[string]*Attachment),
 		Reader:   conn.(io.Reader),
 	}
 
@@ -188,7 +189,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 	}
 
 	for {
-		formData := &FormData{}
+		var data *Data
 		formDataBody := bytes.NewBuffer(nil)
 
 		for {
@@ -196,19 +197,19 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			switch string(bytes.Title(bytes.TrimSpace(content[0]))) {
 			case "Content-Type":
 				bytes.Split(content[1], []byte(`;`))
-				formData.ContentType = ContentType(content[1])
+				data.ContentType = ContentType(content[1])
 
 			case "Content-Disposition":
-				contentDisposition := bytes.Split(content[1], []byte(`;`))
-				formData.ContentDisposition = ContentDisposition(string(contentDisposition[0]))
-				for i := 1; i < len(contentDisposition); i++ {
-					parms := bytes.Split(contentDisposition[i], []byte(`=`))
+				split := bytes.Split(content[1], []byte(`;`))
+				data.ContentDisposition = ContentDisposition(string(split[0]))
+				for i := 1; i < len(data.ContentDisposition); i++ {
+					parms := bytes.Split(split[i], []byte(`=`))
 					switch string(bytes.TrimSpace(parms[0])) {
 					case "name":
-						formData.Name = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						data.Name = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
 					case "filename":
-						formData.FileName = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
-						formData.IsFile = true
+						data.FileName = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						data.IsAttachment = true
 					}
 				}
 			}
@@ -225,7 +226,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
 			line, err = reader.ReadSlice('\n')
 
-			if !formData.IsFile {
+			if !data.IsAttachment {
 				if line[len(line)-1] == '\n' {
 					drop := 1
 					if len(line) > 1 && line[len(line)-2] == '\r' {
@@ -236,7 +237,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			}
 
 			if err != nil {
-				formData.Body = formDataBody.Bytes()
+				data.Body = formDataBody.Bytes()
 				return err
 			}
 
@@ -244,15 +245,24 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			if bytes.HasPrefix(line, []byte(fmt.Sprintf("--%s", r.Boundary))) ||
 				bytes.HasPrefix(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) {
 				// save formData
-				formData.Body = formDataBody.Bytes()
-				key := formData.Name
+				data.Body = formDataBody.Bytes()
+				key := data.Name
 				if key == "" {
-					key = formData.FileName
+					key = data.FileName
 				}
-				r.FormData[key] = formData
+
+				if data.IsAttachment {
+					r.Attachments[key] = &Attachment{
+						Data: data,
+					}
+				} else {
+					r.FormData[key] = &FormData{
+						Data: data,
+					}
+				}
 
 				// next formData
-				formData = &FormData{}
+				data = &Data{}
 				formDataBody = bytes.NewBuffer(nil)
 
 				break
