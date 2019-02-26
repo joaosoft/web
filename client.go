@@ -86,10 +86,6 @@ func (c *Client) Send(request *Request) (*Response, error) {
 	defer conn.Close()
 	conn.Write(body)
 
-	fmt.Println("----")
-	fmt.Println(string(body))
-	fmt.Println("----")
-
 	response, err := c.NewResponse(request.Method, request.Address, conn)
 
 	if c.logger.IsDebugEnabled() {
