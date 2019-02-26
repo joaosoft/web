@@ -58,12 +58,12 @@ func (r *Request) Send() (*Response, error) {
 func (c *Client) Send(request *Request) (*Response, error) {
 	startTime := time.Now()
 	regx := regexp.MustCompile(RegexForHost)
-	split := regx.FindStringSubmatch(request.Url)
+	split := regx.FindStringSubmatch(request.Address.Url)
 	if len(split) == 0 {
 		return nil, fmt.Errorf("invalid url [%s]", split[0])
 	}
 
-	fmt.Println(color.WithColor("[IN] http client send Method[%s] Url[%s] on Start[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, request.Method, request.Url, startTime))
+	fmt.Println(color.WithColor("[IN] Method[%s] Url[%s] on Start[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, request.Method, request.Address.Url, startTime))
 
 	if c.logger.IsDebugEnabled() {
 		if request.Body != nil {
@@ -86,7 +86,11 @@ func (c *Client) Send(request *Request) (*Response, error) {
 	defer conn.Close()
 	conn.Write(body)
 
-	response, err := c.NewResponse(request.Method, conn)
+	fmt.Println("----")
+	fmt.Println(string(body))
+	fmt.Println("----")
+
+	response, err := c.NewResponse(request.Method, request.Address, conn)
 
 	if c.logger.IsDebugEnabled() {
 		if response.Body != nil {
@@ -94,7 +98,7 @@ func (c *Client) Send(request *Request) (*Response, error) {
 		}
 	}
 
-	fmt.Println(color.WithColor("[OUT] http client send Method[%s] Url[%s] on Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundCyan, color.BackgroundBlack, request.Method, request.Url, startTime, time.Since(startTime)))
+	fmt.Println(color.WithColor("[OUT] Status[%d] Method[%s] Url[%s] on Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundCyan, color.BackgroundBlack, response.Status, request.Method, request.Address.Url, startTime, time.Since(startTime)))
 
 	return response, err
 }

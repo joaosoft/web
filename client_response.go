@@ -14,12 +14,13 @@ import (
 	"time"
 )
 
-func (c *Client) NewResponse(method Method, conn net.Conn) (*Response, error) {
+func (c *Client) NewResponse(method Method, address *Address, conn net.Conn) (*Response, error) {
 
 	response := &Response{
 		Base: Base{
 			client:    c,
 			Method:    method,
+			Address:   address,
 			Headers:   make(Headers),
 			Cookies:   make(Cookies),
 			Params:    make(Params),

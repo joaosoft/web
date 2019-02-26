@@ -154,7 +154,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 		return err
 	}
 
-	fmt.Println(color.WithColor("[IN] Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, request.IP, request.Method, request.Url, request.Protocol, startTime))
+	fmt.Println(color.WithColor("[IN] Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, request.IP, request.Method, request.Address.Url, request.Protocol, startTime))
 
 	if w.logger.IsDebugEnabled() {
 		if request.Body != nil {
@@ -175,7 +175,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 		if val, ok := request.Headers[HeaderAccessControlRequestMethod]; ok {
 			method = Method(val[0])
 		}
-		route, err = w.GetRoute(method, request.Url)
+		route, err = w.GetRoute(method, request.Address.Url)
 		if err != nil {
 			w.logger.Errorf("error getting route: [%s]", err)
 			goto on_error
@@ -183,7 +183,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	}
 
 	// middleware's of the server
-	route, err = w.GetRoute(request.Method, request.Url)
+	route, err = w.GetRoute(request.Method, request.Address.Url)
 	if err != nil {
 		w.logger.Errorf("error getting route: [%s]", err)
 		goto on_error
@@ -230,7 +230,7 @@ on_error:
 		w.logger.Errorf("error writing response: [%s]", err)
 	}
 
-	fmt.Println(color.WithColor("[OUT] Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundCyan, color.BackgroundBlack, ctx.Request.IP, ctx.Request.Method, ctx.Request.Url, ctx.Request.Protocol, startTime, time.Since(startTime)))
+	fmt.Println(color.WithColor("[OUT] Status[%d] Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundCyan, color.BackgroundBlack, ctx.Response.Status, ctx.Request.IP, ctx.Request.Method, ctx.Request.Address.Url, ctx.Request.Protocol, startTime, time.Since(startTime)))
 
 	return nil
 }
@@ -271,7 +271,7 @@ func (w *Server) GetRoute(method Method, url string) (*Route, error) {
 func (w *Server) LoadUrlParms(request *Request, route *Route) error {
 
 	routeUrl := strings.Split(route.Path, "/")
-	url := strings.Split(request.Url, "/")
+	url := strings.Split(request.Address.Url, "/")
 
 	for i, name := range routeUrl {
 		if name != url[i] {

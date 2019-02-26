@@ -33,6 +33,7 @@ const (
 	HeaderXRequestedWith      HeaderType = "X-Requested-With"
 	HeaderServer              HeaderType = "Server"
 	HeaderDate                HeaderType = "Date"
+	HeaderHost                HeaderType = "Host"
 	HeaderMimeVersion         HeaderType = "MIME-Version"
 
 	// Access control

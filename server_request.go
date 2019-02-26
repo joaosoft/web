@@ -27,9 +27,9 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 			Charset:     CharsetUTF8,
 			conn:        conn,
 		},
-		FormData: make(map[string]*FormData),
+		FormData:    make(map[string]*FormData),
 		Attachments: make(map[string]*Attachment),
-		Reader:   conn.(io.Reader),
+		Reader:      conn.(io.Reader),
 	}
 
 	return request, request.read()
@@ -113,27 +113,8 @@ func (r *Request) readHeader(reader *bufio.Reader) error {
 		return errors.New("invalid http request")
 	} else {
 		r.Method = Method(firstLine[0])
-		r.FullUrl = string(firstLine[1])
+		r.Address = NewAddress(string(firstLine[1]))
 		r.Protocol = Protocol(firstLine[2])
-
-		// load query parameters
-		if split := strings.SplitN(r.FullUrl, "?", 2); len(split) > 1 {
-			r.Url = string(split[0])
-			if parms := strings.Split(split[1], "&"); len(parms) > 0 {
-				for _, parm := range parms {
-					if p := strings.Split(parm, "="); len(p) > 1 {
-						if split := strings.SplitN(p[1], ",", -1); len(split) > 0 {
-							for _, s := range split {
-								r.Params[p[0]] = append(r.Params[p[0]], s)
-							}
-						}
-						r.Params[p[0]] = append(r.Params[p[0]], p[1])
-					}
-				}
-			}
-		} else {
-			r.Url = string(firstLine[1])
-		}
 	}
 
 	return nil

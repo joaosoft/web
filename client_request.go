@@ -22,15 +22,16 @@ func (c *Client) NewRequest(method Method, url string) (*Request, error) {
 
 	return &Request{
 		Base: Base{
-			client:    c,
-			Protocol:  ProtocolHttp1p1,
-			Method:    method,
-			Url:       url,
-			Headers:   make(Headers),
-			Cookies:   make(Cookies),
-			Params:    make(Params),
-			UrlParams: make(UrlParams),
-			Charset:   CharsetUTF8,
+			client:      c,
+			Protocol:    ProtocolHttp1p1,
+			Method:      method,
+			Address:     NewAddress(url),
+			Headers:     make(Headers),
+			Cookies:     make(Cookies),
+			Params:      make(Params),
+			UrlParams:   make(UrlParams),
+			Charset:     CharsetUTF8,
+			ContentType: ContentTypeApplicationJSON,
 		},
 		FormData:            make(map[string]*FormData),
 		Attachments:         make(map[string]*Attachment),
@@ -106,15 +107,17 @@ func (r *Request) handleHeaders() ([]byte, error) {
 	lenFormData := len(r.FormData)
 
 	// header
-	split := strings.SplitN(r.Url, "/", 2)
+	split := strings.SplitN(r.Address.Url, "/", 2)
 	if len(split) != 2 {
-		return nil, fmt.Errorf("invalid url [%s]", r.Url)
+		return nil, fmt.Errorf("invalid url [%s]", r.Address.Url)
 	}
 
 	buf.WriteString(fmt.Sprintf("%s %s %s\r\n", r.Method, fmt.Sprintf("/%s", split[1]), r.Protocol))
 
 	// headers
+	r.Headers["Host"] = []string{r.Address.Url}
 	r.Headers[HeaderServer] = []string{"client"}
+	r.Headers[HeaderHost] = []string{r.Address.Host}
 	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
 
 	if lenFormData > 0 {
@@ -124,10 +127,10 @@ func (r *Request) handleHeaders() ([]byte, error) {
 			r.Headers[HeaderContentType] = []string{fmt.Sprintf("%s; boundary=%s; charset=%s", ContentTypeMultipartFormData, r.Boundary, r.Charset)}
 		case MultiAttachmentModeZip:
 			if len(r.FormData) == 0 {
-				var name= "attachments"
-				var fileName= "attachments.zip"
-				var contentType= ContentTypeApplicationZip
-				var charset= r.Charset
+				var name = "attachments"
+				var fileName = "attachments.zip"
+				var contentType = ContentTypeApplicationZip
+				var charset = r.Charset
 
 				if lenFormData == 1 {
 					for _, formData := range r.Attachments {
@@ -147,7 +150,10 @@ func (r *Request) handleHeaders() ([]byte, error) {
 		}
 	} else {
 		r.Headers[HeaderContentType] = []string{string(r.ContentType)}
-		r.Headers[HeaderContentLength] = []string{strconv.Itoa(len(r.Body))}
+		lenBody := len(r.Body)
+		if lenBody > 0 {
+			r.Headers[HeaderContentLength] = []string{strconv.Itoa(lenBody)}
+		}
 	}
 
 	for key, value := range r.Headers {

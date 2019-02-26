@@ -9,10 +9,10 @@ import (
 )
 
 func (w *Server) handlerFile(ctx *Context) error {
-	logger.Infof("handling file %s", ctx.Request.FullUrl)
+	logger.Infof("handling file %s", ctx.Request.Address.Full)
 
 	dir, _ := os.Getwd()
-	path := fmt.Sprintf("%s%s", dir, ctx.Request.FullUrl)
+	path := fmt.Sprintf("%s%s", dir, ctx.Request.Address.Full)
 
 	if _, err := os.Stat(path); err == nil {
 		if bytes, err := ioutil.ReadFile(path); err != nil {

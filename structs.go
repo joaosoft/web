@@ -24,9 +24,6 @@ type Cookie struct {
 type Cookies map[string]Cookie
 
 type UrlParams map[string][]string
-
-type Params map[string][]string
-
 type ErrorHandler func(ctx *Context, err error) error
 type HandlerFunc func(ctx *Context) error
 type MiddlewareFunc func(HandlerFunc) HandlerFunc
@@ -39,8 +36,7 @@ type Context struct {
 
 type Base struct {
 	IP          string
-	FullUrl     string
-	Url         string
+	Address     *Address
 	Method      Method
 	Protocol    Protocol
 	Headers     Headers

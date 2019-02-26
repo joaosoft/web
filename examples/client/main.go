@@ -15,7 +15,6 @@ func main() {
 	requestGet(c)
 
 	requestGetBoundary(c)
-
 }
 
 func requestGet(c *web.Client) {
