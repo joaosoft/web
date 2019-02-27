@@ -37,6 +37,10 @@ A simple and fast web server and client.
 * PROPFIND
 * VIEW
 
+## With authentication types
+* basic
+* jwt (in development)
+
 >### Go
 ```
 go get github.com/joaosoft/web

@@ -5,7 +5,8 @@ import (
 )
 
 var (
-	ErrorNotFound = NewError(StatusNotFound, "route not found")
+	ErrorNotFound    = NewError(StatusNotFound, "route not found")
+	ErrorInvalidAuth = NewError(StatusUnauthorized, "invalid authentication")
 )
 
 type Error struct {

@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/flate"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"regexp"
@@ -43,6 +44,18 @@ func (c *Client) NewRequest(method Method, url string) (*Request, error) {
 func (r *Request) WithBody(body []byte, contentType ContentType) *Request {
 	r.Body = body
 	r.ContentType = contentType
+
+	return r
+}
+
+func (r *Request) WithAuthBasic(username, password string) *Request {
+	r.SetHeader(HeaderAuthorization, []string{base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", username, password)))})
+
+	return r
+}
+
+func (r *Request) WithAuthJwt(token string) *Request {
+	r.SetHeader(HeaderAuthorization, []string{base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s", token)))})
 
 	return r
 }

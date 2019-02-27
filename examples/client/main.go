@@ -15,6 +15,8 @@ func main() {
 	requestGet(c)
 
 	requestGetBoundary(c)
+
+	requestBasicAuth(c)
 }
 
 func requestGet(c *web.Client) {
@@ -23,7 +25,7 @@ func requestGet(c *web.Client) {
 		panic(err)
 	}
 
-	response, err := c.Send(request)
+	response, err := request.Send()
 	if err != nil {
 		panic(err)
 	}
@@ -37,7 +39,21 @@ func requestGetBoundary(c *web.Client) {
 		panic(err)
 	}
 
-	response, err := c.Send(request)
+	response, err := request.Send()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%+v", response)
+}
+
+func requestBasicAuth(c *web.Client) {
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/auth")
+	if err != nil {
+		panic(err)
+	}
+
+	response, err := request.WithAuthBasic("user1", "pass").Send()
 	if err != nil {
 		panic(err)
 	}

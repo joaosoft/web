@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"web"
+	"web/middleware"
 )
 
 func main() {
@@ -16,7 +17,8 @@ func main() {
 	// add middleware's
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
 	w.AddRoutes(
-		web.NewRoute(web.MethodOptions, "*", HandlerHelloForOptions, web.MiddlewareOptions()),
+		web.NewRoute(web.MethodOptions, "*", HandlerHelloForOptions, middleware.Options()),
+		web.NewRoute(web.MethodGet, "/auth", HandlerHelloForOptions, middleware.AuthBasic("user", "pass")),
 		web.NewRoute(web.MethodHead, "/hello/:name", HandlerHelloForHead),
 		web.NewRoute(web.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareThree()),
 		web.NewRoute(web.MethodPost, "/hello/:name", HandlerHelloForPost),
@@ -25,7 +27,7 @@ func main() {
 		web.NewRoute(web.MethodPatch, "/hello/:name", HandlerHelloForPatch),
 		web.NewRoute(web.MethodCopy, "/hello/:name", HandlerHelloForCopy),
 		web.NewRoute(web.MethodConnect, "/hello/:name", HandlerHelloForConnect),
-		web.NewRoute(web.MethodOptions, "/hello/:name", HandlerHelloForOptions, web.MiddlewareOptions()),
+		web.NewRoute(web.MethodOptions, "/hello/:name", HandlerHelloForOptions, middleware.Options()),
 		web.NewRoute(web.MethodTrace, "/hello/:name", HandlerHelloForTrace),
 		web.NewRoute(web.MethodLink, "/hello/:name", HandlerHelloForLink),
 		web.NewRoute(web.MethodUnlink, "/hello/:name", HandlerHelloForUnlink),
