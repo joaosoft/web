@@ -47,6 +47,12 @@ func (r *Request) WithBody(body []byte, contentType ContentType) *Request {
 	return r
 }
 
+func (r *Request) WithContentType(contentType ContentType) *Request {
+	r.ContentType = contentType
+
+	return r
+}
+
 func (r *Request) build() ([]byte, error) {
 	var buf bytes.Buffer
 	var lenAttachments = len(r.Attachments)
