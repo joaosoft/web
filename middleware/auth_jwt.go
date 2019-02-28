@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"github.com/joaosoft/auth-types/jwt"
 	"strings"
 	"web"
+
+	"github.com/joaosoft/auth-types/jwt"
 )
 
 func CheckAuthJwt(keyFunc jwt.KeyFunc, checkFunc jwt.CheckFunc) web.MiddlewareFunc {
@@ -12,7 +13,7 @@ func CheckAuthJwt(keyFunc jwt.KeyFunc, checkFunc jwt.CheckFunc) web.MiddlewareFu
 			authHeader := ctx.Request.GetHeader(web.HeaderAuthorization)
 			token := strings.Replace(authHeader, "Bearer ", "", 1)
 
-			ok, err := jwt.Check(token, keyFunc, checkFunc, jwt.Claims{}, true)
+			ok, err := jwt.Check(token, keyFunc, checkFunc, jwt.Claims{}, false)
 
 			if !ok || err != nil {
 				return ErrorInvalidAuthorization
