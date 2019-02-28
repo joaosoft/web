@@ -12,7 +12,7 @@ func CheckAuthBasic(user, password string) web.MiddlewareFunc {
 
 			authHeader := ctx.Request.GetHeader(web.HeaderAuthorization)
 
-			ok, err := basic.New().Check(authHeader, func(username string) (*basic.Credentials, error) {
+			ok, err := basic.Check(authHeader, func(username string) (*basic.Credentials, error) {
 				return &basic.Credentials{
 					UserName: user,
 					Password: password,

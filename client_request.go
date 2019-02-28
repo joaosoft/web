@@ -51,7 +51,7 @@ func (r *Request) WithBody(body []byte, contentType ContentType) *Request {
 }
 
 func (r *Request) WithAuthBasic(username, password string) (*Request, error) {
-	r.SetHeader(HeaderAuthorization, []string{basic.New().Generate(username, password)})
+	r.SetHeader(HeaderAuthorization, []string{basic.Generate(username, password)})
 
 	return r, nil
 }
