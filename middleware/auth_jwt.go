@@ -13,7 +13,7 @@ func CheckAuthJwt(keyFunc jwt.KeyFunc, checkFunc jwt.CheckFunc) web.MiddlewareFu
 			authHeader := ctx.Request.GetHeader(web.HeaderAuthorization)
 			token := strings.Replace(authHeader, "Bearer ", "", 1)
 
-			ok, err := jwt.Check(token, keyFunc, checkFunc, jwt.Claims{}, false)
+			ok, err := jwt.New().Check(token, keyFunc, checkFunc, jwt.Claims{}, false)
 
 			if !ok || err != nil {
 				return ErrorInvalidAuthorization
