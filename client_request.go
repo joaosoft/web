@@ -4,13 +4,15 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/flate"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/joaosoft/auth-types/basic"
+	"github.com/joaosoft/auth-types/jwt"
 )
 
 func (c *Client) NewRequest(method Method, url string) (*Request, error) {
@@ -48,16 +50,21 @@ func (r *Request) WithBody(body []byte, contentType ContentType) *Request {
 	return r
 }
 
-func (r *Request) WithAuthBasic(username, password string) *Request {
-	r.SetHeader(HeaderAuthorization, []string{base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", username, password)))})
+func (r *Request) WithAuthBasic(username, password string) (*Request, error) {
+	r.SetHeader(HeaderAuthorization, []string{basic.New().Generate(username, password)})
 
-	return r
+	return r, nil
 }
 
-func (r *Request) WithAuthJwt(token string) *Request {
-	r.SetHeader(HeaderAuthorization, []string{base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s", token)))})
+func (r *Request) WithAuthJwt(claims jwt.Claims, key interface{}) (*Request, error) {
+	token, err := jwt.New(jwt.SignatureHS384).Generate(claims, key)
+	if err != nil {
+		return r, err
+	}
 
-	return r
+	r.SetHeader(HeaderAuthorization, []string{token})
+
+	return r, nil
 }
 
 func (r *Request) WithContentType(contentType ContentType) *Request {

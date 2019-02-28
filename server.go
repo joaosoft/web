@@ -222,7 +222,9 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 
 on_error:
 	if err != nil {
-		w.errorhandler(ctx, err)
+		if er := w.errorhandler(ctx, err); er != nil {
+			w.logger.Errorf("error writing error: [error: %s] %s", err, er)
+		}
 	}
 
 	// write response to connection

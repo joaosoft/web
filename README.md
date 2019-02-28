@@ -39,7 +39,7 @@ A simple and fast web server and client.
 
 ## With authentication types
 * basic
-* jwt (in development)
+* jwt
 
 >### Go
 ```
@@ -58,9 +58,26 @@ func main() {
 		panic(err)
 	}
 
+	claims := jwt.Claims{"name": "joao", "age": 30}
+
+	keyFunc := func(token *jwt.Token) (interface{}, error) {
+		return []byte("bananas"), nil
+	}
+
+	checkFunc := func(c jwt.Claims) (bool, error) {
+		if claims["name"] == c["name"].(string) &&
+			claims["age"] == int(c["age"].(float64)) {
+			return true, nil
+		}
+		return false, fmt.Errorf("invalid jwt session token")
+	}
+
 	// add middleware's
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
 	w.AddRoutes(
+		web.NewRoute(web.MethodOptions, "*", HandlerHelloForOptions, middleware.Options()),
+		web.NewRoute(web.MethodGet, "/auth-basic", HandlerForGet, middleware.CheckAuthBasic("joao", "ribeiro")),
+		web.NewRoute(web.MethodGet, "/auth-jwt", HandlerForGet, middleware.CheckAuthJwt(keyFunc, checkFunc)),
 		web.NewRoute(web.MethodHead, "/hello/:name", HandlerHelloForHead),
 		web.NewRoute(web.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareThree()),
 		web.NewRoute(web.MethodPost, "/hello/:name", HandlerHelloForPost),
@@ -69,7 +86,7 @@ func main() {
 		web.NewRoute(web.MethodPatch, "/hello/:name", HandlerHelloForPatch),
 		web.NewRoute(web.MethodCopy, "/hello/:name", HandlerHelloForCopy),
 		web.NewRoute(web.MethodConnect, "/hello/:name", HandlerHelloForConnect),
-		web.NewRoute(web.MethodOptions, "/hello/:name", HandlerHelloForOptions),
+		web.NewRoute(web.MethodOptions, "/hello/:name", HandlerHelloForOptions, middleware.Options()),
 		web.NewRoute(web.MethodTrace, "/hello/:name", HandlerHelloForTrace),
 		web.NewRoute(web.MethodLink, "/hello/:name", HandlerHelloForLink),
 		web.NewRoute(web.MethodUnlink, "/hello/:name", HandlerHelloForUnlink),
@@ -127,6 +144,17 @@ func MyMiddlewareFour() web.MiddlewareFunc {
 		}
 	}
 }
+
+func HandlerForGet(ctx *web.Context) error {
+	fmt.Println("HELLO I'M THE HELLO HANDER FOR GET")
+
+	return ctx.Response.Bytes(
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
+		[]byte("{ \"welcome\": \"guest\" }"),
+	)
+}
+
 func HandlerHelloForHead(ctx *web.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR HEAD")
 
@@ -209,11 +237,7 @@ func HandlerHelloForConnect(ctx *web.Context) error {
 func HandlerHelloForOptions(ctx *web.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR OPTIONS")
 
-	return ctx.Response.Bytes(
-		web.StatusOK,
-		web.ContentTypeApplicationJSON,
-		[]byte("{ \"welcome\": \""+ctx.Request.UrlParams["name"][0]+"\" }"),
-	)
+	return ctx.Response.NoContent(web.StatusNoContent)
 }
 
 func HandlerHelloForTrace(ctx *web.Context) error {
@@ -291,7 +315,8 @@ func HandlerHelloForDownloadOneFile(ctx *web.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR DOWNLOAD ONE FILE")
 
 	dir, _ := os.Getwd()
-	ctx.Response.Attachment(fmt.Sprintf("%s%s", dir, "/examples/data/a.text"), "text_a.text")
+	body, _ := web.ReadFile(fmt.Sprintf("%s%s", dir, "/examples/data/a.text"), nil)
+	ctx.Response.Attachment("text_a.text", body)
 
 	return ctx.Response.Bytes(
 		web.StatusOK,
@@ -304,9 +329,14 @@ func HandlerHelloForDownloadFiles(ctx *web.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR DOWNLOAD FILES")
 
 	dir, _ := os.Getwd()
-	ctx.Response.Attachment(fmt.Sprintf("%s%s", dir, "/examples/data/a.text"), "text_a.text")
-	ctx.Response.Attachment(fmt.Sprintf("%s%s", dir, "/examples/data/b.text"), "text_b.text")
-	ctx.Response.Inline(fmt.Sprintf("%s%s", dir, "/examples/data/c.text"), "text_c.text")
+	body, _ := web.ReadFile(fmt.Sprintf("%s%s", dir, "/examples/data/a.text"), nil)
+	ctx.Response.Attachment("text_a.text", body)
+
+	body, _ = web.ReadFile(fmt.Sprintf("%s%s", dir, "/examples/data/b.text"), nil)
+	ctx.Response.Attachment("text_b.text", body)
+
+	body, _ = web.ReadFile(fmt.Sprintf("%s%s", dir, "/examples/data/c.text"), nil)
+	ctx.Response.Inline("text_c.text", body)
 
 	return ctx.Response.Bytes(
 		web.StatusOK,
@@ -318,7 +348,7 @@ func HandlerHelloForDownloadFiles(ctx *web.Context) error {
 func HandlerHelloForUploadFiles(ctx *web.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR UPLOAD FILES")
 
-	fmt.Printf("\nAttachments: %+v\n", ctx.Request.Attachments)
+	fmt.Printf("\nAttachments: %+v\n", ctx.Request.FormData)
 	return ctx.Response.Bytes(
 		web.StatusOK,
 		web.ContentTypeApplicationJSON,
@@ -340,6 +370,8 @@ func main() {
 
 	requestGetBoundary(c)
 
+	requestAuthBasic(c)
+	requestAuthJwt(c)
 }
 
 func requestGet(c *web.Client) {
@@ -348,7 +380,7 @@ func requestGet(c *web.Client) {
 		panic(err)
 	}
 
-	response, err := c.Send(request)
+	response, err := request.Send()
 	if err != nil {
 		panic(err)
 	}
@@ -362,12 +394,50 @@ func requestGetBoundary(c *web.Client) {
 		panic(err)
 	}
 
-	response, err := c.Send(request)
+	response, err := request.Send()
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Printf("%+v", response)
+}
+
+func requestAuthBasic(c *web.Client) {
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/auth-basic")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = request.WithAuthBasic("joao", "ribeiro")
+	if err != nil {
+		panic(err)
+	}
+
+	response, err := request.Send()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("\n\n%d: %s\n\n", response.Status, string(response.Body))
+}
+
+func requestAuthJwt(c *web.Client) {
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/auth-jwt")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = request.WithAuthJwt(jwt.Claims{"name": "joao", "age": 30}, "bananas")
+	if err != nil {
+		panic(err)
+	}
+
+	response, err := request.Send()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("\n\n%d: %s\n\n", response.Status, string(response.Body))
 }
 ```
 

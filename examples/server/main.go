@@ -5,6 +5,8 @@ import (
 	"os"
 	"web"
 	"web/middleware"
+
+	"github.com/joaosoft/auth-types/jwt"
 )
 
 func main() {
@@ -14,11 +16,26 @@ func main() {
 		panic(err)
 	}
 
+	claims := jwt.Claims{"name": "joao", "age": 30}
+
+	keyFunc := func(token *jwt.Token) (interface{}, error) {
+		return []byte("bananas"), nil
+	}
+
+	checkFunc := func(c jwt.Claims) (bool, error) {
+		if claims["name"] == c["name"].(string) &&
+			claims["age"] == int(c["age"].(float64)) {
+			return true, nil
+		}
+		return false, fmt.Errorf("invalid jwt session token")
+	}
+
 	// add middleware's
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
 	w.AddRoutes(
 		web.NewRoute(web.MethodOptions, "*", HandlerHelloForOptions, middleware.Options()),
-		web.NewRoute(web.MethodGet, "/auth", HandlerHelloForOptions, middleware.AuthBasic("user", "pass")),
+		web.NewRoute(web.MethodGet, "/auth-basic", HandlerForGet, middleware.CheckAuthBasic("joao", "ribeiro")),
+		web.NewRoute(web.MethodGet, "/auth-jwt", HandlerForGet, middleware.CheckAuthJwt(keyFunc, checkFunc)),
 		web.NewRoute(web.MethodHead, "/hello/:name", HandlerHelloForHead),
 		web.NewRoute(web.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareThree()),
 		web.NewRoute(web.MethodPost, "/hello/:name", HandlerHelloForPost),
@@ -85,6 +102,17 @@ func MyMiddlewareFour() web.MiddlewareFunc {
 		}
 	}
 }
+
+func HandlerForGet(ctx *web.Context) error {
+	fmt.Println("HELLO I'M THE HELLO HANDER FOR GET")
+
+	return ctx.Response.Bytes(
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
+		[]byte("{ \"welcome\": \"guest\" }"),
+	)
+}
+
 func HandlerHelloForHead(ctx *web.Context) error {
 	fmt.Println("HELLO I'M THE HELLO HANDER FOR HEAD")
 

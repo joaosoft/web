@@ -1,29 +1,29 @@
 package middleware
 
 import (
-	"encoding/base64"
-	"strings"
 	"web"
+
+	"github.com/joaosoft/auth-types/basic"
 )
 
-func AuthBasic(username, password string) web.MiddlewareFunc {
+func CheckAuthBasic(user, password string) web.MiddlewareFunc {
 	return func(next web.HandlerFunc) web.HandlerFunc {
 		return func(ctx *web.Context) error {
 
 			authHeader := ctx.Request.GetHeader(web.HeaderAuthorization)
 
-			authDecoded, err := base64.StdEncoding.DecodeString(authHeader)
-			if err != nil {
-				return web.ErrorInvalidAuth
+			ok, err := basic.New().Check(authHeader, func(username string) (*basic.Credentials, error) {
+				return &basic.Credentials{
+					UserName: user,
+					Password: password,
+				}, nil
+			})
+
+			if !ok || err != nil {
+				return ErrorInvalidAuthorization
 			}
 
-			split := strings.SplitN(string(authDecoded), ":", 2)
-
-			if len(split) == 2 && split[0] == username && split[1] == password {
-				return next(ctx)
-			}
-
-			return web.ErrorInvalidAuth
+			return next(ctx)
 		}
 	}
 }
