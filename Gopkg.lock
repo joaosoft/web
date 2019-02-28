@@ -8,7 +8,7 @@
     "basic",
     "jwt"
   ]
-  revision = "f5dd43bb0fe5a80ff1e289244d70a09691087a8b"
+  revision = "2414ed0ad32f0d93e90b3c286967fdd4adcae37a"
 
 [[projects]]
   branch = "master"
