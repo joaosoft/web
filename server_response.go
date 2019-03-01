@@ -66,8 +66,8 @@ func (r *Response) write() error {
 		} else {
 			buf.Write(body)
 
-			if r.server.logger.IsDebugEnabled() {
-				r.server.logger.Infof("[RESPONSE BODY] [%s]", string(body))
+			if r.Server.logger.IsDebugEnabled() {
+				r.Server.logger.Infof("[RESPONSE BODY] [%s]", string(body))
 			}
 		}
 	}
@@ -81,7 +81,7 @@ func (r *Response) handleHeaders() ([]byte, error) {
 	var buf bytes.Buffer
 	lenFormData := len(r.FormData)
 
-	r.Headers[HeaderServer] = []string{"server"}
+	r.Headers[HeaderServer] = []string{"Server"}
 	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
 	r.Headers[HeaderAccessControlAllowCredentials] = []string{"true"}
 	if val, ok := r.Headers[HeaderOrigin]; ok {

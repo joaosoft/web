@@ -17,7 +17,7 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 
 	request := &Request{
 		Base: Base{
-			server:      server,
+			Server:      server,
 			IP:          conn.RemoteAddr().String(),
 			Headers:     make(Headers),
 			Cookies:     make(Cookies),

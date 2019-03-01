@@ -46,8 +46,8 @@ type Base struct {
 	UrlParams   UrlParams
 	Charset     Charset
 	conn        net.Conn
-	server      *Server
-	client      *Client
+	Server      *Server
+	Client      *Client
 }
 
 type Request struct {

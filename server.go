@@ -27,7 +27,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 	config, err := NewServerConfig()
 
 	service := &Server{
-		logger:              logger.NewLogDefault("server", logger.WarnLevel),
+		logger:              logger.NewLogDefault("Server", logger.WarnLevel),
 		routes:              make(Routes),
 		middlewares:         make([]MiddlewareFunc, 0),
 		address:             ":80",
@@ -116,7 +116,7 @@ func (w *Server) Start() error {
 		w.logger.Errorf("error connecting to %s: %s", w.address, err)
 		return err
 	}
-	fmt.Println(color.WithColor("http server started on [%s]", color.FormatBold, color.ForegroundRed, color.BackgroundBlack, w.address))
+	fmt.Println(color.WithColor("http Server started on [%s]", color.FormatBold, color.ForegroundRed, color.BackgroundBlack, w.address))
 
 	for {
 		conn, err := w.listener.Accept()
@@ -182,7 +182,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 		}
 	}
 
-	// middleware's of the server
+	// middleware's of the Server
 	route, err = w.GetRoute(request.Method, request.Address.Url)
 	if err != nil {
 		w.logger.Errorf("error getting route: [%s]", err)

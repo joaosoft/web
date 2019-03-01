@@ -18,7 +18,7 @@ func (c *Client) NewResponse(method Method, address *Address, conn net.Conn) (*R
 
 	response := &Response{
 		Base: Base{
-			client:    c,
+			Client:    c,
 			Method:    method,
 			Address:   address,
 			Headers:   make(Headers),

@@ -25,7 +25,7 @@ func (c *Client) NewRequest(method Method, url string) (*Request, error) {
 
 	return &Request{
 		Base: Base{
-			client:      c,
+			Client:      c,
 			Protocol:    ProtocolHttp1p1,
 			Method:      method,
 			Address:     NewAddress(url),
@@ -142,7 +142,7 @@ func (r *Request) handleHeaders() ([]byte, error) {
 
 	// headers
 	r.Headers["Host"] = []string{r.Address.Url}
-	r.Headers[HeaderServer] = []string{"client"}
+	r.Headers[HeaderServer] = []string{"Client"}
 	r.Headers[HeaderHost] = []string{r.Address.Host}
 	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
 

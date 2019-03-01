@@ -22,7 +22,7 @@ func NewClient(options ...ClientOption) (*Client, error) {
 	config, err := NewClientConfig()
 
 	service := &Client{
-		logger:              logger.NewLogDefault("client", logger.WarnLevel),
+		logger:              logger.NewLogDefault("Client", logger.WarnLevel),
 		multiAttachmentMode: MultiAttachmentModeZip,
 		config:              &config.Client,
 	}
@@ -52,7 +52,7 @@ func NewClient(options ...ClientOption) (*Client, error) {
 	return service, nil
 }
 func (r *Request) Send() (*Response, error) {
-	return r.client.Send(r)
+	return r.Client.Send(r)
 }
 
 func (c *Client) Send(request *Request) (*Response, error) {
