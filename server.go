@@ -171,14 +171,16 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 
 	// when options method, validate request route
 	if request.Method == MethodOptions {
-		var method Method
-		if val, ok := request.Headers[HeaderAccessControlRequestMethod]; ok {
-			method = Method(val[0])
-		}
-		route, err = w.GetRoute(method, request.Address.Url)
-		if err != nil {
-			w.logger.Errorf("error getting route: [%s]", err)
-			goto on_error
+		if _, ok := w.routes[MethodOptions]; !ok {
+			var method Method
+			if val, ok := request.Headers[HeaderAccessControlRequestMethod]; ok {
+				method = Method(val[0])
+			}
+			route, err = w.GetRoute(method, request.Address.Url)
+			if err != nil {
+				w.logger.Errorf("error getting route: [%s]", err)
+				goto on_error
+			}
 		}
 	}
 
@@ -251,6 +253,7 @@ func ConvertPathToRegex(path string) string {
 
 	var re = regexp.MustCompile(`:[a-zA-Z0-9\-_.]+`)
 	regx := re.ReplaceAllString(path, `[a-zA-Z0-9-_.]+`)
+	regx = strings.Replace(regx, "*", "(.+)", -1)
 
 	return fmt.Sprintf("^%s$", regx)
 }

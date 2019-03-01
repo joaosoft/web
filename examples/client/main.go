@@ -20,6 +20,9 @@ func main() {
 
 	requestAuthBasic(c)
 	requestAuthJwt(c)
+
+	requestOptionsOK(c)
+	requestOptionsNotFound(c)
 }
 
 func requestGet(c *web.Client) {
@@ -48,6 +51,46 @@ func requestGetBoundary(c *web.Client) {
 	}
 
 	fmt.Printf("%+v", response)
+}
+
+func requestOptionsOK(c *web.Client) {
+	request, err := c.NewRequest(web.MethodOptions, "localhost:9001/auth-basic")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = request.WithAuthBasic("joao", "ribeiro")
+	if err != nil {
+		panic(err)
+	}
+
+	request.SetHeader(web.HeaderAccessControlRequestMethod, []string{string(web.MethodGet)})
+	response, err := request.Send()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("\n\n%d: %s\n\n", response.Status, string(response.Body))
+}
+
+func requestOptionsNotFound(c *web.Client) {
+	request, err := c.NewRequest(web.MethodOptions, "localhost:9001/auth-basic-invalid")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = request.WithAuthBasic("joao", "ribeiro")
+	if err != nil {
+		panic(err)
+	}
+
+	request.SetHeader(web.HeaderAccessControlRequestMethod, []string{string(web.MethodGet)})
+	response, err := request.Send()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("\n\n%d: %s\n\n", response.Status, string(response.Body))
 }
 
 func requestAuthBasic(c *web.Client) {

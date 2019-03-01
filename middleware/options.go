@@ -10,7 +10,14 @@ func Options() web.MiddlewareFunc {
 		return func(ctx *web.Context) error {
 
 			if ctx.Request.Method == web.MethodOptions {
-				route, err := ctx.Request.Server.GetRoute(ctx.Request.Method, ctx.Request.Address.Url)
+				var method web.Method
+				if val, ok := ctx.Request.Headers[web.HeaderAccessControlRequestMethod]; ok {
+					method = web.Method(val[0])
+				} else {
+					return ctx.Response.NoContent(web.StatusBadRequest)
+				}
+
+				route, err := ctx.Request.Server.GetRoute(method, ctx.Request.Address.Url)
 				if err == nil && route != nil {
 					ctx.Response.Headers[web.HeaderAccessControlAllowMethods] = []string{string(ctx.Request.Method)}
 					ctx.Response.Headers[web.HeaderAccessControlAllowHeaders] = []string{strings.Join([]string{
@@ -20,9 +27,9 @@ func Options() web.MiddlewareFunc {
 						string(web.HeaderXRequestedWith),
 					}, ", ")}
 				} else if err != web.ErrorNotFound {
-					ctx.Response.NoContent(web.StatusNotFound)
+					return ctx.Response.NoContent(web.StatusNotFound)
 				} else {
-					ctx.Response.NoContent(web.StatusBadRequest)
+					return ctx.Response.NoContent(web.StatusBadRequest)
 				}
 			}
 
