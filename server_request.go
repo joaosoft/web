@@ -187,9 +187,13 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 					parms := bytes.Split(split[i], []byte(`=`))
 					switch string(bytes.TrimSpace(parms[0])) {
 					case "name":
-						data.Name = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						if len(parms) > 1 {
+							data.Name = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						}
 					case "filename":
-						data.FileName = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						if len(parms) > 1 {
+							data.FileName = string(bytes.Replace(parms[1], []byte(`"`), []byte(""), 2))
+						}
 						data.IsAttachment = true
 					}
 				}
