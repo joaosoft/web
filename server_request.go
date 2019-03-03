@@ -183,7 +183,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			case "Content-Disposition":
 				split := bytes.Split(content[1], []byte(`;`))
 				data.ContentDisposition = ContentDisposition(string(split[0]))
-				for i := 1; i < len(data.ContentDisposition); i++ {
+				for i := 1; i < len(split); i++ {
 					parms := bytes.Split(split[i], []byte(`=`))
 					switch string(bytes.TrimSpace(parms[0])) {
 					case "name":
