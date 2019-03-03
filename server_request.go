@@ -170,7 +170,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 	}
 
 	for {
-		var data *Data
+		data := &Data{}
 		formDataBody := bytes.NewBuffer(nil)
 
 		for {
