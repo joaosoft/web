@@ -1,16 +1,14 @@
-package middleware
+package web
 
 import (
-	"web"
-
 	"github.com/joaosoft/auth-types/basic"
 )
 
-func CheckAuthBasic(user, password string) web.MiddlewareFunc {
-	return func(next web.HandlerFunc) web.HandlerFunc {
-		return func(ctx *web.Context) error {
+func MiddlewareCheckAuthBasic(user, password string) MiddlewareFunc {
+	return func(next HandlerFunc) HandlerFunc {
+		return func(ctx *Context) error {
 
-			authHeader := ctx.Request.GetHeader(web.HeaderAuthorization)
+			authHeader := ctx.Request.GetHeader(HeaderAuthorization)
 
 			ok, err := basic.Check(authHeader, func(username string) (*basic.Credentials, error) {
 				return &basic.Credentials{

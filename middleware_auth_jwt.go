@@ -1,16 +1,14 @@
-package middleware
+package web
 
 import (
 	"strings"
-	"web"
-
 	"github.com/joaosoft/auth-types/jwt"
 )
 
-func CheckAuthJwt(keyFunc jwt.KeyFunc, checkFunc jwt.CheckFunc) web.MiddlewareFunc {
-	return func(next web.HandlerFunc) web.HandlerFunc {
-		return func(ctx *web.Context) error {
-			authHeader := ctx.Request.GetHeader(web.HeaderAuthorization)
+func MiddlewareCheckAuthJwt(keyFunc jwt.KeyFunc, checkFunc jwt.CheckFunc) MiddlewareFunc {
+	return func(next HandlerFunc) HandlerFunc {
+		return func(ctx *Context) error {
+			authHeader := ctx.Request.GetHeader(HeaderAuthorization)
 			token := strings.Replace(authHeader, "Bearer ", "", 1)
 
 			ok, err := jwt.Check(token, keyFunc, checkFunc, jwt.Claims{}, false)

@@ -49,9 +49,9 @@ const (
 
 	// Security
 	HeaderStrictTransportSecurity HeaderType = "Strict-Transport-Security"
-	HeaderXContentTypeOptions     HeaderType = "X-Content-Type-Options"
+	HeaderXContentTypeOptions     HeaderType = "X-Content-Type-MiddlewareOptions"
 	HeaderXXSSProtection          HeaderType = "X-XSS-Protection"
-	HeaderXFrameOptions           HeaderType = "X-Frame-Options"
+	HeaderXFrameOptions           HeaderType = "X-Frame-MiddlewareOptions"
 	HeaderContentSecurityPolicy   HeaderType = "Content-Security-Policy"
 	HeaderXCSRFToken              HeaderType = "X-CSRF-Token"
 )
