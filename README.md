@@ -75,9 +75,9 @@ func main() {
 	// add middleware's
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
 	w.AddRoutes(
-		web.NewRoute(web.MethodOptions, "*", HandlerHelloForOptions, middleware.Options()),
-		web.NewRoute(web.MethodGet, "/auth-basic", HandlerForGet, middleware.CheckAuthBasic("joao", "ribeiro")),
-		web.NewRoute(web.MethodGet, "/auth-jwt", HandlerForGet, middleware.CheckAuthJwt(keyFunc, checkFunc)),
+		web.NewRoute(web.MethodOptions, "*", HandlerHelloForOptions, web.MiddlewareOptions()),
+		web.NewRoute(web.MethodGet, "/auth-basic", HandlerForGet, web.MiddlewareCheckAuthBasic("joao", "ribeiro")),
+		web.NewRoute(web.MethodGet, "/auth-jwt", HandlerForGet, web.MiddlewareCheckAuthJwt(keyFunc, checkFunc)),
 		web.NewRoute(web.MethodHead, "/hello/:name", HandlerHelloForHead),
 		web.NewRoute(web.MethodGet, "/hello/:name", HandlerHelloForGet, MyMiddlewareThree()),
 		web.NewRoute(web.MethodPost, "/hello/:name", HandlerHelloForPost),
@@ -86,7 +86,7 @@ func main() {
 		web.NewRoute(web.MethodPatch, "/hello/:name", HandlerHelloForPatch),
 		web.NewRoute(web.MethodCopy, "/hello/:name", HandlerHelloForCopy),
 		web.NewRoute(web.MethodConnect, "/hello/:name", HandlerHelloForConnect),
-		web.NewRoute(web.MethodOptions, "/hello/:name", HandlerHelloForOptions, middleware.Options()),
+		web.NewRoute(web.MethodOptions, "/hello/:name", HandlerHelloForOptions, web.MiddlewareOptions()),
 		web.NewRoute(web.MethodTrace, "/hello/:name", HandlerHelloForTrace),
 		web.NewRoute(web.MethodLink, "/hello/:name", HandlerHelloForLink),
 		web.NewRoute(web.MethodUnlink, "/hello/:name", HandlerHelloForUnlink),
@@ -372,6 +372,9 @@ func main() {
 
 	requestAuthBasic(c)
 	requestAuthJwt(c)
+
+	requestOptionsOK(c)
+	requestOptionsNotFound(c)
 }
 
 func requestGet(c *web.Client) {
@@ -400,6 +403,46 @@ func requestGetBoundary(c *web.Client) {
 	}
 
 	fmt.Printf("%+v", response)
+}
+
+func requestOptionsOK(c *web.Client) {
+	request, err := c.NewRequest(web.MethodOptions, "localhost:9001/auth-basic")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = request.WithAuthBasic("joao", "ribeiro")
+	if err != nil {
+		panic(err)
+	}
+
+	request.SetHeader(web.HeaderAccessControlRequestMethod, []string{string(web.MethodGet)})
+	response, err := request.Send()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("\n\n%d: %s\n\n", response.Status, string(response.Body))
+}
+
+func requestOptionsNotFound(c *web.Client) {
+	request, err := c.NewRequest(web.MethodOptions, "localhost:9001/auth-basic-invalid")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = request.WithAuthBasic("joao", "ribeiro")
+	if err != nil {
+		panic(err)
+	}
+
+	request.SetHeader(web.HeaderAccessControlRequestMethod, []string{string(web.MethodGet)})
+	response, err := request.Send()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("\n\n%d: %s\n\n", response.Status, string(response.Body))
 }
 
 func requestAuthBasic(c *web.Client) {
