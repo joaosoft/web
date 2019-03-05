@@ -2,6 +2,7 @@ package web
 
 import (
 	"strings"
+
 	"github.com/joaosoft/auth-types/jwt"
 )
 
