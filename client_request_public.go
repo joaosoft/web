@@ -107,19 +107,6 @@ func (r *Request) File(name string, body []byte) error {
 	return nil
 }
 
-func (r *Request) SetFormData(name string, value string) {
-	r.FormData[name] = &FormData{
-		Data: &Data{
-			ContentDisposition: ContentDispositionFormData,
-			ContentType:        ContentTypeTextPlain,
-			Charset:            CharsetUTF8,
-			Name:               name,
-			Body:               []byte(value),
-			IsAttachment:       false,
-		},
-	}
-}
-
 func (r *Request) Attachment(name string, body []byte) error {
 	contentType, charset := DetectContentType(filepath.Ext(name), body)
 	r.FormData[name] = &FormData{
@@ -150,4 +137,33 @@ func (r *Request) Inline(name string, body []byte) error {
 		},
 	}
 	return nil
+}
+
+func (r *Request) SetFormData(name string, value string) {
+	r.FormData[name] = &FormData{
+		Data: &Data{
+			ContentDisposition: ContentDispositionFormData,
+			ContentType:        ContentTypeTextPlain,
+			Charset:            CharsetUTF8,
+			Name:               name,
+			Body:               []byte(value),
+			IsAttachment:       false,
+		},
+	}
+}
+
+func (r *Request) GetFormDataBytes(name string) []byte {
+	if value, ok := r.FormData[name]; ok {
+		return value.Body
+	}
+
+	return nil
+}
+
+func (r *Request) GetFormDataString(name string) string {
+	if value, ok := r.FormData[name]; ok {
+		return string(value.Body)
+	}
+
+	return ""
 }

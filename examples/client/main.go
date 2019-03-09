@@ -23,6 +23,8 @@ func main() {
 
 	requestOptionsOK(c)
 	requestOptionsNotFound(c)
+
+	bindFormData(c)
 }
 
 func requestGet(c *web.Client) {
@@ -129,4 +131,33 @@ func requestAuthJwt(c *web.Client) {
 	}
 
 	fmt.Printf("\n\n%d: %s\n\n", response.Status, string(response.Body))
+}
+
+func bindFormData(c *web.Client) {
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/form-data")
+	if err != nil {
+		panic(err)
+	}
+
+	request.SetFormData("var_one", "one")
+	request.SetFormData("var_two", "2")
+
+	response, err := request.WithContentType(web.ContentTypeMultipartFormData).Send()
+	if err != nil {
+		panic(err)
+	}
+
+	formData := struct {
+		VarOne string `json:"var_one"`
+		VarTwo int    `json:"var_two"`
+	}{}
+
+	if err := response.BindFormData(&formData); err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("\nvar_one: %s", response.GetFormDataString("var_one"))
+	fmt.Printf("\nvar_two: %s", response.GetFormDataString("var_two"))
+
+	fmt.Printf("\n\n%+v", formData)
 }

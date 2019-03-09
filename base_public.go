@@ -1,6 +1,5 @@
 package web
 
-
 func (r *Base) SetHeader(name HeaderType, header []string) {
 	r.Headers[name] = header
 }

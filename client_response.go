@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -56,6 +57,114 @@ func (r *Response) Bind(i interface{}) error {
 		tmp := string(r.Body)
 		i = &tmp
 	}
+	return nil
+}
+
+func (r *Response) BindFormData(obj interface{}) error {
+	if len(r.FormData) == 0 {
+		return nil
+	}
+
+	formData := make(map[string]string)
+	for _, item := range r.FormData {
+		if item.IsAttachment {
+			continue
+		}
+
+		formData[item.Name] = string(item.Body)
+	}
+
+	return readFormData(reflect.ValueOf(obj), formData)
+}
+
+func readFormData(obj reflect.Value, formData map[string]string) error {
+	types := reflect.TypeOf(obj)
+
+	if !obj.CanInterface() {
+		return nil
+	}
+
+	if obj.Kind() == reflect.Ptr && !obj.IsNil() {
+		obj = obj.Elem()
+
+		if obj.IsValid() {
+			types = obj.Type()
+		} else {
+			return nil
+		}
+	}
+
+	switch obj.Kind() {
+	case reflect.Struct:
+		for i := 0; i < types.NumField(); i++ {
+			nextValue := obj.Field(i)
+			nextType := types.Field(i)
+
+			if nextValue.Kind() == reflect.Ptr && !nextValue.IsNil() {
+				nextValue = nextValue.Elem()
+			}
+
+			if !nextValue.CanInterface() {
+				continue
+			}
+
+			var tagName string
+			jsonName, exists := nextType.Tag.Lookup("json")
+			if exists {
+				tagName = strings.SplitN(jsonName, ",", 2)[0]
+			}
+
+			if value, ok := formData[tagName]; ok {
+				if err := setValue(nextValue.Kind(), nextValue, value); err != nil {
+					return err
+				}
+			}
+
+			if err := readFormData(nextValue, formData); err != nil {
+				return err
+			}
+		}
+
+	case reflect.Array, reflect.Slice:
+		for i := 0; i < obj.Len(); i++ {
+			nextValue := obj.Index(i)
+
+			if !nextValue.CanInterface() {
+				continue
+			}
+
+			if err := readFormData(nextValue, formData); err != nil {
+				return err
+			}
+		}
+	case reflect.Map:
+
+	default:
+		// do nothing ...
+	}
+	return nil
+}
+
+func setValue(kind reflect.Kind, obj reflect.Value, newValue string) error {
+
+	if !obj.CanAddr() {
+		return nil
+	}
+
+	switch kind {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		v, _ := strconv.Atoi(newValue)
+		obj.SetInt(int64(v))
+	case reflect.Float32, reflect.Float64:
+		v, _ := strconv.ParseFloat(newValue, 64)
+		obj.SetFloat(v)
+	case reflect.String:
+		obj.SetString(newValue)
+	case reflect.Bool:
+		v, _ := strconv.ParseBool(newValue)
+		obj.SetBool(v)
+	}
+
 	return nil
 }
 
@@ -203,19 +312,22 @@ func (r *Response) handleBoundary(reader *bufio.Reader) error {
 			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
 			line, err = reader.ReadSlice('\n')
 
-			if !data.IsAttachment {
-				if line[len(line)-1] == '\n' {
-					drop := 1
-					if len(line) > 1 && line[len(line)-2] == '\r' {
-						drop = 2
-					}
-					line = line[:len(line)-drop]
-				}
-			}
+			if !bytes.HasPrefix(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) { // here we dont have a new line
 
-			if err != nil {
-				data.Body = formDataBody.Bytes()
-				return err
+				if !data.IsAttachment {
+					if line[len(line)-1] == '\n' {
+						drop := 1
+						if len(line) > 1 && line[len(line)-2] == '\r' {
+							drop = 2
+						}
+						line = line[:len(line)-drop]
+					}
+				}
+
+				if err != nil {
+					data.Body = formDataBody.Bytes()
+					return err
+				}
 			}
 
 			// is another boundary ?

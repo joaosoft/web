@@ -118,10 +118,25 @@ func (r *Request) build() ([]byte, error) {
 			}
 		}
 	} else {
-		if body, err := r.handleBody(); err != nil {
-			return nil, err
-		} else {
-			buf.Write(body)
+		switch r.ContentType {
+		case ContentTypeMultipartFormData, ContentTypeMultipartMixed:
+			if body, err := r.handleBoundaries(); err != nil {
+				return nil, err
+			} else {
+				buf.Write(body)
+			}
+		case ContentTypeApplicationForm:
+			if urlForm, err := r.handleUrlForm(); err != nil {
+				return nil, err
+			} else {
+				buf.Write(urlForm)
+			}
+		default:
+			if body, err := r.handleBody(); err != nil {
+				return nil, err
+			} else {
+				buf.Write(body)
+			}
 		}
 	}
 
@@ -204,6 +219,27 @@ func (r *Request) handleBody() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func (r *Request) handleUrlForm() ([]byte, error) {
+	var buf bytes.Buffer
+
+	lenI := len(r.FormData)
+	i := 0
+	for _, formData := range r.FormData {
+		if formData.IsAttachment {
+			continue
+		}
+
+		buf.WriteString(fmt.Sprintf("%s=%s", formData.Name, string(formData.Body)))
+
+		if i < lenI-1 {
+			buf.WriteString("&")
+		}
+		i++
+	}
+
+	return buf.Bytes(), nil
+}
+
 func (r *Request) handleSingleAttachment() ([]byte, error) {
 	for _, attachment := range r.FormData {
 		return attachment.Body, nil
@@ -214,18 +250,22 @@ func (r *Request) handleSingleAttachment() ([]byte, error) {
 func (r *Request) handleBoundaries() ([]byte, error) {
 	var buf bytes.Buffer
 
-	bufFormData, err := r.handleFormData()
-	if err != nil {
-		return buf.Bytes(), err
-	}
-	buf.Write(bufFormData)
-
-	if r.MultiAttachmentMode != MultiAttachmentModeZip {
-		bufAttachments, err := r.handleAttachments()
+	switch r.ContentType {
+	case ContentTypeMultipartFormData, ContentTypeMultipartMixed:
+		bufFormData, err := r.handleFormData()
 		if err != nil {
 			return buf.Bytes(), err
 		}
-		buf.Write(bufAttachments)
+		buf.Write(bufFormData)
+
+	default:
+		if r.MultiAttachmentMode != MultiAttachmentModeZip {
+			bufAttachments, err := r.handleAttachments()
+			if err != nil {
+				return buf.Bytes(), err
+			}
+			buf.Write(bufAttachments)
+		}
 	}
 
 	buf.WriteString(fmt.Sprintf("\r\n--%s--", r.Boundary))
@@ -236,12 +276,19 @@ func (r *Request) handleBoundaries() ([]byte, error) {
 func (r *Request) handleFormData() ([]byte, error) {
 	var buf bytes.Buffer
 
+	lenF := len(r.FormData)
+	i := 0
+
 	for _, formData := range r.FormData {
 		buf.WriteString(fmt.Sprintf("--%s\r\n", r.Boundary))
 		buf.WriteString(fmt.Sprintf("%s: %s; name=%q\r\n", HeaderContentDisposition, formData.ContentDisposition, formData.Name))
 		buf.WriteString(fmt.Sprintf("%s: %s\r\n\r\n", HeaderContentType, formData.ContentType))
 		buf.Write(formData.Body)
-		buf.WriteString("\r\n")
+
+		if i < lenF-1 {
+			buf.WriteString("\r\n")
+		}
+		i++
 	}
 
 	return buf.Bytes(), nil

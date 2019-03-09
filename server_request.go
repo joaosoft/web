@@ -35,22 +35,6 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 	return request, request.read()
 }
 
-func (r *Request) GetFormDataBytes(name string) []byte {
-	if value, ok := r.FormData[name]; ok {
-		return value.Body
-	}
-
-	return nil
-}
-
-func (r *Request) GetFormDataString(name string) string {
-	if value, ok := r.FormData[name]; ok {
-		return string(value.Body)
-	}
-
-	return ""
-}
-
 func (r *Request) Bind(i interface{}) error {
 	contentType := r.GetContentType()
 
@@ -92,9 +76,17 @@ func (r *Request) read() error {
 		r.handleBoundary(reader)
 	} else {
 		// body
-		if err := r.readBody(reader); err != nil {
-			return err
+		switch r.ContentType {
+		case ContentTypeApplicationForm:
+			if err := r.readUrlForm(reader); err != nil {
+				return err
+			}
+		default:
+			if err := r.readBody(reader); err != nil {
+				return err
+			}
 		}
+
 	}
 
 	return nil
@@ -161,7 +153,6 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 }
 
 func (r *Request) handleBoundary(reader *bufio.Reader) error {
-
 	// read next line
 	r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
 	line, _, err := reader.ReadLine()
@@ -211,19 +202,22 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
 			line, err = reader.ReadSlice('\n')
 
-			if !data.IsAttachment {
-				if line[len(line)-1] == '\n' {
-					drop := 1
-					if len(line) > 1 && line[len(line)-2] == '\r' {
-						drop = 2
-					}
-					line = line[:len(line)-drop]
-				}
-			}
+			if !bytes.HasPrefix(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) { // here we dont have a new line
 
-			if err != nil {
-				data.Body = formDataBody.Bytes()
-				return err
+				if !data.IsAttachment {
+					if line[len(line)-1] == '\n' {
+						drop := 1
+						if len(line) > 1 && line[len(line)-2] == '\r' {
+							drop = 2
+						}
+						line = line[:len(line)-drop]
+					}
+				}
+
+				if err != nil {
+					data.Body = formDataBody.Bytes()
+					return err
+				}
 			}
 
 			// is another boundary ?
@@ -276,6 +270,39 @@ func (r *Request) readBody(reader *bufio.Reader) error {
 		buf.Write(line)
 	}
 	r.Body = buf.Bytes()
+
+	return nil
+}
+
+func (r *Request) readUrlForm(reader *bufio.Reader) error {
+	var buf bytes.Buffer
+	for {
+		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
+		line, _, err := reader.ReadLine()
+		if err != nil {
+			break
+		}
+
+		buf.Write(line)
+	}
+
+	variables := bytes.Split(buf.Bytes(), []byte("&"))
+	for _, variable := range variables {
+
+		keyValues := bytes.Split(variable, []byte("="))
+		lenKeyValues := len(keyValues)
+
+		for i := 0; i < lenKeyValues; i += 2 {
+
+			name := string(keyValues[0])
+			r.FormData[name] = &FormData{
+				&Data{
+					Name: name,
+					Body: keyValues[1],
+				},
+			}
+		}
+	}
 
 	return nil
 }

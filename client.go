@@ -82,7 +82,6 @@ func (c *Client) Send(request *Request) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	defer conn.Close()
 	conn.Write(body)
 

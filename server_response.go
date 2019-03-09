@@ -156,12 +156,24 @@ func (r *Response) handleBoundaryAttachments() ([]byte, error) {
 		return buf.Bytes(), nil
 	}
 
-	for _, attachment := range r.FormData {
+	lenF := len(r.FormData)
+	i := 0
+
+	for _, formData := range r.FormData {
 		buf.WriteString(fmt.Sprintf("--%s\r\n", r.Boundary))
-		buf.WriteString(fmt.Sprintf("%s: %s; name=%q; filename=%q\r\n", HeaderContentDisposition, attachment.ContentDisposition, attachment.Name, attachment.FileName))
-		buf.WriteString(fmt.Sprintf("%s: %s\r\n\r\n", HeaderContentType, attachment.ContentType))
-		buf.Write(attachment.Body)
-		buf.WriteString("\r\n")
+		if formData.IsAttachment {
+			buf.WriteString(fmt.Sprintf("%s: %s; name=%q; filename=%q\r\n", HeaderContentDisposition, formData.ContentDisposition, formData.Name, formData.FileName))
+		} else {
+			buf.WriteString(fmt.Sprintf("%s: %s; name=%q\r\n", HeaderContentDisposition, formData.ContentDisposition, formData.Name))
+
+		}
+		buf.WriteString(fmt.Sprintf("%s: %s\r\n\r\n", HeaderContentType, formData.ContentType))
+		buf.Write(formData.Body)
+
+		if i < lenF-1 {
+			buf.WriteString("\r\n")
+		}
+		i++
 	}
 
 	buf.WriteString(fmt.Sprintf("\r\n--%s--", r.Boundary))

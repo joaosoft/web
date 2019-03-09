@@ -151,3 +151,32 @@ func (r *Response) NoContent(status Status) error {
 	r.Status = status
 	return nil
 }
+
+func (r *Response) SetFormData(name string, value string) {
+	r.FormData[name] = &FormData{
+		Data: &Data{
+			ContentDisposition: ContentDispositionFormData,
+			ContentType:        ContentTypeTextPlain,
+			Charset:            CharsetUTF8,
+			Name:               name,
+			Body:               []byte(value),
+			IsAttachment:       false,
+		},
+	}
+}
+
+func (r *Response) GetFormDataBytes(name string) []byte {
+	if value, ok := r.FormData[name]; ok {
+		return value.Body
+	}
+
+	return nil
+}
+
+func (r *Response) GetFormDataString(name string) string {
+	if value, ok := r.FormData[name]; ok {
+		return string(value.Body)
+	}
+
+	return ""
+}
