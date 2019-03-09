@@ -25,6 +25,7 @@ func main() {
 	requestOptionsNotFound(c)
 
 	bindFormData(c)
+	bindUrlFormData(c)
 }
 
 func requestGet(c *web.Client) {
@@ -159,5 +160,34 @@ func bindFormData(c *web.Client) {
 	fmt.Printf("\nvar_one: %s", response.GetFormDataString("var_one"))
 	fmt.Printf("\nvar_two: %s", response.GetFormDataString("var_two"))
 
-	fmt.Printf("\n\n%+v", formData)
+	fmt.Printf("\n\nFORM DATA: %+v\n", formData)
+}
+
+func bindUrlFormData(c *web.Client) {
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/url-form-data")
+	if err != nil {
+		panic(err)
+	}
+
+	request.SetFormData("var_one", "one")
+	request.SetFormData("var_two", "2")
+
+	response, err := request.WithContentType(web.ContentTypeApplicationForm).Send()
+	if err != nil {
+		panic(err)
+	}
+
+	formData := struct {
+		VarOne string `json:"var_one"`
+		VarTwo int    `json:"var_two"`
+	}{}
+
+	if err := response.BindFormData(&formData); err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("\nvar_one: %s", response.GetFormDataString("var_one"))
+	fmt.Printf("\nvar_two: %s", response.GetFormDataString("var_two"))
+
+	fmt.Printf("\n\nURL FORM DATA: %+v\n", formData)
 }

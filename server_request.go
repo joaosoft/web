@@ -204,6 +204,11 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 
 			if !bytes.HasPrefix(line, []byte(fmt.Sprintf("--%s--", r.Boundary))) { // here we dont have a new line
 
+				if err != nil {
+					data.Body = formDataBody.Bytes()
+					return err
+				}
+
 				if !data.IsAttachment {
 					if line[len(line)-1] == '\n' {
 						drop := 1
@@ -212,11 +217,6 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 						}
 						line = line[:len(line)-drop]
 					}
-				}
-
-				if err != nil {
-					data.Body = formDataBody.Bytes()
-					return err
 				}
 			}
 

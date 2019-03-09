@@ -56,6 +56,7 @@ func main() {
 		web.NewRoute(web.MethodGet, "/hello/:name/download/one", HandlerHelloForDownloadOneFile),
 		web.NewRoute(web.MethodPost, "/hello/:name/upload", HandlerHelloForUploadFiles),
 		web.NewRoute(web.MethodGet, "/form-data", HandlerFormDataForGet),
+		web.NewRoute(web.MethodGet, "/url-form-data", HandlerUrlFormDataForGet),
 	)
 
 	w.AddNamespace("/p").AddRoutes(
@@ -316,6 +317,23 @@ func HandlerHelloForUploadFiles(ctx *web.Context) error {
 
 func HandlerFormDataForGet(ctx *web.Context) error {
 	fmt.Println("HANDLING FORM DATA FOR GET")
+
+	fmt.Printf("\nreceived")
+	fmt.Printf("\nvar_one: %s", ctx.Request.GetFormDataString("var_one"))
+	fmt.Printf("\nvar_two: %s", ctx.Request.GetFormDataString("var_two"))
+
+	ctx.Response.SetFormData("var_one", "one")
+	ctx.Response.SetFormData("var_two", "2")
+
+	return ctx.Response.Bytes(
+		web.StatusOK,
+		web.ContentTypeApplicationJSON,
+		[]byte("{ \"welcome\": \"form-data\" }"),
+	)
+}
+
+func HandlerUrlFormDataForGet(ctx *web.Context) error {
+	fmt.Println("HANDLING URL FORM DATA FOR GET")
 
 	fmt.Printf("\nreceived")
 	fmt.Printf("\nvar_one: %s", ctx.Request.GetFormDataString("var_one"))
