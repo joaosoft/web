@@ -292,3 +292,7 @@ func (w *Server) LoadUrlParms(request *Request, route *Route) error {
 
 	return nil
 }
+
+func (w *Server) GetAddress() string {
+	return w.address
+}
