@@ -1,11 +1,13 @@
 package web
 
-func (r *Base) SetHeader(name HeaderType, header []string) {
-	r.Headers[name] = header
+import "strings"
+
+func (r *Base) SetHeader(name string, header []string) {
+	r.Headers[strings.Title(name)] = header
 }
 
-func (r *Base) GetHeader(name HeaderType) string {
-	if header, ok := r.Headers[name]; ok {
+func (r *Base) GetHeader(name string) string {
+	if header, ok := r.Headers[strings.Title(name)]; ok {
 		return header[0]
 	}
 	return ""
@@ -16,7 +18,7 @@ func (r *Base) SetContentType(contentType ContentType) {
 }
 
 func (r *Base) GetContentType() *ContentType {
-	if value, ok := r.Headers[HeaderContentType]; ok {
+	if value, ok := r.Headers[string(HeaderContentType)]; ok {
 		contentType := ContentType(value[0])
 		return &contentType
 	}

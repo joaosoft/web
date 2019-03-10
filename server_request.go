@@ -144,7 +144,7 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 				}
 				fallthrough
 			default:
-				r.Headers[HeaderType(strings.Title(string(split[0])))] = []string{string(bytes.TrimSpace(split[1]))}
+				r.Headers[strings.Title(string(split[0]))] = []string{string(bytes.TrimSpace(split[1]))}
 			}
 		}
 	}

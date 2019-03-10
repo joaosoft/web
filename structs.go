@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type Headers map[HeaderType][]string
+type Headers map[string][]string
 
 type Cookie struct {
 	Name    string
