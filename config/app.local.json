@@ -1,6 +1,6 @@
 {
   "server": {
-    "port": ":9001",
+    "address": ":9001",
     "log": {
       "level": "debug"
     }
