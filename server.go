@@ -116,6 +116,12 @@ func (w *Server) Start() error {
 		w.logger.Errorf("error connecting to %s: %s", w.address, err)
 		return err
 	}
+
+	if w.address == ":0" {
+		split := strings.Split(w.listener.Addr().String(), ":")
+		w.address = split[len(split)-1]
+	}
+
 	fmt.Println(color.WithColor("http Server started on [%s]", color.FormatBold, color.ForegroundRed, color.BackgroundBlack, w.address))
 
 	for {
