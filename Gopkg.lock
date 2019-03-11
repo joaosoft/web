@@ -8,7 +8,7 @@
     "basic",
     "jwt"
   ]
-  revision = "a5e4749b30937cfb0b6216037870f3ebee06dd99"
+  revision = "c69fd62ab4415c9c103eb2173d7eccb44c6b20fb"
 
 [[projects]]
   branch = "master"
@@ -20,13 +20,13 @@
   branch = "master"
   name = "github.com/joaosoft/errors"
   packages = ["."]
-  revision = "dd98851e0d4f418b451d921259cfee63f93864dc"
+  revision = "595507b0a4a675ff2b92ad6f8884f74a36a07df2"
 
 [[projects]]
   branch = "master"
   name = "github.com/joaosoft/logger"
   packages = ["."]
-  revision = "3cb37169f05a408eca80c27e648861849c1d8449"
+  revision = "183bd5151e65d920b053ec1d7c3149a69dceefaf"
 
 [[projects]]
   branch = "master"
