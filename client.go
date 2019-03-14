@@ -3,7 +3,6 @@ package web
 import (
 	"fmt"
 	"net"
-	"regexp"
 	"time"
 
 	"github.com/joaosoft/color"
@@ -57,12 +56,6 @@ func (r *Request) Send() (*Response, error) {
 
 func (c *Client) Send(request *Request) (*Response, error) {
 	startTime := time.Now()
-	regx := regexp.MustCompile(RegexForHost)
-	split := regx.FindStringSubmatch(request.Address.Url)
-	if len(split) == 0 {
-		return nil, fmt.Errorf("invalid url [%s]", split[0])
-	}
-
 	fmt.Println(color.WithColor("[IN] Method[%s] Url[%s] on Start[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, request.Method, request.Address.Url, startTime))
 
 	if c.logger.IsDebugEnabled() {
@@ -71,9 +64,14 @@ func (c *Client) Send(request *Request) (*Response, error) {
 		}
 	}
 
-	c.logger.Debugf("executing [%s] request to [%s]", request.Method, split[0])
+	c.logger.Debugf("executing [%s] request to [%s]", request.Method, request.Address.Full)
 
-	conn, err := c.dialer.Dial("tcp", split[0])
+	address := request.Address.Host
+	if request.Address.Schema != "" {
+		address += fmt.Sprintf(":%s", request.Address.Schema)
+	}
+
+	conn, err := c.dialer.Dial("tcp", address)
 	if err != nil {
 		return nil, err
 	}

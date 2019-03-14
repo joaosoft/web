@@ -6,5 +6,4 @@ const (
 	ANSIC      = "Mon Jan _2 15:04:05 2006"
 
 	RegexForURL  = "^((http|https)://)?(www)?[a-zA-Z0-9-._:/?&=,]+$"
-	RegexForHost = "^((http|https)://)?(www)?[a-zA-Z0-9-._:]+"
 )
