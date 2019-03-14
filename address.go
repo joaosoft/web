@@ -29,16 +29,16 @@ func NewAddress(url string) *Address {
 	}
 
 	split = strings.SplitN(tmp, "/", 2)
-	host = fmt.Sprintf("/%s", split[0]) // host
+	host = split[0] // host
 
 	if len(split) == 2 {
 		tmp = split[1]
-		url = tmp // url
+		url = fmt.Sprintf("/%s", tmp) // url
 	}
 
 	// load query parameters
 	if split := strings.SplitN(tmp, "?", 2); len(split) > 1 {
-		url = fmt.Sprintf("/%s", split[0]) // host
+		url = fmt.Sprintf("/%s", split[0]) // url
 		if parms := strings.Split(split[1], "&"); len(parms) > 0 {
 			for _, parm := range parms {
 				if p := strings.Split(parm, "="); len(p) > 1 {
