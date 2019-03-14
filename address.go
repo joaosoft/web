@@ -1,6 +1,9 @@
 package web
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Params map[string][]string
 
@@ -26,7 +29,7 @@ func NewAddress(url string) *Address {
 	}
 
 	split = strings.SplitN(tmp, "/", 2)
-	host = split[0] // host
+	host = fmt.Sprintf("/%s", split[0]) // host
 
 	if len(split) == 2 {
 		tmp = split[1]
@@ -35,7 +38,7 @@ func NewAddress(url string) *Address {
 
 	// load query parameters
 	if split := strings.SplitN(tmp, "?", 2); len(split) > 1 {
-		url = string(split[0]) // url
+		url = fmt.Sprintf("/%s", split[0]) // host
 		if parms := strings.Split(split[1], "&"); len(parms) > 0 {
 			for _, parm := range parms {
 				if p := strings.Split(parm, "="); len(p) > 1 {
