@@ -19,7 +19,7 @@ func NewAddress(url string) *Address {
 	tmp = url
 	full = tmp // full
 
-	split := strings.SplitN(tmp, "//", 2)
+	split := strings.SplitN(tmp, "://", 2)
 	if len(split) == 2 {
 		schema = split[0] // schema
 		tmp = split[1]
