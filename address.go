@@ -30,6 +30,7 @@ func NewAddress(url string) *Address {
 
 	if len(split) == 2 {
 		tmp = split[1]
+		url = tmp // url
 	}
 
 	// load query parameters
