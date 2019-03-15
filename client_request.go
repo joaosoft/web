@@ -154,7 +154,6 @@ func (r *Request) handleHeaders() ([]byte, error) {
 	if _, ok := r.Headers[HeaderUserAgent]; !ok {
 		r.Headers[HeaderUserAgent] = []string{"client"}
 	}
-	r.Headers[HeaderHost] = []string{r.Address.Host}
 	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
 
 	if lenFormData > 0 {
