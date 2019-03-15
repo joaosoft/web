@@ -3,7 +3,6 @@ package web
 import (
 	"fmt"
 	"strings"
-	"net/url"
 )
 
 type Params map[string][]string
@@ -17,11 +16,11 @@ type Address struct {
 	Params    Params
 }
 
-func NewAddress(addr string) *Address {
+func NewAddress(url string) *Address {
 	var tmp, full, schema, host, paramsUrl string
 	var params = make(Params)
 
-	tmp = url.QueryEscape(addr)
+	tmp = url
 	full = tmp // full
 
 	split := strings.SplitN(tmp, "://", 2)
@@ -35,13 +34,13 @@ func NewAddress(addr string) *Address {
 
 	if len(split) == 2 {
 		tmp = split[1]
-		addr = fmt.Sprintf("/%s", tmp) // url
+		url = fmt.Sprintf("/%s", tmp) // url
 	}
 
 	// load query parameters
 	paramsUrl = fmt.Sprintf("/%s", tmp) // params url
 	if split := strings.SplitN(tmp, "?", 2); len(split) > 1 {
-		addr = fmt.Sprintf("/%s", split[0]) // url
+		url = fmt.Sprintf("/%s", split[0]) // url
 		if parms := strings.Split(split[1], "&"); len(parms) > 0 {
 			for _, parm := range parms {
 				if p := strings.Split(parm, "="); len(p) > 1 {
@@ -60,7 +59,7 @@ func NewAddress(addr string) *Address {
 		Full:      full,
 		Schema:    Schema(schema),
 		Host:      host,
-		Url:       addr,
+		Url:       url,
 		ParamsUrl: paramsUrl,
 		Params:    params,
 	}
