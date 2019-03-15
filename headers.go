@@ -32,6 +32,7 @@ const (
 	HeaderDate                = "Date"
 	HeaderHost                = "Host"
 	HeaderMimeVersion         = "MIME-Version"
+	HeaderUserAgent           = "User-Agent"
 
 	// Access control
 	HeaderAccessControlRequestMethod    = "Access-Control-Request-Method"

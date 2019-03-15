@@ -150,8 +150,10 @@ func (r *Request) handleHeaders() ([]byte, error) {
 	buf.WriteString(fmt.Sprintf("%s %s %s\r\n", r.Method, r.Address.ParamsUrl, r.Protocol))
 
 	// headers
-	r.Headers["Host"] = []string{r.Address.Host}
-	r.Headers[HeaderServer] = []string{"Client"}
+	r.Headers[HeaderHost] = []string{r.Address.Host}
+	if _, ok := r.Headers[HeaderUserAgent]; !ok {
+		r.Headers[HeaderUserAgent] = []string{"client"}
+	}
 	r.Headers[HeaderHost] = []string{r.Address.Host}
 	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
 
