@@ -33,6 +33,7 @@ const (
 	HeaderHost                = "Host"
 	HeaderMimeVersion         = "MIME-Version"
 	HeaderUserAgent           = "User-Agent"
+	HeaderTransferEncoding    = "Transfer-Encoding"
 
 	// Access control
 	HeaderAccessControlRequestMethod    = "Access-Control-Request-Method"

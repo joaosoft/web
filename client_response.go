@@ -370,15 +370,44 @@ func (r *Response) handleBoundary(reader *bufio.Reader) error {
 
 func (r *Response) readBody(reader *bufio.Reader) error {
 	var buf bytes.Buffer
-	for {
-		r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
-		line, _, err := reader.ReadLine()
-		if err != nil {
-			break
-		}
+	encoding, hasEcoding := r.Headers[HeaderTransferEncoding]
+	if hasEcoding {
+		switch Encoding(encoding[0]) {
+		case EncodingChunked:
+			size := 0
 
-		buf.Write(line)
+			for {
+				r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
+				line, _, err := reader.ReadLine()
+				if err != nil {
+					break
+				}
+				size, _ = strconv.Atoi(string(line))
+				if size == 0 {
+					break
+				}
+
+				chunk := make([]byte, size)
+				_, err = reader.Read(chunk)
+				if err != nil {
+					break
+				}
+
+				buf.Write(line)
+			}
+		default:
+			for {
+				r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
+				line, _, err := reader.ReadLine()
+				if err != nil {
+					break
+				}
+
+				buf.Write(line)
+			}
+		}
 	}
+
 	r.Body = buf.Bytes()
 
 	return nil
