@@ -8,7 +8,6 @@ import (
 	"io"
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/joaosoft/auth-types/basic"
@@ -148,12 +147,7 @@ func (r *Request) handleHeaders() ([]byte, error) {
 	lenFormData := len(r.FormData)
 
 	// header
-	split := strings.SplitN(r.Address.Url, "/", 2)
-	if len(split) != 2 {
-		return nil, fmt.Errorf("invalid url [%s]", r.Address.Url)
-	}
-
-	buf.WriteString(fmt.Sprintf("%s %s %s\r\n", r.Method, fmt.Sprintf("/%s", split[1]), r.Protocol))
+	buf.WriteString(fmt.Sprintf("%s %s %s\r\n", r.Method, r.Address.Url, r.Protocol))
 
 	// headers
 	r.Headers["Host"] = []string{r.Address.Url}
