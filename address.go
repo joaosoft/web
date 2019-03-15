@@ -38,7 +38,7 @@ func NewAddress(url string) *Address {
 	}
 
 	// load query parameters
-	paramsUrl = tmp
+	paramsUrl = fmt.Sprintf("/%s", tmp) // params url
 	if split := strings.SplitN(tmp, "?", 2); len(split) > 1 {
 		url = fmt.Sprintf("/%s", split[0]) // url
 		if parms := strings.Split(split[1], "&"); len(parms) > 0 {
