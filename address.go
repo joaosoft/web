@@ -9,7 +9,7 @@ type Params map[string][]string
 
 type Address struct {
 	Full      string
-	Schema    string
+	Schema    Schema
 	Url       string
 	ParamsUrl string
 	Host      string
@@ -57,7 +57,7 @@ func NewAddress(url string) *Address {
 
 	return &Address{
 		Full:      full,
-		Schema:    schema,
+		Schema:    Schema(schema),
 		Host:      host,
 		Url:       url,
 		ParamsUrl: paramsUrl,

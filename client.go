@@ -1,6 +1,7 @@
 package web
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
 	"time"
@@ -67,14 +68,30 @@ func (c *Client) Send(request *Request) (*Response, error) {
 	c.logger.Debugf("executing [%s] request to [%s]", request.Method, request.Address.Full)
 
 	address := request.Address.Host
-	if request.Address.Schema != "" {
+	if request.Address.Schema != SchemaNone {
 		address += fmt.Sprintf(":%s", request.Address.Schema)
 	}
 
-	conn, err := c.dialer.Dial("tcp", address)
+	var conn net.Conn
+	var err error
+
+	switch request.Address.Schema {
+	case SchemaHttps:
+		conn, err = tls.Dial("tcp", address, nil)
+	default:
+		conn, err = c.dialer.Dial("tcp", address)
+	}
+
 	if err != nil {
 		return nil, err
 	}
+
+	client := tls.Client(conn, &tls.Config{})
+	err = client.Handshake()
+	if err == nil {
+		return nil, err
+	}
+	client.Close()
 
 	body, err := request.build()
 	if err != nil {
