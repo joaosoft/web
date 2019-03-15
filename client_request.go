@@ -6,7 +6,6 @@ import (
 	"compress/flate"
 	"fmt"
 	"io"
-	"regexp"
 	"strconv"
 	"time"
 
@@ -15,13 +14,6 @@ import (
 )
 
 func (c *Client) NewRequest(method Method, url string) (*Request, error) {
-
-	// validate url
-	regx := regexp.MustCompile(RegexForURL)
-	if !regx.MatchString(url) {
-		return nil, fmt.Errorf("invalid url [%s]", url)
-	}
-
 	return &Request{
 		Base: Base{
 			Client:      c,
