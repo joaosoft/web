@@ -120,7 +120,7 @@ func (r *Request) readHeaders(reader *bufio.Reader) error {
 			break
 		}
 
-		if split := bytes.SplitN(line, []byte(`:`), 2); len(split) > 0 {
+		if split := bytes.SplitN(line, []byte(`: `), 2); len(split) > 0 {
 			switch string(bytes.TrimSpace(bytes.Title(split[0]))) {
 			case "Cookie":
 				var cookieValue string
@@ -165,7 +165,7 @@ func (r *Request) handleBoundary(reader *bufio.Reader) error {
 		formDataBody := bytes.NewBuffer(nil)
 
 		for {
-			content := bytes.SplitN(line, []byte(`:`), 2)
+			content := bytes.SplitN(line, []byte(`: `), 2)
 			switch string(bytes.Title(bytes.TrimSpace(content[0]))) {
 			case "Content-Type":
 				bytes.Split(content[1], []byte(`;`))
