@@ -5,7 +5,8 @@ import (
 )
 
 var (
-	ErrorNotFound = NewError(StatusNotFound, "route not found")
+	ErrorNotFound     = NewError(StatusNotFound, "route not found")
+	ErrorInvalidChunk = NewError(StatusNotFound, "invalid chunk length")
 )
 
 type Error struct {

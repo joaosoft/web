@@ -374,8 +374,7 @@ func (r *Response) readBody(reader *bufio.Reader) error {
 	if hasEcoding {
 		switch Encoding(encoding[0]) {
 		case EncodingChunked:
-			size := 0
-			encoder := encoderHexadecimal{}
+			var size uint64
 
 			for {
 				r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
@@ -384,12 +383,7 @@ func (r *Response) readBody(reader *bufio.Reader) error {
 					break
 				}
 
-				lineDecoded, err := encoder.Decode(line)
-				if err != nil {
-					return err
-				}
-
-				size, _ = strconv.Atoi(string(lineDecoded))
+				size, _ = parseHexUint(line)
 				if size == 0 {
 					break
 				}
@@ -400,7 +394,7 @@ func (r *Response) readBody(reader *bufio.Reader) error {
 					break
 				}
 
-				buf.Write(line)
+				buf.Write(chunk)
 			}
 		default:
 			for {
