@@ -86,13 +86,6 @@ func (c *Client) Send(request *Request) (*Response, error) {
 		return nil, err
 	}
 
-	client := tls.Client(conn, &tls.Config{})
-	err = client.Handshake()
-	if err == nil {
-		return nil, err
-	}
-	client.Close()
-
 	body, err := request.build()
 	if err != nil {
 		return nil, err
