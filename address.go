@@ -8,15 +8,16 @@ import (
 type Params map[string][]string
 
 type Address struct {
-	Full   string
-	Schema string
-	Url    string
-	Host   string
-	Params Params
+	Full      string
+	Schema    string
+	Url       string
+	ParamsUrl string
+	Host      string
+	Params    Params
 }
 
 func NewAddress(url string) *Address {
-	var tmp, full, schema, host string
+	var tmp, full, schema, host, paramsUrl string
 	var params = make(Params)
 
 	tmp = url
@@ -37,6 +38,7 @@ func NewAddress(url string) *Address {
 	}
 
 	// load query parameters
+	paramsUrl = tmp
 	if split := strings.SplitN(tmp, "?", 2); len(split) > 1 {
 		url = fmt.Sprintf("/%s", split[0]) // url
 		if parms := strings.Split(split[1], "&"); len(parms) > 0 {
@@ -54,10 +56,11 @@ func NewAddress(url string) *Address {
 	}
 
 	return &Address{
-		Full:   full,
-		Schema: schema,
-		Host:   host,
-		Url:    url,
-		Params: params,
+		Full:      full,
+		Schema:    schema,
+		Host:      host,
+		Url:       url,
+		ParamsUrl: paramsUrl,
+		Params:    params,
 	}
 }

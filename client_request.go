@@ -147,10 +147,10 @@ func (r *Request) handleHeaders() ([]byte, error) {
 	lenFormData := len(r.FormData)
 
 	// header
-	buf.WriteString(fmt.Sprintf("%s %s %s\r\n", r.Method, r.Address.Url, r.Protocol))
+	buf.WriteString(fmt.Sprintf("%s %s %s\r\n", r.Method, r.Address.ParamsUrl, r.Protocol))
 
 	// headers
-	r.Headers["Host"] = []string{r.Address.Url}
+	r.Headers["Host"] = []string{r.Address.Host}
 	r.Headers[HeaderServer] = []string{"Client"}
 	r.Headers[HeaderHost] = []string{r.Address.Host}
 	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
