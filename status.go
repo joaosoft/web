@@ -103,7 +103,7 @@ var statusText = map[Status]string{
 	StatusNotFound:                     "Not Found",
 	StatusMethodNotAllowed:             "Method Not Allowed",
 	StatusNotAcceptable:                "Not Acceptable",
-	StatusProxyAuthRequired:            "Proxy Session Required",
+	StatusProxyAuthRequired:            "Proxy Messenger Required",
 	StatusRequestTimeout:               "Request Timeout",
 	StatusConflict:                     "Conflict",
 	StatusGone:                         "Gone",
@@ -134,7 +134,7 @@ var statusText = map[Status]string{
 	StatusInsufficientStorage:           "Insufficient Storage",
 	StatusLoopDetected:                  "Loop Detected",
 	StatusNotExtended:                   "Not Extended",
-	StatusNetworkAuthenticationRequired: "Network Session Required",
+	StatusNetworkAuthenticationRequired: "Network Messenger Required",
 }
 
 // StatusText returns a text for the HTTP status code. It returns the empty

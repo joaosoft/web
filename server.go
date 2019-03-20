@@ -257,8 +257,8 @@ func (w *Server) Stop() error {
 
 func ConvertPathToRegex(path string) string {
 
-	var re = regexp.MustCompile(`:[a-zA-Z0-9\-_.]+`)
-	regx := re.ReplaceAllString(path, `[a-zA-Z0-9-_.]+`)
+	var re = regexp.MustCompile(`:[a-zA-Z0-9\-_.:]+`)
+	regx := re.ReplaceAllString(path, `[a-zA-Z0-9-_.:]+`)
 	regx = strings.Replace(regx, "*", "(.+)", -1)
 
 	return fmt.Sprintf("^%s$", regx)

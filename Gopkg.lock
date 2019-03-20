@@ -32,7 +32,7 @@
   branch = "master"
   name = "github.com/joaosoft/writers"
   packages = ["."]
-  revision = "e7f81b49284c35354b23b3ce8fe113dd9552a0b7"
+  revision = "310c8522699ddd9cbcaac2d0eca833c2afc1c037"
 
 [[projects]]
   branch = "master"
