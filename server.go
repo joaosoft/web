@@ -102,6 +102,10 @@ func (n *Namespace) AddRoutes(route ...Route) error {
 	return nil
 }
 
+func (n *Namespace) AddRoute(method Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
+	return n.WebServer.AddRoute(method, fmt.Sprintf("%s%s", path, path), handler, append(middleware, n.Middlewares...)...)
+}
+
 func (w *Server) SetErrorHandler(handler ErrorHandler) error {
 	w.errorhandler = handler
 	return nil
