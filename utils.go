@@ -205,3 +205,10 @@ func GetFreePort() (int, error) {
 	defer l.Close()
 	return l.Addr().(*net.TCPAddr).Port, nil
 }
+
+func reflectAlloc(typ reflect.Type) reflect.Value {
+	if typ.Kind() == reflect.Ptr {
+		return reflect.New(typ.Elem())
+	}
+	return reflect.New(typ).Elem()
+}
