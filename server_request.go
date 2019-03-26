@@ -126,6 +126,7 @@ func (r *Request) readHeader(reader *bufio.Reader) error {
 		r.Method = Method(firstLine[0])
 		r.Address = NewAddress(string(firstLine[1]))
 		r.Protocol = Protocol(firstLine[2])
+		r.Params = r.Address.Params
 	}
 
 	return nil

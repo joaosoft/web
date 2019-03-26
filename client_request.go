@@ -22,15 +22,18 @@ func (c *Client) NewRequest(method Method, url string) (*Request, error) {
 		return nil, fmt.Errorf("invalid url [%s]", url)
 	}
 
+	address := NewAddress(url)
+	params := address.Params
+
 	return &Request{
 		Base: Base{
 			Client:      c,
 			Protocol:    ProtocolHttp1p1,
 			Method:      method,
-			Address:     NewAddress(url),
+			Address:     address,
 			Headers:     make(Headers),
 			Cookies:     make(Cookies),
-			Params:      make(Params),
+			Params:      params,
 			UrlParams:   make(UrlParams),
 			Charset:     CharsetUTF8,
 			ContentType: ContentTypeApplicationJSON,
