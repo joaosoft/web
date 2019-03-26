@@ -65,19 +65,45 @@ func (r *Response) BindFormData(obj interface{}) error {
 		return nil
 	}
 
-	formData := make(map[string]string)
+	data := make(map[string]string)
 	for _, item := range r.FormData {
 		if item.IsAttachment {
 			continue
 		}
 
-		formData[item.Name] = string(item.Body)
+		data[item.Name] = string(item.Body)
 	}
 
-	return readFormData(reflect.ValueOf(obj), formData)
+	return readData(reflect.ValueOf(obj), data)
 }
 
-func readFormData(obj reflect.Value, formData map[string]string) error {
+func (r *Response) BindParams(obj interface{}) error {
+	if len(r.Params) == 0 {
+		return nil
+	}
+
+	data := make(map[string]string)
+	for name, values := range r.Params {
+		data[name] = values[0]
+	}
+
+	return readData(reflect.ValueOf(obj), data)
+}
+
+func (r *Response) BindUrlParams(obj interface{}) error {
+	if len(r.UrlParams) == 0 {
+		return nil
+	}
+
+	data := make(map[string]string)
+	for name, values := range r.UrlParams {
+		data[name] = values[0]
+	}
+
+	return readData(reflect.ValueOf(obj), data)
+}
+
+func readData(obj reflect.Value, data map[string]string) error {
 	types := reflect.TypeOf(obj)
 
 	if !obj.CanInterface() {
@@ -114,13 +140,13 @@ func readFormData(obj reflect.Value, formData map[string]string) error {
 				tagName = strings.SplitN(jsonName, ",", 2)[0]
 			}
 
-			if value, ok := formData[tagName]; ok {
+			if value, ok := data[tagName]; ok {
 				if err := setValue(nextValue.Kind(), nextValue, value); err != nil {
 					return err
 				}
 			}
 
-			if err := readFormData(nextValue, formData); err != nil {
+			if err := readData(nextValue, data); err != nil {
 				return err
 			}
 		}
@@ -133,7 +159,7 @@ func readFormData(obj reflect.Value, formData map[string]string) error {
 				continue
 			}
 
-			if err := readFormData(nextValue, formData); err != nil {
+			if err := readData(nextValue, data); err != nil {
 				return err
 			}
 		}
