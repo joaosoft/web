@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"strings"
 
 	"io"
 
@@ -211,4 +212,91 @@ func reflectAlloc(typ reflect.Type) reflect.Value {
 		return reflect.New(typ.Elem())
 	}
 	return reflect.New(typ).Elem()
+}
+
+func readData(obj reflect.Value, data map[string]string) error {
+	types := reflect.TypeOf(obj.Interface())
+
+	if !obj.CanInterface() {
+		return nil
+	}
+
+	if obj.Kind() == reflect.Ptr && !obj.IsNil() {
+		obj = obj.Elem()
+
+		if obj.IsValid() {
+			types = obj.Type()
+		} else {
+			return nil
+		}
+	}
+
+	switch obj.Kind() {
+	case reflect.Struct:
+		for i := 0; i < types.NumField(); i++ {
+			nextValue := obj.Field(i)
+			nextType := types.Field(i)
+
+			if nextValue.Kind() == reflect.Ptr {
+				if !nextValue.IsNil() {
+					nextValue = nextValue.Elem()
+				} else {
+					isSlice := nextValue.Kind() == reflect.Slice
+					isMap := nextValue.Kind() == reflect.Map
+					isMapOfSlices := isMap && nextValue.Type().Elem().Kind() == reflect.Slice
+
+					if isMapOfSlices {
+						nextValue = reflectAlloc(nextValue.Type().Elem().Elem())
+					} else if isSlice || isMap {
+						nextValue = reflectAlloc(nextValue.Type().Elem())
+					} else {
+						nextValue = reflectAlloc(nextValue.Type())
+					}
+				}
+			}
+
+			if !nextValue.CanInterface() {
+				continue
+			}
+
+			var tagName string
+			jsonName, exists := nextType.Tag.Lookup("json")
+			if exists {
+				tagName = strings.SplitN(jsonName, ",", 2)[0]
+			}
+
+			if value, ok := data[tagName]; ok {
+				if nextValue.Kind() == reflect.Ptr {
+					obj.Field(i).Set(nextValue)
+					nextValue = nextValue.Elem()
+				}
+
+				if err := setValue(nextValue.Kind(), nextValue, value); err != nil {
+					return err
+				}
+			}
+
+			if err := readData(nextValue, data); err != nil {
+				return err
+			}
+		}
+
+	case reflect.Array, reflect.Slice:
+		for i := 0; i < obj.Len(); i++ {
+			nextValue := obj.Index(i)
+
+			if !nextValue.CanInterface() {
+				continue
+			}
+
+			if err := readData(nextValue, data); err != nil {
+				return err
+			}
+		}
+	case reflect.Map:
+
+	default:
+		// do nothing ...
+	}
+	return nil
 }
