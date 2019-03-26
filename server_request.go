@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -35,7 +36,7 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 	return request, request.read()
 }
 
-func (r *Request) Bind(i interface{}) error {
+func (r *Request) Bind(obj interface{}) error {
 	contentType := r.GetContentType()
 
 	if len(r.Body) == 0 || contentType == nil {
@@ -44,18 +45,36 @@ func (r *Request) Bind(i interface{}) error {
 
 	switch *contentType {
 	case ContentTypeApplicationJSON:
-		if err := json.Unmarshal(r.Body, i); err != nil {
+		if err := json.Unmarshal(r.Body, obj); err != nil {
 			return err
 		}
 	case ContentTypeApplicationXML:
-		if err := xml.Unmarshal(r.Body, i); err != nil {
+		if err := xml.Unmarshal(r.Body, obj); err != nil {
 			return err
 		}
 	default:
 		tmp := string(r.Body)
-		i = &tmp
+		obj = &tmp
 	}
 	return nil
+}
+
+
+func (r *Request) BindFormData(obj interface{}) error {
+	if len(r.FormData) == 0 {
+		return nil
+	}
+
+	data := make(map[string]string)
+	for _, item := range r.FormData {
+		if item.IsAttachment {
+			continue
+		}
+
+		data[item.Name] = string(item.Body)
+	}
+
+	return readData(reflect.ValueOf(obj), data)
 }
 
 func (r *Request) read() error {

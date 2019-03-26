@@ -77,32 +77,6 @@ func (r *Response) BindFormData(obj interface{}) error {
 	return readData(reflect.ValueOf(obj), data)
 }
 
-func (r *Response) BindParams(obj interface{}) error {
-	if len(r.Params) == 0 {
-		return nil
-	}
-
-	data := make(map[string]string)
-	for name, values := range r.Params {
-		data[name] = values[0]
-	}
-
-	return readData(reflect.ValueOf(obj), data)
-}
-
-func (r *Response) BindUrlParams(obj interface{}) error {
-	if len(r.UrlParams) == 0 {
-		return nil
-	}
-
-	data := make(map[string]string)
-	for name, values := range r.UrlParams {
-		data[name] = values[0]
-	}
-
-	return readData(reflect.ValueOf(obj), data)
-}
-
 func readData(obj reflect.Value, data map[string]string) error {
 	types := reflect.TypeOf(obj)
 

@@ -1,6 +1,9 @@
 package web
 
-import "strings"
+import (
+	"reflect"
+	"strings"
+)
 
 func (r *Base) SetHeader(name string, header []string) {
 	r.Headers[strings.Title(name)] = header
@@ -78,4 +81,30 @@ func (r *Base) GetUrlParams(name string) []string {
 		return urlParam
 	}
 	return nil
+}
+
+func (r *Base) BindParams(obj interface{}) error {
+	if len(r.Params) == 0 {
+		return nil
+	}
+
+	data := make(map[string]string)
+	for name, values := range r.Params {
+		data[name] = values[0]
+	}
+
+	return readData(reflect.ValueOf(obj), data)
+}
+
+func (r *Base) BindUrlParams(obj interface{}) error {
+	if len(r.UrlParams) == 0 {
+		return nil
+	}
+
+	data := make(map[string]string)
+	for name, values := range r.UrlParams {
+		data[name] = values[0]
+	}
+
+	return readData(reflect.ValueOf(obj), data)
 }
