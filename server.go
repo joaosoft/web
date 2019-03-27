@@ -159,6 +159,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	var handlerFilterBefore HandlerFunc
 	var handlerRoute HandlerFunc
 	var handlerFilterAfter HandlerFunc
+	var skipRouterHandler bool
 	startTime := time.Now()
 
 	defer func() {
@@ -189,9 +190,14 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 
 	// execute before filters
 	if before, ok := w.filters[PositionBefore]; ok {
-		filters := before[ctx.Request.Method]
-		length = len(filters)
 
+		filters, err := w.GetMatchedFilters(before, request.Method, request.Address.Url)
+		if err != nil {
+			w.logger.Errorf("error getting route: [%s]", err)
+			goto on_error
+		}
+
+		length = len(filters)
 		handlerFilterBefore = emptyHandler
 		for i, _ := range filters {
 			if filters[length-1-i] != nil {
@@ -228,6 +234,8 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 					string(HeaderXRequestedWith),
 				}, ", ")}
 			}
+
+			skipRouterHandler = true
 		}
 	}
 
@@ -245,7 +253,11 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	}
 
 	// route handler
-	handlerRoute = route.Handler
+	if !skipRouterHandler {
+		handlerRoute = route.Handler
+	} else {
+		handlerRoute = emptyHandler
+	}
 
 	// execute middlewares
 	length = len(w.middlewares)
@@ -270,10 +282,15 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	}
 
 	// execute after filters
-	if before, ok := w.filters[PositionAfter]; ok {
-		filters := before[ctx.Request.Method]
-		length = len(filters)
+	if after, ok := w.filters[PositionAfter]; ok {
 
+		filters, err := w.GetMatchedFilters(after, request.Method, request.Address.Url)
+		if err != nil {
+			w.logger.Errorf("error getting route: [%s]", err)
+			goto on_error
+		}
+
+		length = len(filters)
 		handlerFilterAfter = emptyHandler
 		for i, _ := range filters {
 			if filters[length-1-i] != nil {
@@ -337,6 +354,22 @@ func (w *Server) GetRoute(method Method, url string) (*Route, error) {
 	}
 
 	return nil, ErrorNotFound
+}
+
+func (w *Server) GetMatchedFilters(filters map[Method][]*Filter, method Method, url string) ([]*Filter, error) {
+	matched := make([]*Filter, 0)
+
+	for _, filter := range filters[method] {
+		if regx, err := regexp.Compile(filter.Regex); err != nil {
+			return nil, err
+		} else {
+			if regx.MatchString(url) {
+				matched = append(matched, filter)
+			}
+		}
+	}
+
+	return matched, nil
 }
 
 func (w *Server) LoadUrlParms(request *Request, route *Route) error {

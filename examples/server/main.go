@@ -31,9 +31,13 @@ func main() {
 
 	// add filters
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
-	w.AddFilter("*", web.PositionBefore, MyFilterOne(), web.MethodPost)
-	w.AddFilter("*", web.PositionBefore, MyFilterTwo(), web.MethodGet)
-	w.AddFilter("*", web.PositionAfter, MyFilterThree(), web.MethodPost, web.MethodGet)
+	w.AddFilter("/hello/:name", web.PositionBefore, MyFilterOne(), web.MethodPost)
+	w.AddFilter("/hello/:name/upload", web.PositionBefore, MyFilterTwo(), web.MethodPost)
+	w.AddFilter("*", web.PositionBefore, MyFilterThree(), web.MethodPost)
+
+	w.AddFilter("/hello/:name", web.PositionBefore, MyFilterTwo(), web.MethodGet)
+
+	w.AddFilter("/form-data", web.PositionAfter, MyFilterThree(), web.MethodPost, web.MethodGet)
 
 	// add routes
 	w.AddRoutes(
