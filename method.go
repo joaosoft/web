@@ -20,6 +20,7 @@ const (
 	MethodLock     Method = "LOCK"
 	MethodUnlock   Method = "UNLOCK"
 	MethodPropFind Method = "PROPFIND"
+	MethodAny      Method = "ANY"
 )
 
 var (

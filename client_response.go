@@ -302,42 +302,45 @@ func (r *Response) handleBoundary(reader *bufio.Reader) error {
 
 func (r *Response) readBody(reader *bufio.Reader) error {
 	var buf bytes.Buffer
-	encoding, hasEcoding := r.Headers[HeaderTransferEncoding]
-	if hasEcoding {
-		switch Encoding(encoding[0]) {
-		case EncodingChunked:
-			var size uint64
+	var encoding = EncodingNone
 
-			for {
-				r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
-				line, _, err := reader.ReadLine()
-				if err != nil {
-					break
-				}
+	if enc, ok := r.Headers[HeaderTransferEncoding]; ok {
+		encoding = Encoding(enc[0])
+	}
 
-				size, _ = parseHexUint(line)
-				if size == 0 {
-					break
-				}
+	switch encoding {
+	case EncodingChunked:
+		var size uint64
 
-				chunk := make([]byte, size)
-				_, err = reader.Read(chunk)
-				if err != nil {
-					break
-				}
-
-				buf.Write(chunk)
+		for {
+			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
+			line, _, err := reader.ReadLine()
+			if err != nil {
+				break
 			}
-		default:
-			for {
-				r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
-				line, _, err := reader.ReadLine()
-				if err != nil {
-					break
-				}
 
-				buf.Write(line)
+			size, _ = parseHexUint(line)
+			if size == 0 {
+				break
 			}
+
+			chunk := make([]byte, size)
+			_, err = reader.Read(chunk)
+			if err != nil {
+				break
+			}
+
+			buf.Write(chunk)
+		}
+	default:
+		for {
+			r.conn.SetReadDeadline(time.Now().Add(time.Millisecond * 5))
+			line, _, err := reader.ReadLine()
+			if err != nil {
+				break
+			}
+
+			buf.Write(line)
 		}
 	}
 

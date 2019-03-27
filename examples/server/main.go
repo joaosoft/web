@@ -29,8 +29,13 @@ func main() {
 		return false, fmt.Errorf("invalid jwt session token")
 	}
 
-	// add middleware's
+	// add filters
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
+	w.AddFilter("*", web.PositionBefore, MyFilterOne(), web.MethodPost)
+	w.AddFilter("*", web.PositionBefore, MyFilterTwo(), web.MethodGet)
+	w.AddFilter("*", web.PositionAfter, MyFilterThree(), web.MethodPost, web.MethodGet)
+
+	// add routes
 	w.AddRoutes(
 		web.NewRoute(web.MethodOptions, "*", HandlerHelloForOptions, web.MiddlewareOptions()),
 		web.NewRoute(web.MethodGet, "/auth-basic", HandlerForGet, web.MiddlewareCheckAuthBasic("joao", "ribeiro")),
@@ -69,6 +74,33 @@ func main() {
 	}
 }
 
+func MyFilterOne() web.MiddlewareFunc {
+	return func(next web.HandlerFunc) web.HandlerFunc {
+		return func(ctx *web.Context) error {
+			fmt.Println("HELLO I'M THE FILTER ONE")
+			return next(ctx)
+		}
+	}
+}
+
+func MyFilterTwo() web.MiddlewareFunc {
+	return func(next web.HandlerFunc) web.HandlerFunc {
+		return func(ctx *web.Context) error {
+			fmt.Println("HELLO I'M THE FILTER TWO")
+			return next(ctx)
+		}
+	}
+}
+
+func MyFilterThree() web.MiddlewareFunc {
+	return func(next web.HandlerFunc) web.HandlerFunc {
+		return func(ctx *web.Context) error {
+			fmt.Println("HELLO I'M THE FILTER THREE")
+			return next(ctx)
+		}
+	}
+}
+
 func MyMiddlewareOne() web.MiddlewareFunc {
 	return func(next web.HandlerFunc) web.HandlerFunc {
 		return func(ctx *web.Context) error {
@@ -95,6 +127,7 @@ func MyMiddlewareThree() web.MiddlewareFunc {
 		}
 	}
 }
+
 func MyMiddlewareFour() web.MiddlewareFunc {
 	return func(next web.HandlerFunc) web.HandlerFunc {
 		return func(ctx *web.Context) error {

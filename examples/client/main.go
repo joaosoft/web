@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"web"
 
@@ -15,6 +16,7 @@ func main() {
 	}
 
 	requestGet(c)
+	requestPost(c)
 
 	requestGetBoundary(c)
 
@@ -40,6 +42,30 @@ func requestGet(c *web.Client) {
 	}
 
 	fmt.Printf("%+v", response)
+}
+
+func requestPost(c *web.Client) {
+	request, err := c.NewRequest(web.MethodPost, "localhost:9001/hello/joao?a=1&b=2&c=1,2,3")
+	if err != nil {
+		panic(err)
+	}
+
+	data := struct {
+		Name string `json:"name"`
+		Age  int    `json:"age"`
+	}{
+		Name: "joao",
+		Age:  30,
+	}
+
+	bytes, _ := json.Marshal(data)
+
+	response, err := request.WithBody(bytes, web.ContentTypeApplicationJSON).Send()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%+v\n", string(response.Body))
 }
 
 func requestGetBoundary(c *web.Client) {

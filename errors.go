@@ -10,26 +10,26 @@ var (
 )
 
 type Error struct {
-	Status   Status
-	Messages interface{}
+	Status  Status `json:"status"`
+	Message string `json:"message"`
 }
 
-func NewError(status Status, errors ...interface{}) *Error {
+func NewError(status Status, messages ...string) *Error {
 	err := &Error{
 		Status: status,
 	}
 
-	if len(errors) > 0 {
-		err.Messages = errors
+	if len(messages) > 0 {
+		err.Message = messages[0]
 	} else {
-		err.Messages = []string{StatusText(status)}
+		err.Message = StatusText(status)
 	}
 
 	return err
 }
 
 func (e *Error) Error() string {
-	return fmt.Sprintf("status=%d, messages=%v", e.Status, e.Messages)
+	return fmt.Sprintf("status=%d, message=%v", e.Status, e.Message)
 }
 
 func (w *Server) DefaultErrorHandler(ctx *Context, err error) error {
@@ -39,5 +39,5 @@ func (w *Server) DefaultErrorHandler(ctx *Context, err error) error {
 		return ctx.Response.JSON(e.Status, e)
 	}
 
-	return ctx.Response.JSON(StatusInternalServerError, NewError(StatusInternalServerError, err))
+	return ctx.Response.JSON(StatusInternalServerError, NewError(StatusInternalServerError, err.Error()))
 }

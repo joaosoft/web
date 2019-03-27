@@ -11,8 +11,8 @@ type Route struct {
 	Middlewares []MiddlewareFunc
 }
 
-func NewRoute(method Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) Route {
-	return Route{
+func NewRoute(method Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) *Route {
+	return &Route{
 		Method:      method,
 		Path:        path,
 		Regex:       ConvertPathToRegex(path),

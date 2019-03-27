@@ -16,6 +16,7 @@ type Server struct {
 	isLogExternal       bool
 	logger              logger.ILogger
 	routes              Routes
+	filters             Filters
 	middlewares         []MiddlewareFunc
 	listener            net.Listener
 	address             string
@@ -29,6 +30,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 	service := &Server{
 		logger:              logger.NewLogDefault("Server", logger.WarnLevel),
 		routes:              make(Routes),
+		filters:             make(Filters),
 		middlewares:         make([]MiddlewareFunc, 0),
 		address:             ":80",
 		multiAttachmentMode: MultiAttachmentModeZip,
@@ -63,6 +65,10 @@ func (w *Server) AddMiddlewares(middlewares ...MiddlewareFunc) {
 	w.middlewares = append(w.middlewares, middlewares...)
 }
 
+func (w *Server) AddFilter(pattern string, position Position, middleware MiddlewareFunc, method Method, methods ...Method) {
+	w.filters.AddFilter(pattern, position, middleware, method, methods...)
+}
+
 func (w *Server) AddRoute(method Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
 	w.routes[method] = append(w.routes[method], Route{
 		Method:      method,
@@ -76,7 +82,7 @@ func (w *Server) AddRoute(method Method, path string, handler HandlerFunc, middl
 	return nil
 }
 
-func (w *Server) AddRoutes(route ...Route) error {
+func (w *Server) AddRoutes(route ...*Route) error {
 	for _, r := range route {
 		if err := w.AddRoute(r.Method, r.Path, r.Handler, r.Middlewares...); err != nil {
 			return err
@@ -93,7 +99,7 @@ func (w *Server) AddNamespace(path string, middlewares ...MiddlewareFunc) *Names
 	}
 }
 
-func (n *Namespace) AddRoutes(route ...Route) error {
+func (n *Namespace) AddRoutes(route ...*Route) error {
 	for _, r := range route {
 		if err := n.WebServer.AddRoute(r.Method, fmt.Sprintf("%s%s", n.Path, r.Path), r.Handler, append(r.Middlewares, n.Middlewares...)...); err != nil {
 			return err
@@ -149,8 +155,10 @@ func (w *Server) Start() error {
 
 func (w *Server) handleConnection(conn net.Conn) (err error) {
 	var ctx *Context
-	var handler HandlerFunc
 	var length int
+	var handlerFilterBefore HandlerFunc
+	var handlerRoute HandlerFunc
+	var handlerFilterAfter HandlerFunc
 	startTime := time.Now()
 
 	defer func() {
@@ -179,6 +187,25 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	ctx = NewContext(startTime, request, response)
 	var route *Route
 
+	// execute before filters
+	if before, ok := w.filters[PositionBefore]; ok {
+		filters := before[ctx.Request.Method]
+		length = len(filters)
+
+		handlerFilterBefore = emptyHandler
+		for i, _ := range filters {
+			if filters[length-1-i] != nil {
+				handlerFilterBefore = filters[length-1-i].Middleware(handlerFilterBefore)
+			}
+		}
+
+		// run handlers with middleware's
+		if err = handlerFilterBefore(ctx); err != nil {
+			w.logger.Errorf("error executing handler: [%s]", err)
+			goto on_error
+		}
+	}
+
 	// when options method, validate request route
 	if request.Method == MethodOptions {
 		if _, ok := w.routes[MethodOptions]; !ok {
@@ -186,10 +213,20 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 			if val, ok := request.Headers[HeaderAccessControlRequestMethod]; ok {
 				method = Method(val[0])
 			}
-			route, err = w.GetRoute(method, request.Address.Url)
+			_, err := w.GetRoute(method, request.Address.Url)
 			if err != nil {
 				w.logger.Errorf("error getting route: [%s]", err)
 				goto on_error
+			}
+
+			if err == nil && route != nil {
+				ctx.Response.Headers[HeaderAccessControlAllowMethods] = []string{string(method)}
+				ctx.Response.Headers[HeaderAccessControlAllowHeaders] = []string{strings.Join([]string{
+					string(HeaderContentType),
+					string(HeaderAccessControlAllowHeaders),
+					string(HeaderAuthorization),
+					string(HeaderXRequestedWith),
+				}, ", ")}
 			}
 		}
 	}
@@ -208,13 +245,13 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	}
 
 	// route handler
-	handler = route.Handler
+	handlerRoute = route.Handler
 
 	// execute middlewares
 	length = len(w.middlewares)
 	for i, _ := range w.middlewares {
 		if w.middlewares[length-1-i] != nil {
-			handler = w.middlewares[length-1-i](handler)
+			handlerRoute = w.middlewares[length-1-i](handlerRoute)
 		}
 	}
 
@@ -222,14 +259,33 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	length = len(route.Middlewares)
 	for i, _ := range route.Middlewares {
 		if route.Middlewares[length-1-i] != nil {
-			handler = route.Middlewares[length-1-i](handler)
+			handlerRoute = route.Middlewares[length-1-i](handlerRoute)
 		}
 	}
 
 	// run handlers with middleware's
-	if err = handler(ctx); err != nil {
+	if err = handlerRoute(ctx); err != nil {
 		w.logger.Errorf("error executing handler: [%s]", err)
 		goto on_error
+	}
+
+	// execute after filters
+	if before, ok := w.filters[PositionAfter]; ok {
+		filters := before[ctx.Request.Method]
+		length = len(filters)
+
+		handlerFilterAfter = emptyHandler
+		for i, _ := range filters {
+			if filters[length-1-i] != nil {
+				handlerFilterAfter = filters[length-1-i].Middleware(handlerFilterAfter)
+			}
+		}
+
+		// run handlers with middleware's
+		if err = handlerFilterAfter(ctx); err != nil {
+			w.logger.Errorf("error executing handler: [%s]", err)
+			goto on_error
+		}
 	}
 
 on_error:
@@ -299,4 +355,8 @@ func (w *Server) LoadUrlParms(request *Request, route *Route) error {
 
 func (w *Server) GetAddress() string {
 	return w.address
+}
+
+func emptyHandler(ctx *Context) error {
+	return nil
 }
