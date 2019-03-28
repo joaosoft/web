@@ -37,7 +37,7 @@ func main() {
 
 	w.AddFilter("/hello/:name", web.PositionBefore, MyFilterTwo(), web.MethodGet)
 
-	w.AddFilter("/form-data", web.PositionAfter, MyFilterThree(), web.MethodPost, web.MethodGet)
+	w.AddFilter("/form-data", web.PositionAfter, MyFilterThree(), web.MethodAny)
 
 	// add routes
 	w.AddRoutes(

@@ -369,6 +369,16 @@ func (w *Server) GetMatchedFilters(filters map[Method][]*Filter, method Method, 
 		}
 	}
 
+	for _, filter := range filters[MethodAny] {
+		if regx, err := regexp.Compile(filter.Regex); err != nil {
+			return nil, err
+		} else {
+			if regx.MatchString(url) {
+				matched = append(matched, filter)
+			}
+		}
+	}
+
 	return matched, nil
 }
 
