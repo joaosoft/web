@@ -222,7 +222,7 @@ func readData(obj reflect.Value, data map[string]string) error {
 	}
 
 	if obj.Kind() == reflect.Ptr && !obj.IsNil() {
-		obj = obj.Elem()
+		obj = obj.Elem().Elem()
 
 		if obj.IsValid() {
 			types = obj.Type()
