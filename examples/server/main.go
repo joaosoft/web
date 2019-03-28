@@ -31,13 +31,24 @@ func main() {
 
 	// add filters
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
-	w.AddFilter("/hello/:name", web.PositionBefore, MyFilterOne(), web.MethodPost)
-	w.AddFilter("/hello/:name/upload", web.PositionBefore, MyFilterTwo(), web.MethodPost)
-	w.AddFilter("*", web.PositionBefore, MyFilterThree(), web.MethodPost)
 
-	w.AddFilter("/hello/:name", web.PositionBefore, MyFilterTwo(), web.MethodGet)
+	w.AddFilter("/hello/:name", web.PositionBefore, MyFilterBeforeOne(), web.MethodPost)
+	w.AddFilter("/hello/:name", web.PositionBefore, MyFilterBeforeTwo(), web.MethodPost)
+	w.AddFilter("/hello/:name", web.PositionBetween, MyFilterBetweenOne(), web.MethodPost)
+	w.AddFilter("/hello/:name", web.PositionBetween, MyFilterBetweenTwo(), web.MethodPost)
+	w.AddFilter("/hello/:name", web.PositionAfter, MyFilterAfterOne(), web.MethodAny)
+	w.AddFilter("/hello/:name", web.PositionAfter, MyFilterAfterTwo(), web.MethodAny)
 
-	w.AddFilter("/form-data", web.PositionAfter, MyFilterThree(), web.MethodAny)
+	w.AddFilter("/hello/:name", web.PositionBefore, MyFilterBeforeOne(), web.MethodGet)
+	w.AddFilter("/hello/:name", web.PositionBefore, MyFilterBeforeTwo(), web.MethodGet)
+
+	w.AddFilter("/hello/:name/upload", web.PositionBefore, MyFilterBeforeOne(), web.MethodPost)
+	w.AddFilter("/hello/:name/upload", web.PositionBefore, MyFilterBeforeTwo(), web.MethodPost)
+
+	w.AddFilter("*", web.PositionBefore, MyFilterBeforeThree(), web.MethodPost)
+
+	w.AddFilter("/form-data", web.PositionAfter, MyFilterAfterOne(), web.MethodAny)
+	w.AddFilter("/form-data", web.PositionAfter, MyFilterAfterTwo(), web.MethodAny)
 
 	// add routes
 	w.AddRoutes(
@@ -78,28 +89,64 @@ func main() {
 	}
 }
 
-func MyFilterOne() web.MiddlewareFunc {
+func MyFilterBeforeOne() web.MiddlewareFunc {
 	return func(next web.HandlerFunc) web.HandlerFunc {
 		return func(ctx *web.Context) error {
-			fmt.Println("HELLO I'M THE FILTER ONE")
+			fmt.Println("HELLO I'M THE FILTER BEFORE ONE")
 			return next(ctx)
 		}
 	}
 }
 
-func MyFilterTwo() web.MiddlewareFunc {
+func MyFilterBeforeTwo() web.MiddlewareFunc {
 	return func(next web.HandlerFunc) web.HandlerFunc {
 		return func(ctx *web.Context) error {
-			fmt.Println("HELLO I'M THE FILTER TWO")
+			fmt.Println("HELLO I'M THE FILTER BEFORE TWO")
 			return next(ctx)
 		}
 	}
 }
 
-func MyFilterThree() web.MiddlewareFunc {
+func MyFilterBeforeThree() web.MiddlewareFunc {
 	return func(next web.HandlerFunc) web.HandlerFunc {
 		return func(ctx *web.Context) error {
-			fmt.Println("HELLO I'M THE FILTER THREE")
+			fmt.Println("HELLO I'M THE FILTER BEFORE THREE")
+			return next(ctx)
+		}
+	}
+}
+
+func MyFilterBetweenOne() web.MiddlewareFunc {
+	return func(next web.HandlerFunc) web.HandlerFunc {
+		return func(ctx *web.Context) error {
+			fmt.Println("HELLO I'M THE FILTER BETWEEN ONE")
+			return next(ctx)
+		}
+	}
+}
+
+func MyFilterBetweenTwo() web.MiddlewareFunc {
+	return func(next web.HandlerFunc) web.HandlerFunc {
+		return func(ctx *web.Context) error {
+			fmt.Println("HELLO I'M THE FILTER BETWEEN TWO")
+			return next(ctx)
+		}
+	}
+}
+
+func MyFilterAfterOne() web.MiddlewareFunc {
+	return func(next web.HandlerFunc) web.HandlerFunc {
+		return func(ctx *web.Context) error {
+			fmt.Println("HELLO I'M THE FILTER AFTER ONE")
+			return next(ctx)
+		}
+	}
+}
+
+func MyFilterAfterTwo() web.MiddlewareFunc {
+	return func(next web.HandlerFunc) web.HandlerFunc {
+		return func(ctx *web.Context) error {
+			fmt.Println("HELLO I'M THE FILTER AFTER TWO")
 			return next(ctx)
 		}
 	}

@@ -156,9 +156,7 @@ func (w *Server) Start() error {
 func (w *Server) handleConnection(conn net.Conn) (err error) {
 	var ctx *Context
 	var length int
-	var handlerFilterBefore HandlerFunc
 	var handlerRoute HandlerFunc
-	var handlerFilterAfter HandlerFunc
 	var skipRouterHandler bool
 	startTime := time.Now()
 
@@ -229,34 +227,52 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	}
 
 	// execute before filters
-	if before, ok := w.filters[PositionBefore]; ok {
+	handlerRoute = emptyHandler
+	if after, ok := w.filters[PositionAfter]; ok {
 
-		filters, err := w.GetMatchedFilters(before, request.Method, request.Address.Url)
+		filters, err := w.GetMatchedFilters(after, request.Method, request.Address.Url)
 		if err != nil {
 			w.logger.Errorf("error getting route: [%s]", err)
 			goto on_error
 		}
 
 		length = len(filters)
-		handlerFilterBefore = emptyHandler
 		for i, _ := range filters {
 			if filters[length-1-i] != nil {
-				handlerFilterBefore = filters[length-1-i].Middleware(handlerFilterBefore)
+				handlerRoute = filters[length-1-i].Middleware(handlerRoute)
 			}
-		}
-
-		// run handlers with middleware's
-		if err = handlerFilterBefore(ctx); err != nil {
-			w.logger.Errorf("error executing handler: [%s]", err)
-			goto on_error
 		}
 	}
 
 	// route handler
 	if !skipRouterHandler {
-		handlerRoute = route.Handler
-	} else {
-		handlerRoute = emptyHandler
+		handlerRoute = func(next HandlerFunc) HandlerFunc {
+			return func(ctx *Context) error {
+				if err := route.Handler(ctx); err != nil {
+					return err
+				}
+
+				return next(ctx)
+			}
+
+		}(handlerRoute)
+	}
+
+	// execute before filters
+	if between, ok := w.filters[PositionBetween]; ok {
+
+		filters, err := w.GetMatchedFilters(between, request.Method, request.Address.Url)
+		if err != nil {
+			w.logger.Errorf("error getting route: [%s]", err)
+			goto on_error
+		}
+
+		length = len(filters)
+		for i, _ := range filters {
+			if filters[length-1-i] != nil {
+				handlerRoute = filters[length-1-i].Middleware(handlerRoute)
+			}
+		}
 	}
 
 	// execute middlewares
@@ -275,34 +291,27 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 		}
 	}
 
-	// run handlers with middleware's
-	if err = handlerRoute(ctx); err != nil {
-		w.logger.Errorf("error executing handler: [%s]", err)
-		goto on_error
-	}
+	// execute before filters
+	if before, ok := w.filters[PositionBefore]; ok {
 
-	// execute after filters
-	if after, ok := w.filters[PositionAfter]; ok {
-
-		filters, err := w.GetMatchedFilters(after, request.Method, request.Address.Url)
+		filters, err := w.GetMatchedFilters(before, request.Method, request.Address.Url)
 		if err != nil {
 			w.logger.Errorf("error getting route: [%s]", err)
 			goto on_error
 		}
 
 		length = len(filters)
-		handlerFilterAfter = emptyHandler
 		for i, _ := range filters {
 			if filters[length-1-i] != nil {
-				handlerFilterAfter = filters[length-1-i].Middleware(handlerFilterAfter)
+				handlerRoute = filters[length-1-i].Middleware(handlerRoute)
 			}
 		}
+	}
 
-		// run handlers with middleware's
-		if err = handlerFilterAfter(ctx); err != nil {
-			w.logger.Errorf("error executing handler: [%s]", err)
-			goto on_error
-		}
+	// run handlers with middleware's
+	if err = handlerRoute(ctx); err != nil {
+		w.logger.Errorf("error executing handler: [%s]", err)
+		goto on_error
 	}
 
 on_error:
