@@ -221,14 +221,17 @@ func readData(obj reflect.Value, data map[string]string) error {
 		return nil
 	}
 
+checkAgain:
 	if obj.Kind() == reflect.Ptr && !obj.IsNil() {
-		obj = obj.Elem().Elem()
+		obj = obj.Elem()
 
 		if obj.IsValid() {
 			types = obj.Type()
 		} else {
 			return nil
 		}
+
+		goto checkAgain
 	}
 
 	switch obj.Kind() {
