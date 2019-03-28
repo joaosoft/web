@@ -188,30 +188,6 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	ctx = NewContext(startTime, request, response)
 	var route *Route
 
-	// execute before filters
-	if before, ok := w.filters[PositionBefore]; ok {
-
-		filters, err := w.GetMatchedFilters(before, request.Method, request.Address.Url)
-		if err != nil {
-			w.logger.Errorf("error getting route: [%s]", err)
-			goto on_error
-		}
-
-		length = len(filters)
-		handlerFilterBefore = emptyHandler
-		for i, _ := range filters {
-			if filters[length-1-i] != nil {
-				handlerFilterBefore = filters[length-1-i].Middleware(handlerFilterBefore)
-			}
-		}
-
-		// run handlers with middleware's
-		if err = handlerFilterBefore(ctx); err != nil {
-			w.logger.Errorf("error executing handler: [%s]", err)
-			goto on_error
-		}
-	}
-
 	// when options method, validate request route
 	if request.Method == MethodOptions {
 		if _, ok := w.routes[MethodOptions]; !ok {
@@ -239,7 +215,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 		}
 	}
 
-	// middleware's of the Server
+	// route of the Server
 	route, err = w.GetRoute(request.Method, request.Address.Url)
 	if err != nil {
 		w.logger.Errorf("error getting route: [%s]", err)
@@ -250,6 +226,30 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	if err = w.LoadUrlParms(request, route); err != nil {
 		w.logger.Errorf("error loading url parameters: [%s]", err)
 		goto on_error
+	}
+
+	// execute before filters
+	if before, ok := w.filters[PositionBefore]; ok {
+
+		filters, err := w.GetMatchedFilters(before, request.Method, request.Address.Url)
+		if err != nil {
+			w.logger.Errorf("error getting route: [%s]", err)
+			goto on_error
+		}
+
+		length = len(filters)
+		handlerFilterBefore = emptyHandler
+		for i, _ := range filters {
+			if filters[length-1-i] != nil {
+				handlerFilterBefore = filters[length-1-i].Middleware(handlerFilterBefore)
+			}
+		}
+
+		// run handlers with middleware's
+		if err = handlerFilterBefore(ctx); err != nil {
+			w.logger.Errorf("error executing handler: [%s]", err)
+			goto on_error
+		}
 	}
 
 	// route handler
