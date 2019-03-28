@@ -9,14 +9,8 @@ A simple and fast web server and client.
 * Common http methods
 * Single/Multiple File Upload
 * Single/Multiple File Download
-
-## With attachment modes
-* [default] zip files when returns more then one file 
-  - on client WithClientAttachmentMode(web.MultiAttachmentModeZip)
-  - on server WithServerAttachmentMode(web.MultiAttachmentModeZip)
-* [experimental] returns attachmentes splited by a boundary defined on header Content-Type 
-  - on client WithClientAttachmentMode(web.MultiAttachmentModeBoundary)
-  - on server WithServerAttachmentMode(web.MultiAttachmentModeBoundary)
+* Middlewares
+* Filters
 
 ## With support for methods
 * HEAD
@@ -36,10 +30,20 @@ A simple and fast web server and client.
 * UNLOCK
 * PROPFIND
 * VIEW
+* ANY (used only on filters)
 
 ## With authentication types
 * basic
 * jwt
+
+## With attachment modes
+* [default] zip files when returns more then one file 
+  - on client WithClientAttachmentMode(web.MultiAttachmentModeZip)
+  - on server WithServerAttachmentMode(web.MultiAttachmentModeZip)
+* [experimental] returns attachmentes splited by a boundary defined on header Content-Type 
+  - on client WithClientAttachmentMode(web.MultiAttachmentModeBoundary)
+  - on server WithServerAttachmentMode(web.MultiAttachmentModeBoundary)
+
 
 >### Go
 ```
@@ -72,8 +76,17 @@ func main() {
 		return false, fmt.Errorf("invalid jwt session token")
 	}
 
-	// add middleware's
+	// add filters
 	w.AddMiddlewares(MyMiddlewareOne(), MyMiddlewareTwo())
+	w.AddFilter("/hello/:name", web.PositionBefore, MyFilterOne(), web.MethodPost)
+	w.AddFilter("/hello/:name/upload", web.PositionBefore, MyFilterTwo(), web.MethodPost)
+	w.AddFilter("*", web.PositionBefore, MyFilterThree(), web.MethodPost)
+
+	w.AddFilter("/hello/:name", web.PositionBefore, MyFilterTwo(), web.MethodGet)
+
+	w.AddFilter("/form-data", web.PositionAfter, MyFilterThree(), web.MethodAny)
+
+	// add routes
 	w.AddRoutes(
 		web.NewRoute(web.MethodOptions, "*", HandlerHelloForOptions, web.MiddlewareOptions()),
 		web.NewRoute(web.MethodGet, "/auth-basic", HandlerForGet, web.MiddlewareCheckAuthBasic("joao", "ribeiro")),
@@ -112,6 +125,33 @@ func main() {
 	}
 }
 
+func MyFilterOne() web.MiddlewareFunc {
+	return func(next web.HandlerFunc) web.HandlerFunc {
+		return func(ctx *web.Context) error {
+			fmt.Println("HELLO I'M THE FILTER ONE")
+			return next(ctx)
+		}
+	}
+}
+
+func MyFilterTwo() web.MiddlewareFunc {
+	return func(next web.HandlerFunc) web.HandlerFunc {
+		return func(ctx *web.Context) error {
+			fmt.Println("HELLO I'M THE FILTER TWO")
+			return next(ctx)
+		}
+	}
+}
+
+func MyFilterThree() web.MiddlewareFunc {
+	return func(next web.HandlerFunc) web.HandlerFunc {
+		return func(ctx *web.Context) error {
+			fmt.Println("HELLO I'M THE FILTER THREE")
+			return next(ctx)
+		}
+	}
+}
+
 func MyMiddlewareOne() web.MiddlewareFunc {
 	return func(next web.HandlerFunc) web.HandlerFunc {
 		return func(ctx *web.Context) error {
@@ -138,6 +178,7 @@ func MyMiddlewareThree() web.MiddlewareFunc {
 		}
 	}
 }
+
 func MyMiddlewareFour() web.MiddlewareFunc {
 	return func(next web.HandlerFunc) web.HandlerFunc {
 		return func(ctx *web.Context) error {
@@ -403,6 +444,7 @@ func main() {
 	}
 
 	requestGet(c)
+	requestPost(c)
 
 	requestGetBoundary(c)
 
@@ -428,6 +470,30 @@ func requestGet(c *web.Client) {
 	}
 
 	fmt.Printf("%+v", response)
+}
+
+func requestPost(c *web.Client) {
+	request, err := c.NewRequest(web.MethodPost, "localhost:9001/hello/joao?a=1&b=2&c=1,2,3")
+	if err != nil {
+		panic(err)
+	}
+
+	data := struct {
+		Name string `json:"name"`
+		Age  int    `json:"age"`
+	}{
+		Name: "joao",
+		Age:  30,
+	}
+
+	bytes, _ := json.Marshal(data)
+
+	response, err := request.WithBody(bytes, web.ContentTypeApplicationJSON).Send()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%+v\n", string(response.Body))
 }
 
 func requestGetBoundary(c *web.Client) {
