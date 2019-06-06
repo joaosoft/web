@@ -145,7 +145,7 @@ func (r *Response) readHeader(reader *bufio.Reader) error {
 	} else {
 		status, err := strconv.Atoi(string(firstLine[1]))
 		if err != nil {
-			return err
+			return fmt.Errorf("invalid http response [%s]", string(line))
 		}
 
 		r.Protocol = Protocol(firstLine[0])
