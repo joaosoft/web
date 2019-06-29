@@ -55,7 +55,10 @@ func NewServer(options ...ServerOption) (*Server, error) {
 		service.address = config.Server.Address
 	}
 
-	service.AddRoute(MethodGet, "/favicon.ico", service.handlerFile)
+	if err = service.AddRoute(MethodGet, "/favicon.ico", service.handlerFile); err != nil {
+		return nil, err
+	}
+
 	service.errorhandler = service.DefaultErrorHandler
 
 	return service, nil
