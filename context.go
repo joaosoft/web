@@ -4,7 +4,7 @@ import "fmt"
 
 func (ctx *Context) Redirect(host string) error {
 	if ctx.Request.Client == nil {
-		client, err := NewClient()
+		client, err := NewClient(WithClientLogger(ctx.Request.Server.logger))
 		if err != nil {
 			return err
 		}
