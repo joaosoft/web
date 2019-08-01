@@ -1,6 +1,8 @@
 package web
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func (ctx *Context) Redirect(host string) error {
 	if ctx.Request.Client == nil {
@@ -12,7 +14,8 @@ func (ctx *Context) Redirect(host string) error {
 		ctx.Request.Client = client
 	}
 
-	ctx.Request.Address = NewAddress(fmt.Sprintf("%s%s", host, ctx.Request.Address.Url))
+	url := fmt.Sprintf("%s%s", ctx.Request.Address.Url, ctx.Request.Params)
+	ctx.Request.Address = NewAddress(fmt.Sprintf("%s%s", host, url))
 
 	response, err := ctx.Request.Send()
 	if err != nil {
