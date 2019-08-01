@@ -196,7 +196,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 			if val, ok := request.Headers[HeaderAccessControlRequestMethod]; ok {
 				method = Method(val[0])
 			}
-			_, err := w.GetRoute(method, request.Address.Url)
+			route, err = w.GetRoute(method, request.Address.Url)
 			if err != nil {
 				w.logger.Errorf("error getting route: [%s]", err)
 				goto on_error
