@@ -199,7 +199,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 			route, err = w.GetRoute(method, request.Address.Url)
 			if err != nil {
 				w.logger.Errorf("error getting route: [%s]", err)
-				goto on_error
+				goto done
 			}
 
 			if err == nil && route != nil {
@@ -210,6 +210,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 					string(HeaderAuthorization),
 					string(HeaderXRequestedWith),
 				}, ", ")}
+				goto done
 			}
 
 			skipRouterHandler = true
@@ -220,13 +221,13 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	route, err = w.GetRoute(request.Method, request.Address.Url)
 	if err != nil {
 		w.logger.Errorf("error getting route: [%s]", err)
-		goto on_error
+		goto done
 	}
 
 	// get url parameters
 	if err = w.LoadUrlParms(request, route); err != nil {
 		w.logger.Errorf("error loading url parameters: [%s]", err)
-		goto on_error
+		goto done
 	}
 
 	// execute before filters
@@ -236,7 +237,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 		filters, err := w.GetMatchedFilters(after, request.Method, request.Address.Url)
 		if err != nil {
 			w.logger.Errorf("error getting route: [%s]", err)
-			goto on_error
+			goto done
 		}
 
 		length = len(filters)
@@ -267,7 +268,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 		filters, err := w.GetMatchedFilters(between, request.Method, request.Address.Url)
 		if err != nil {
 			w.logger.Errorf("error getting route: [%s]", err)
-			goto on_error
+			goto done
 		}
 
 		length = len(filters)
@@ -300,7 +301,7 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 		filters, err := w.GetMatchedFilters(before, request.Method, request.Address.Url)
 		if err != nil {
 			w.logger.Errorf("error getting route: [%s]", err)
-			goto on_error
+			goto done
 		}
 
 		length = len(filters)
@@ -314,10 +315,10 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 	// run handlers with middleware's
 	if err = handlerRoute(ctx); err != nil {
 		w.logger.Errorf("error executing handler: [%s]", err)
-		goto on_error
+		goto done
 	}
 
-on_error:
+done:
 	if err != nil {
 		if er := w.errorhandler(ctx, err); er != nil {
 			w.logger.Errorf("error writing error: [error: %s] %s", err, er)
