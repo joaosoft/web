@@ -19,12 +19,19 @@ type Address struct {
 func (p Params) String() string {
 	var url string
 
-	if len(p) > 0 {
+	lenP := len(p)
+	if lenP > 0 {
 		url += "?"
 	}
 
+	i := 1
 	for key, value := range p {
 		url += fmt.Sprintf("%s=%s", key, value[0])
+
+		if i < lenP {
+			url += "&"
+				i++
+		}
 	}
 
 	return url
