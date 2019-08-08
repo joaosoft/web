@@ -108,3 +108,16 @@ func (r *Base) BindUrlParams(obj interface{}) error {
 
 	return readData(reflect.ValueOf(obj), data)
 }
+
+func (r *Base) BindHeaders(obj interface{}) error {
+	if len(r.Headers) == 0 {
+		return nil
+	}
+
+	data := make(map[string]string)
+	for name, values := range r.Headers {
+		data[name] = values[0]
+	}
+
+	return readData(reflect.ValueOf(obj), data)
+}
