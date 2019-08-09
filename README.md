@@ -54,7 +54,7 @@ go get github.com/joaosoft/web
 This examples are available in the project at [web/examples](https://github.com/joaosoft/web/tree/master/examples)
 
 ### Server
-```
+```go
 func main() {
 	// create a new server
 	w, err := web.NewServer(web.WithServerMultiAttachmentMode(web.MultiAttachmentModeBoundary))
@@ -435,7 +435,7 @@ func HandlerUrlFormDataForGet(ctx *web.Context) error {
 ```
 
 ### Client
-```
+```go
 func main() {
 	// create a new client
 	c, err := web.NewClient(web.WithClientMultiAttachmentMode(web.MultiAttachmentModeBoundary))
