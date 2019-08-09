@@ -34,7 +34,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 		middlewares:         make([]MiddlewareFunc, 0),
 		address:             ":80",
 		multiAttachmentMode: MultiAttachmentModeZip,
-		config:              &ServerConfig{},
+		config:              &config.Server,
 	}
 
 	if service.isLogExternal {
@@ -51,7 +51,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 
 	service.Reconfigure(options...)
 
-	if config.Server.Address != "" {
+	if service.config.Address != "" {
 		service.address = service.config.Address
 	}
 

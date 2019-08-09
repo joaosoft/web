@@ -5,13 +5,11 @@ import (
 )
 
 type ClientConfig struct {
-	Log struct {
-		Level string `json:"level"`
-	} `json:"log"`
+	Log Log `json:"log"`
 }
 
-func NewClientConfig() (*AppConfig, error) {
-	appConfig := &AppConfig{}
+func NewClientConfig() (*AppClientConfig, error) {
+	appConfig := &AppClientConfig{}
 	err := NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig)
 
 	return appConfig, err

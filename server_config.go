@@ -11,8 +11,8 @@ type ServerConfig struct {
 	} `json:"log"`
 }
 
-func NewServerConfig() (*AppConfig, error) {
-	appConfig := &AppConfig{}
+func NewServerConfig() (*AppServerConfig, error) {
+	appConfig := &AppServerConfig{}
 	err := NewSimpleConfig(fmt.Sprintf("/config/app.%s.json", GetEnv()), appConfig)
 
 	return appConfig, err

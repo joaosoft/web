@@ -1,6 +1,13 @@
 package web
 
-type AppConfig struct {
-	Server ServerConfig `json:"Server"`
-	Client ClientConfig `json:"Client"`
+type AppServerConfig struct {
+	Server ServerConfig `json:"server"`
+}
+
+type AppClientConfig struct {
+	Client ClientConfig `json:"client"`
+}
+
+type Log struct {
+	Level string `json:"level"`
 }
