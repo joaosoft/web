@@ -39,8 +39,6 @@ func NewClient(options ...ClientOption) (*Client, error) {
 		service.logger.Reconfigure(logger.WithLevel(level))
 	}
 
-	service.Reconfigure(options...)
-
 	// create a new dialer to create connections
 	dialer := net.Dialer{
 		Timeout:   30 * time.Second,
@@ -48,6 +46,8 @@ func NewClient(options ...ClientOption) (*Client, error) {
 		DualStack: true,
 	}
 	service.dialer = dialer
+
+	service.Reconfigure(options...)
 
 	return service, nil
 }

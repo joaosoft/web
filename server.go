@@ -49,7 +49,6 @@ func NewServer(options ...ServerOption) (*Server, error) {
 		service.logger.Reconfigure(logger.WithLevel(level))
 	}
 
-	service.Reconfigure(options...)
 
 	if config.Server.Address != "" {
 		service.address = config.Server.Address
@@ -60,6 +59,8 @@ func NewServer(options ...ServerOption) (*Server, error) {
 	}
 
 	service.errorhandler = service.DefaultErrorHandler
+
+	service.Reconfigure(options...)
 
 	return service, nil
 }
