@@ -44,7 +44,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 	if err != nil {
 		service.logger.Error(err.Error())
 	} else {
-		level, _ := logger.ParseLevel(config.Server.Log.Level)
+		level, _ := logger.ParseLevel(service.config.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
 	}
@@ -52,7 +52,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 	service.Reconfigure(options...)
 
 	if config.Server.Address != "" {
-		service.address = config.Server.Address
+		service.address = service.config.Address
 	}
 
 	if err = service.AddRoute(MethodGet, "/favicon.ico", service.handlerFile); err != nil {
