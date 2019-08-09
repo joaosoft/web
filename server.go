@@ -44,7 +44,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 	if err != nil {
 		service.logger.Error(err.Error())
 	} else {
-		level, _ := logger.ParseLevel(config.Client.Log.Level)
+		level, _ := logger.ParseLevel(config.Server.Log.Level)
 		service.logger.Debugf("setting log level to %s", level)
 		service.logger.Reconfigure(logger.WithLevel(level))
 	}
