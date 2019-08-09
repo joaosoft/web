@@ -5,6 +5,7 @@ import (
 	"net"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/joaosoft/color"
@@ -22,6 +23,7 @@ type Server struct {
 	address             string
 	errorhandler        ErrorHandler
 	multiAttachmentMode MultiAttachmentMode
+	started             bool
 }
 
 func NewServer(options ...ServerOption) (*Server, error) {
@@ -118,42 +120,6 @@ func (n *Namespace) AddRoute(method Method, path string, handler HandlerFunc, mi
 func (w *Server) SetErrorHandler(handler ErrorHandler) error {
 	w.errorhandler = handler
 	return nil
-}
-
-func (w *Server) Start() error {
-	w.logger.Debug("executing Start")
-	var err error
-
-	w.listener, err = net.Listen("tcp", w.address)
-	if err != nil {
-		w.logger.Errorf("error connecting to %s: %s", w.address, err)
-		return err
-	}
-
-	if w.address == ":0" {
-		split := strings.Split(w.listener.Addr().String(), ":")
-		w.address = fmt.Sprintf(":%s", split[len(split)-1])
-	}
-
-	fmt.Println(color.WithColor("http Server started on [%s]", color.FormatBold, color.ForegroundRed, color.BackgroundBlack, w.address))
-
-	for {
-		conn, err := w.listener.Accept()
-		w.logger.Info("accepted connection")
-		if err != nil {
-			w.logger.Errorf("error accepting connection: %s", err)
-			continue
-		}
-
-		if conn == nil {
-			w.logger.Error("the connection isn't initialized")
-			continue
-		}
-
-		go w.handleConnection(conn)
-	}
-
-	return err
 }
 
 func (w *Server) handleConnection(conn net.Conn) (err error) {
@@ -335,16 +301,6 @@ done:
 	return nil
 }
 
-func (w *Server) Stop() error {
-	w.logger.Debug("executing Stop")
-
-	if w.listener != nil {
-		w.listener.Close()
-	}
-
-	return nil
-}
-
 func ConvertPathToRegex(path string) string {
 
 	var re = regexp.MustCompile(`:[a-zA-Z0-9\-_.:]+`)
@@ -414,5 +370,80 @@ func (w *Server) GetAddress() string {
 }
 
 func emptyHandler(ctx *Context) error {
+	return nil
+}
+
+func (w *Server) Start(waitGroup ...*sync.WaitGroup) error {
+	var wg *sync.WaitGroup
+
+	if len(waitGroup) == 0 {
+		wg = &sync.WaitGroup{}
+		wg.Add(1)
+	} else {
+		wg = waitGroup[0]
+	}
+
+	w.logger.Debug("executing Start")
+	var err error
+
+	w.listener, err = net.Listen("tcp", w.address)
+	if err != nil {
+		w.logger.Errorf("error connecting to %s: %s", w.address, err)
+		return err
+	}
+
+	if w.address == ":0" {
+		split := strings.Split(w.listener.Addr().String(), ":")
+		w.address = fmt.Sprintf(":%s", split[len(split)-1])
+	}
+
+	fmt.Println(color.WithColor("http Server started on [%s]", color.FormatBold, color.ForegroundRed, color.BackgroundBlack, w.address))
+
+	w.started = true
+	wg.Done()
+
+	for {
+		conn, err := w.listener.Accept()
+		w.logger.Info("accepted connection")
+		if err != nil {
+			w.logger.Errorf("error accepting connection: %s", err)
+			continue
+		}
+
+		if conn == nil {
+			w.logger.Error("the connection isn't initialized")
+			continue
+		}
+
+		go w.handleConnection(conn)
+	}
+
+	return err
+}
+
+func (w *Server) Started() bool {
+	return w.started
+}
+
+func (w *Server) Stop(waitGroup ...*sync.WaitGroup) error {
+	var wg *sync.WaitGroup
+
+	if len(waitGroup) == 0 {
+		wg = &sync.WaitGroup{}
+		wg.Add(1)
+	} else {
+		wg = waitGroup[0]
+	}
+
+	defer wg.Done()
+
+	w.logger.Debug("executing Stop")
+
+	if w.listener != nil {
+		w.listener.Close()
+	}
+
+	w.started = false
+
 	return nil
 }
