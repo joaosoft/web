@@ -288,7 +288,7 @@ func (r *Request) buildHeaders() ([]byte, error) {
 	if _, ok := r.Headers[HeaderUserAgent]; !ok {
 		r.Headers[HeaderUserAgent] = []string{"client"}
 	}
-	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
+	r.Headers[HeaderDate] = []string{time.Now().Format(HeaderTimeFormat)}
 
 	if lenFormData > 0 {
 

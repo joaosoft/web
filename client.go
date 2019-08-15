@@ -22,7 +22,7 @@ func NewClient(options ...ClientOption) (*Client, error) {
 	config, err := NewClientConfig()
 
 	service := &Client{
-		logger:              logger.NewLogDefault("Client", logger.WarnLevel),
+		logger:              logger.NewLogDefault("client", logger.WarnLevel),
 		multiAttachmentMode: MultiAttachmentModeZip,
 		config:              &config.Client,
 	}
@@ -57,7 +57,6 @@ func (r *Request) Send() (*Response, error) {
 
 func (c *Client) Send(request *Request) (*Response, error) {
 	startTime := time.Now()
-	fmt.Println(color.WithColor("[IN] Method[%s] Url[%s] on Start[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, request.Method, request.Address.Url, startTime))
 
 	if c.logger.IsDebugEnabled() {
 		if request.Body != nil {
@@ -101,7 +100,7 @@ func (c *Client) Send(request *Request) (*Response, error) {
 		}
 	}
 
-	fmt.Println(color.WithColor("[OUT] Status[%d] Method[%s] Url[%s] on Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundCyan, color.BackgroundBlack, response.Status, request.Method, request.Address.Url, startTime, time.Since(startTime)))
+	fmt.Println(color.WithColor("Status[%d] Method[%s] Url[%s] on Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundCyan, color.BackgroundBlack, response.Status, request.Method, request.Address.Url, startTime.Format(TimeFormat), time.Since(startTime)))
 
 	return response, err
 }

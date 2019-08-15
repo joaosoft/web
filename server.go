@@ -13,6 +13,7 @@ import (
 )
 
 type Server struct {
+	name                string
 	config              *ServerConfig
 	isLogExternal       bool
 	logger              logger.ILogger
@@ -20,7 +21,6 @@ type Server struct {
 	filters             Filters
 	middlewares         []MiddlewareFunc
 	listener            net.Listener
-	address             string
 	errorhandler        ErrorHandler
 	multiAttachmentMode MultiAttachmentMode
 	started             bool
@@ -30,11 +30,11 @@ func NewServer(options ...ServerOption) (*Server, error) {
 	config, err := NewServerConfig()
 
 	service := &Server{
-		logger:              logger.NewLogDefault("Server", logger.WarnLevel),
+		name:                "server",
+		logger:              logger.NewLogDefault("server", logger.WarnLevel),
 		routes:              make(Routes),
 		filters:             make(Filters),
 		middlewares:         make([]MiddlewareFunc, 0),
-		address:             ":80",
 		multiAttachmentMode: MultiAttachmentModeZip,
 		config:              &config.Server,
 	}
@@ -53,8 +53,12 @@ func NewServer(options ...ServerOption) (*Server, error) {
 
 	service.Reconfigure(options...)
 
-	if service.config.Address != "" {
-		service.address = service.config.Address
+	if config.Server.Address == "" {
+		port, err := GetFreePort()
+		if err != nil {
+			return nil, err
+		}
+		config.Server.Address = fmt.Sprintf(":%d", port)
 	}
 
 	if err = service.AddRoute(MethodGet, "/favicon.ico", service.handlerFile); err != nil {
@@ -139,8 +143,6 @@ func (w *Server) handleConnection(conn net.Conn) (err error) {
 		w.logger.Errorf("error getting request: [%s]", err)
 		return err
 	}
-
-	fmt.Println(color.WithColor("[IN] Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s]", color.FormatBold, color.ForegroundBlue, color.BackgroundBlack, request.IP, request.Method, request.Address.Url, request.Protocol, startTime))
 
 	if w.logger.IsDebugEnabled() {
 		if request.Body != nil {
@@ -296,7 +298,7 @@ done:
 		w.logger.Errorf("error writing response: [%s]", err)
 	}
 
-	fmt.Println(color.WithColor("[OUT] Status[%d] Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundCyan, color.BackgroundBlack, ctx.Response.Status, ctx.Request.IP, ctx.Request.Method, ctx.Request.Address.Url, ctx.Request.Protocol, startTime, time.Since(startTime)))
+	fmt.Println(color.WithColor("Server[%s] Status[%d] Address[%s] Method[%s] Url[%s] Protocol[%s] Start[%s] Elapsed[%s]", color.FormatBold, color.ForegroundCyan, color.BackgroundBlack, w.name, ctx.Response.Status, ctx.Request.IP, ctx.Request.Method, ctx.Request.Address.Url, ctx.Request.Protocol, startTime.Format(TimeFormat), time.Since(startTime)))
 
 	return nil
 }
@@ -365,10 +367,6 @@ func (w *Server) LoadUrlParms(request *Request, route *Route) error {
 	return nil
 }
 
-func (w *Server) GetAddress() string {
-	return w.address
-}
-
 func emptyHandler(ctx *Context) error {
 	return nil
 }
@@ -386,18 +384,18 @@ func (w *Server) Start(waitGroup ...*sync.WaitGroup) error {
 	w.logger.Debug("executing Start")
 	var err error
 
-	w.listener, err = net.Listen("tcp", w.address)
+	w.listener, err = net.Listen("tcp", w.config.Address)
 	if err != nil {
-		w.logger.Errorf("error connecting to %s: %s", w.address, err)
+		w.logger.Errorf("error connecting to %s: %s", w.config.Address, err)
 		return err
 	}
 
-	if w.address == ":0" {
+	if w.config.Address == ":0" {
 		split := strings.Split(w.listener.Addr().String(), ":")
-		w.address = fmt.Sprintf(":%s", split[len(split)-1])
+		w.config.Address = fmt.Sprintf(":%s", split[len(split)-1])
 	}
 
-	fmt.Println(color.WithColor("http Server started on [%s]", color.FormatBold, color.ForegroundRed, color.BackgroundBlack, w.address))
+	fmt.Println(color.WithColor("http Server [%s] started on [%s]", color.FormatBold, color.ForegroundRed, color.BackgroundBlack, w.name, w.config.Address))
 
 	w.started = true
 	wg.Done()

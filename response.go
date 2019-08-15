@@ -563,7 +563,7 @@ func (r *Response) buildHeaders() ([]byte, error) {
 	lenFormData := len(r.FormData)
 
 	r.Headers[HeaderServer] = []string{"Server"}
-	r.Headers[HeaderDate] = []string{time.Now().Format(TimeFormat)}
+	r.Headers[HeaderDate] = []string{time.Now().Format(HeaderTimeFormat)}
 	r.Headers[HeaderAccessControlAllowCredentials] = []string{"true"}
 	if val, ok := r.Headers[HeaderOrigin]; ok {
 		r.Headers[HeaderAccessControlAllowOrigin] = val
