@@ -9,6 +9,7 @@ import (
 type ContentType string
 
 const (
+	ContentTypeEmpty                  ContentType = ""
 	ContentTypeApplicationJSON        ContentType = "application/json"
 	ContentTypeApplicationJavaScript  ContentType = "application/javascript"
 	ContentTypeApplicationXML         ContentType = "application/xml"

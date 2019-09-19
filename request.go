@@ -319,7 +319,9 @@ func (r *Request) buildHeaders() ([]byte, error) {
 			}
 		}
 	} else {
-		r.Headers[HeaderContentType] = []string{string(r.ContentType)}
+		if r.ContentType != ContentTypeEmpty {
+			r.Headers[HeaderContentType] = []string{string(r.ContentType)}
+		}
 		lenBody := len(r.Body)
 		if lenBody > 0 {
 			r.Headers[HeaderContentLength] = []string{strconv.Itoa(lenBody)}

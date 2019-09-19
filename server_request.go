@@ -24,7 +24,7 @@ func (w *Server) NewRequest(conn net.Conn, server *Server) (*Request, error) {
 			Cookies:     make(Cookies),
 			Params:      make(Params),
 			UrlParams:   make(UrlParams),
-			ContentType: ContentTypeApplicationJSON,
+			ContentType: ContentTypeEmpty,
 			Charset:     CharsetUTF8,
 			conn:        conn,
 		},
@@ -58,7 +58,6 @@ func (r *Request) Bind(obj interface{}) error {
 	}
 	return nil
 }
-
 
 func (r *Request) BindFormData(obj interface{}) error {
 	if len(r.FormData) == 0 {
