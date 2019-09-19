@@ -27,7 +27,7 @@ func (c *Client) NewRequest(method Method, url string) (*Request, error) {
 			Params:      params,
 			UrlParams:   make(UrlParams),
 			Charset:     CharsetUTF8,
-			ContentType: ContentTypeApplicationJSON,
+			ContentType: ContentTypeEmpty,
 		},
 		FormData:            make(map[string]*FormData),
 		Attachments:         make(map[string]*Attachment),
