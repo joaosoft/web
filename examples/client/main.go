@@ -31,7 +31,7 @@ func main() {
 }
 
 func requestGet(c *web.Client) {
-	request, err := c.NewRequest(web.MethodGet, "localhost:9001/hello/joao?a=1&b=2&c=1,2,3")
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/hello/joao?a=1&b=2&c=1,2,3", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +45,7 @@ func requestGet(c *web.Client) {
 }
 
 func requestPost(c *web.Client) {
-	request, err := c.NewRequest(web.MethodPost, "localhost:9001/hello/joao?a=1&b=2&c=1,2,3")
+	request, err := c.NewRequest(web.MethodPost, "localhost:9001/hello/joao?a=1&b=2&c=1,2,3", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -69,7 +69,7 @@ func requestPost(c *web.Client) {
 }
 
 func requestGetBoundary(c *web.Client) {
-	request, err := c.NewRequest(web.MethodGet, "localhost:9001/hello/joao/download")
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/hello/joao/download", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -83,7 +83,7 @@ func requestGetBoundary(c *web.Client) {
 }
 
 func requestOptionsOK(c *web.Client) {
-	request, err := c.NewRequest(web.MethodOptions, "localhost:9001/auth-basic")
+	request, err := c.NewRequest(web.MethodOptions, "localhost:9001/auth-basic", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -103,7 +103,7 @@ func requestOptionsOK(c *web.Client) {
 }
 
 func requestOptionsNotFound(c *web.Client) {
-	request, err := c.NewRequest(web.MethodOptions, "localhost:9001/auth-basic-invalid")
+	request, err := c.NewRequest(web.MethodOptions, "localhost:9001/auth-basic-invalid", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -123,7 +123,7 @@ func requestOptionsNotFound(c *web.Client) {
 }
 
 func requestAuthBasic(c *web.Client) {
-	request, err := c.NewRequest(web.MethodGet, "localhost:9001/auth-basic")
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/auth-basic", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -142,7 +142,7 @@ func requestAuthBasic(c *web.Client) {
 }
 
 func requestAuthJwt(c *web.Client) {
-	request, err := c.NewRequest(web.MethodGet, "localhost:9001/auth-jwt")
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/auth-jwt", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -161,7 +161,7 @@ func requestAuthJwt(c *web.Client) {
 }
 
 func bindFormData(c *web.Client) {
-	request, err := c.NewRequest(web.MethodGet, "localhost:9001/form-data")
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/form-data", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -190,7 +190,7 @@ func bindFormData(c *web.Client) {
 }
 
 func bindUrlFormData(c *web.Client) {
-	request, err := c.NewRequest(web.MethodGet, "localhost:9001/url-form-data")
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/url-form-data", nil)
 	if err != nil {
 		panic(err)
 	}
