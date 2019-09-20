@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-func (c *Client) NewRequest(method Method, url string, headers Headers) (*Request, error) {
+func (c *Client) NewRequest(method Method, url string, contentType ContentType, headers Headers) (*Request, error) {
 
 	// validate url
 	regx := regexp.MustCompile(RegexForURL)
@@ -20,9 +20,10 @@ func (c *Client) NewRequest(method Method, url string, headers Headers) (*Reques
 		headers = make(Headers)
 	}
 
-	contentType := ContentTypeEmpty
-	if c, ok := headers[HeaderContentType]; ok {
-		contentType = ContentType(c[0])
+	if contentType == ContentTypeEmpty {
+		if c, ok := headers[HeaderContentType]; ok {
+			contentType = ContentType(c[0])
+		}
 	}
 
 	return &Request{

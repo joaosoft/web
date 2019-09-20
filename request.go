@@ -176,9 +176,8 @@ func (r *Request) GetFormDataString(name string) string {
 	return ""
 }
 
-func (r *Request) WithBody(body []byte, contentType ContentType) *Request {
+func (r *Request) WithBody(body []byte) *Request {
 	r.Body = body
-	r.ContentType = contentType
 
 	return r
 }
