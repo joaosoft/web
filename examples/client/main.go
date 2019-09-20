@@ -161,7 +161,7 @@ func requestAuthJwt(c *web.Client) {
 }
 
 func bindFormData(c *web.Client) {
-	request, err := c.NewRequest(web.MethodGet, "localhost:9001/form-data", web.ContentTypeApplicationJSON, nil)
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/form-data", web.ContentTypeMultipartFormData, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -169,7 +169,7 @@ func bindFormData(c *web.Client) {
 	request.SetFormData("var_one", "one")
 	request.SetFormData("var_two", "2")
 
-	response, err := request.WithContentType(web.ContentTypeMultipartFormData).Send()
+	response, err := request.Send()
 	if err != nil {
 		panic(err)
 	}
@@ -190,7 +190,7 @@ func bindFormData(c *web.Client) {
 }
 
 func bindUrlFormData(c *web.Client) {
-	request, err := c.NewRequest(web.MethodGet, "localhost:9001/url-form-data", web.ContentTypeApplicationJSON, nil)
+	request, err := c.NewRequest(web.MethodGet, "localhost:9001/url-form-data", web.ContentTypeApplicationForm, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -198,7 +198,7 @@ func bindUrlFormData(c *web.Client) {
 	request.SetFormData("var_one", "one")
 	request.SetFormData("var_two", "2")
 
-	response, err := request.WithContentType(web.ContentTypeApplicationForm).Send()
+	response, err := request.Send()
 	if err != nil {
 		panic(err)
 	}
