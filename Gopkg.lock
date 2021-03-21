@@ -3,14 +3,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:243b10c0f49b9be3abf2a5317a8ef7f5e4c6a6cc52df9df148d1ca8ab3212ec5"
+  digest = "1:403c6c64bcff5cf2565d9842599973a7c1edef98f51e938d4260fb0a177f180e"
   name = "github.com/joaosoft/auth-types"
   packages = [
     "basic",
     "jwt",
   ]
   pruneopts = "UT"
-  revision = "1650f9472c4a2bd81a44af308a2ac005444fe2b5"
+  revision = "9b1bbd776f4217aa97bc5f74316fffc6dd0b9c6e"
 
 [[projects]]
   branch = "master"
@@ -22,19 +22,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:16448cc34c274f3c9644f235517f28562263e7029e58c2e388652fac2e109164"
+  digest = "1:b0b8e1f9c70074785ae3c9a1a17a70fa71f1ea57ab33c8f9a533b0e2b035cf30"
   name = "github.com/joaosoft/errors"
   packages = ["."]
   pruneopts = "UT"
-  revision = "5be0a9d62458e8b47c998d0b36192a629f55786f"
+  revision = "063d59ab641c2a5e44549624c790c2d59cc1152c"
 
 [[projects]]
   branch = "master"
-  digest = "1:0a0bf8ecb69ffa9c68178b0203f41f1dda4c62854dbdcdcc4d6b2771e37e78cf"
+  digest = "1:0b4f1442a553f26421a985b988ebf3c237395c51a72e21abeb0ccf2e90e59920"
   name = "github.com/joaosoft/logger"
   packages = ["."]
   pruneopts = "UT"
-  revision = "4168033d43f324aad57cae03052925d545f61a69"
+  revision = "7f5013a1da373a321e3b763793069e7f6dd14305"
 
 [[projects]]
   branch = "master"
