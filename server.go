@@ -61,7 +61,9 @@ func NewServer(options ...ServerOption) (*Server, error) {
 		config.Server.Address = fmt.Sprintf(":%d", port)
 	}
 
-	service.AddRoute(MethodGet, "/favicon.ico", service.handlerFile)
+	if err = service.AddRoute(MethodGet, "/favicon.ico", service.handlerFile); err != nil {
+		return nil, err
+	}
 
 	service.errorhandler = service.DefaultErrorHandler
 
@@ -76,7 +78,7 @@ func (w *Server) AddFilter(pattern string, position Position, middleware Middlew
 	w.filters.AddFilter(pattern, position, middleware, method, methods...)
 }
 
-func (w *Server) AddRoute(method Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) {
+func (w *Server) AddRoute(method Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
 	w.routes[method] = append(w.routes[method], Route{
 		Method:      method,
 		Path:        path,
@@ -85,12 +87,17 @@ func (w *Server) AddRoute(method Method, path string, handler HandlerFunc, middl
 		Middlewares: middleware,
 		Name:        GetFunctionName(handler),
 	})
+
+	return nil
 }
 
-func (w *Server) AddRoutes(route ...*Route) {
+func (w *Server) AddRoutes(route ...*Route) error {
 	for _, r := range route {
-		w.AddRoute(r.Method, r.Path, r.Handler, r.Middlewares...)
+		if err := w.AddRoute(r.Method, r.Path, r.Handler, r.Middlewares...); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (w *Server) AddNamespace(path string, middlewares ...MiddlewareFunc) *Namespace {
@@ -101,16 +108,17 @@ func (w *Server) AddNamespace(path string, middlewares ...MiddlewareFunc) *Names
 	}
 }
 
-func (n *Namespace) AddRoutes(route ...*Route) *Namespace {
+func (n *Namespace) AddRoutes(route ...*Route) error {
 	for _, r := range route {
-		n.WebServer.AddRoute(r.Method, fmt.Sprintf("%s%s", n.Path, r.Path), r.Handler, append(r.Middlewares, n.Middlewares...)...)
+		if err := n.WebServer.AddRoute(r.Method, fmt.Sprintf("%s%s", n.Path, r.Path), r.Handler, append(r.Middlewares, n.Middlewares...)...); err != nil {
+			return err
+		}
 	}
-	return n
+	return nil
 }
 
-func (n *Namespace) AddRoute(method Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) *Namespace {
-	n.WebServer.AddRoute(method, fmt.Sprintf("%s%s", path, path), handler, append(middleware, n.Middlewares...)...)
-	return n
+func (n *Namespace) AddRoute(method Method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) error {
+	return n.WebServer.AddRoute(method, fmt.Sprintf("%s%s", path, path), handler, append(middleware, n.Middlewares...)...)
 }
 
 func (w *Server) SetErrorHandler(handler ErrorHandler) error {
