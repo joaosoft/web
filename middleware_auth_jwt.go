@@ -3,7 +3,7 @@ package web
 import (
 	"strings"
 
-	"github.com/joaosoft/auth-types/jwt"
+	"auth-types/jwt"
 )
 
 func MiddlewareCheckAuthJwt(keyFunc jwt.KeyFunc, checkFunc jwt.CheckFunc) MiddlewareFunc {

@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/joaosoft/color"
-	"github.com/joaosoft/logger"
+	"color"
+	"logger"
 )
 
 type Server struct {

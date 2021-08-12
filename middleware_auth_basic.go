@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/joaosoft/auth-types/basic"
+	"auth-types/basic"
 )
 
 func MiddlewareCheckAuthBasic(user, password string) MiddlewareFunc {

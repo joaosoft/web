@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/joaosoft/logger"
+	"logger"
 )
 
 // ServerOption ...
