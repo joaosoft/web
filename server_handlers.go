@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"logger"
+	"github.com/joaosoft/logger"
 )
 
 func (w *Server) handlerFile(ctx *Context) error {

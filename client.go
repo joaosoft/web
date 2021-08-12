@@ -6,8 +6,8 @@ import (
 	"net"
 	"time"
 
-	"color"
-	"logger"
+	"github.com/joaosoft/color"
+	"github.com/joaosoft/logger"
 )
 
 type Client struct {

@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"web"
+	"github.com/joaosoft/web"
 
 	"github.com/joaosoft/auth-types/jwt"
 )

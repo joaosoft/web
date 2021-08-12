@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"web"
+
+	"github.com/joaosoft/web"
 
 	"github.com/joaosoft/auth-types/jwt"
 )
