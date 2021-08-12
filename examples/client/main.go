@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"web"
 
-	"auth-types/jwt"
+	"github.com/joaosoft/auth-types/jwt"
 )
 
 func main() {

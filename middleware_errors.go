@@ -3,7 +3,7 @@ package web
 import (
 	"net/http"
 
-	"errors"
+	"github.com/joaosoft/errors"
 )
 
 var (
