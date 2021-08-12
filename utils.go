@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"path"
 
-	"errors"
+	"github.com/joaosoft/errors"
 )
 
 func GetEnv() string {
