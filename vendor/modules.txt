@@ -1,0 +1,19 @@
+# github.com/joaosoft/auth-types/basic v0.0.0-20210812110140-a5c48e1ab233
+## explicit
+github.com/joaosoft/auth-types/basic
+# github.com/joaosoft/auth-types/jwt v0.0.0-20210812110140-a5c48e1ab233
+## explicit
+github.com/joaosoft/auth-types/jwt
+# github.com/joaosoft/color v0.0.0-20210812105750-e49cf564bb41
+## explicit
+github.com/joaosoft/color
+# github.com/joaosoft/errors v0.0.0-20210812101433-f58fbcc4c1c8
+## explicit
+github.com/joaosoft/errors
+# github.com/joaosoft/logger v0.0.0-20210812110414-b60fd70ff0b8
+## explicit
+github.com/joaosoft/logger
+# github.com/joaosoft/writers v0.0.0-20210812101356-becb38cb2fa6
+github.com/joaosoft/writers
+# github.com/satori/go.uuid v1.2.0
+github.com/satori/go.uuid
