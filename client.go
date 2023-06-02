@@ -104,3 +104,7 @@ func (c *Client) Send(request *Request) (*Response, error) {
 
 	return response, err
 }
+
+func (c *Client) Config() *ClientConfig {
+	return c.config
+}
