@@ -7,7 +7,7 @@ require (
 	github.com/joaosoft/auth-types/jwt v0.0.0-20230531143726-6905d84fa794
 	github.com/joaosoft/color v0.0.0-20230531140514-b61c18d53e39
 	github.com/joaosoft/errors v0.0.0-20230531141818-ebb38600b462
-	github.com/joaosoft/logger v0.0.0-20230531142923-753c0a3e836a
+	github.com/joaosoft/logger v0.0.0-20240321164508-fe379344de3b
 )
 
 require (
